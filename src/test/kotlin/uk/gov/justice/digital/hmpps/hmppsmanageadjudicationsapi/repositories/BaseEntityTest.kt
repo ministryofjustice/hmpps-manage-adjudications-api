@@ -40,25 +40,23 @@ class BaseEntityTest {
     assertThat(updatedEntity.incidentRole?.modifiedDateTime).isAfter(updatedEntity.incidentRole?.createDateTime)
   }
 
-  private fun newDraft(): DraftAdjudication {
-    return DraftAdjudication(
-      prisonerNumber = "A12345",
-      gender = Gender.MALE,
-      agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 2,
-        dateTimeOfIncident = DEFAULT_DATE_TIME,
-        dateTimeOfDiscovery = DEFAULT_DATE_TIME,
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
-      ),
-      incidentRole = IncidentRole(
-        roleCode = "25a",
-        associatedPrisonersNumber = "B23456",
-        associatedPrisonersName = "Associated Prisoner",
-      ),
-      isYouthOffender = true,
-    )
-  }
+  private fun newDraft(): DraftAdjudication = DraftAdjudication(
+    prisonerNumber = "A12345",
+    gender = Gender.MALE,
+    agencyId = "MDI",
+    incidentDetails = IncidentDetails(
+      locationId = 2,
+      dateTimeOfIncident = DEFAULT_DATE_TIME,
+      dateTimeOfDiscovery = DEFAULT_DATE_TIME,
+      handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
+    ),
+    incidentRole = IncidentRole(
+      roleCode = "25a",
+      associatedPrisonersNumber = "B23456",
+      associatedPrisonersName = "Associated Prisoner",
+    ),
+    isYouthOffender = true,
+  )
 
   companion object {
     val DEFAULT_DATE_TIME = LocalDateTime.of(2021, 10, 3, 10, 10, 22)

@@ -33,15 +33,14 @@ data class HearingOutcome(
   var nomisOutcome: Boolean = false,
   var migrated: Boolean = false,
 ) : BaseEntity() {
-  fun toDto(): HearingOutcomeDto =
-    HearingOutcomeDto(
-      id = this.id,
-      code = this.code,
-      reason = this.adjournReason,
-      details = this.details,
-      adjudicator = this.adjudicator,
-      plea = this.plea,
-    )
+  fun toDto(): HearingOutcomeDto = HearingOutcomeDto(
+    id = this.id,
+    code = this.code,
+    reason = this.adjournReason,
+    details = this.details,
+    adjudicator = this.adjudicator,
+    plea = this.plea,
+  )
 }
 
 enum class HearingOutcomeCode(val outcomeCode: OutcomeCode? = null) {

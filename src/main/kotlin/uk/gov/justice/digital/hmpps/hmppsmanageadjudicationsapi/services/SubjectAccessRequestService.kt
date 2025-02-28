@@ -62,7 +62,7 @@ class SubjectAccessRequestService(
       dto.prisonerName = prisonerName
 
       // Retrieve the locationId from 'incidentDetails'
-      val locationId = dto.incidentDetails?.locationId
+      val locationId = dto.incidentDetails.locationId
       if (locationId != null) {
         // Use cache or call the service
         val locationName = locationCache.getOrPut(locationId) {
@@ -74,7 +74,7 @@ class SubjectAccessRequestService(
           }
         }
         // Set the locationName back into incidentDetails
-        dto.incidentDetails?.locationName = locationName
+        dto.incidentDetails.locationName = locationName
       }
 
       val statusDescription = ReportedAdjudicationStatusTransformer.displayName(dto.status)
@@ -148,9 +148,10 @@ class SubjectAccessRequestService(
       }
 
       // Transform each protectedCharacteristics
-      val protectedCharacteristicsDescriptions = dto.offenceDetails.protectedCharacteristics.mapNotNull { characteristic ->
-        CharacteristicTransformer.displayName(characteristic)
-      }
+      val protectedCharacteristicsDescriptions =
+        dto.offenceDetails.protectedCharacteristics.mapNotNull { characteristic ->
+          CharacteristicTransformer.displayName(characteristic)
+        }
       dto.offenceDetails.protectedCharacteristicsDescriptions = protectedCharacteristicsDescriptions
 
       // Transform each offence code

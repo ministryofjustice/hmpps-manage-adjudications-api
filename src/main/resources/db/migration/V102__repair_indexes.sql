@@ -1,1 +1,1 @@
-create index repair_index on reported_adjudications(migrated, status);
+create index repair_index on reported_adjudications (migrated, status);

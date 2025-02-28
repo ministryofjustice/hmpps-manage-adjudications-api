@@ -42,7 +42,8 @@ class PrisonerMergeIntTest : SqsIntegrationTestBase() {
         )
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(PrisonOffenderEventListener.PRISONER_MERGE_EVENT_TYPE).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String")
+              .stringValue(PrisonOffenderEventListener.PRISONER_MERGE_EVENT_TYPE).build(),
           ),
         )
         .build(),

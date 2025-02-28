@@ -82,8 +82,17 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to create a hearing`() {
       createHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isCreated)
-      verify(hearingService).createHearing("1", HEARING_REQUEST.locationId, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(hearingService).createHearing(
+        "1",
+        HEARING_REQUEST.locationId,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+        HEARING_REQUEST.dateTimeOfHearing,
+        HEARING_REQUEST.oicHearingType,
+      )
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.HEARING_CREATED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createHearingRequest(
@@ -135,18 +144,19 @@ class HearingControllerTest : TestControllerBase() {
       deleteHearingRequest(1)
         .andExpect(MockMvcResultMatchers.status().isOk)
       verify(hearingService).deleteHearing("1")
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_DELETED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.HEARING_DELETED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun deleteHearingRequest(
       id: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/v2")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.delete("/reported-adjudications/$id/hearing/v2")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -195,8 +205,17 @@ class HearingControllerTest : TestControllerBase() {
     fun `makes a call to amend a hearing`() {
       amendHearingRequest(1, HEARING_REQUEST)
         .andExpect(MockMvcResultMatchers.status().isOk)
-      verify(hearingService).amendHearing("1", HEARING_REQUEST.locationId, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), HEARING_REQUEST.dateTimeOfHearing, HEARING_REQUEST.oicHearingType)
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.HEARING_UPDATED, REPORTED_ADJUDICATION_DTO)
+      verify(hearingService).amendHearing(
+        "1",
+        HEARING_REQUEST.locationId,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+        HEARING_REQUEST.dateTimeOfHearing,
+        HEARING_REQUEST.oicHearingType,
+      )
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.HEARING_UPDATED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun amendHearingRequest(
@@ -247,13 +266,11 @@ class HearingControllerTest : TestControllerBase() {
 
     private fun allHearingsRequest(
       date: LocalDate,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/hearings?hearingDate=$date")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/hearings?hearingDate=$date")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -305,7 +322,12 @@ class HearingControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val HEARING_REQUEST = HearingRequest(locationId = 1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), dateTimeOfHearing = LocalDateTime.now(), oicHearingType = OicHearingType.GOV)
+    private val HEARING_REQUEST = HearingRequest(
+      locationId = 1L,
+      locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+      dateTimeOfHearing = LocalDateTime.now(),
+      oicHearingType = OicHearingType.GOV,
+    )
 
     private val ALL_HEARINGS_DTO =
       listOf(

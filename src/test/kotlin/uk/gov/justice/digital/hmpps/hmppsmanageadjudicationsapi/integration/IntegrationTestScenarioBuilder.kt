@@ -14,7 +14,10 @@ class IntegrationTestScenarioBuilder(
   private val intTestData: IntegrationTestData,
   private val intTestBase: IntegrationTestBase,
   private val activeCaseload: String? = "MDI",
-  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(activeCaseload = activeCaseload, roles = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS")),
+  private val headers: ((HttpHeaders) -> Unit) = intTestBase.setHeaders(
+    activeCaseload = activeCaseload,
+    roles = listOf("ROLE_ADJUDICATIONS_REVIEWER", "ROLE_VIEW_ADJUDICATIONS"),
+  ),
 ) {
   fun startDraft(
     testAdjudication: AdjudicationIntTestDataSet,
@@ -180,9 +183,7 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun createOutcomeReferGov(): WebTestClient.ResponseSpec {
-    return intTestData.createOutcomeReferGov(testAdjudicationDataSet)
-  }
+  fun createOutcomeReferGov(): WebTestClient.ResponseSpec = intTestData.createOutcomeReferGov(testAdjudicationDataSet)
 
   fun issueReport(): IntegrationTestScenario {
     intTestData.issueReport(
@@ -198,15 +199,9 @@ class IntegrationTestScenario(
     return this
   }
 
-  fun recallCompletedDraftAdjudication(): DraftAdjudicationResponse {
-    return intTestData.recallCompletedDraftAdjudication(testAdjudicationDataSet, headers)
-  }
+  fun recallCompletedDraftAdjudication(): DraftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudicationDataSet, headers)
 
-  fun getDraftId(): Long {
-    return draftCreationResponse.draftAdjudication.id
-  }
+  fun getDraftId(): Long = draftCreationResponse.draftAdjudication.id
 
-  fun getDraftAdjudicationDetails(activeCaseload: String? = "MDI"): WebTestClient.ResponseSpec {
-    return intTestData.getDraftAdjudicationDetails(draftCreationResponse, activeCaseload = activeCaseload)
-  }
+  fun getDraftAdjudicationDetails(activeCaseload: String? = "MDI"): WebTestClient.ResponseSpec = intTestData.getDraftAdjudicationDetails(draftCreationResponse, activeCaseload = activeCaseload)
 }

@@ -19,12 +19,10 @@ class ScheduleTaskController(
 ) {
 
   @DeleteMapping(value = ["/delete-orphaned-draft-adjudications"])
-  fun deleteOrphanedDraftAdjudications(): Unit =
-    draftAdjudicationService.deleteOrphanedDraftAdjudications()
+  fun deleteOrphanedDraftAdjudications(): Unit = draftAdjudicationService.deleteOrphanedDraftAdjudications()
 
   @PostMapping("/migration-populate-charges")
-  fun populateChargesToMigrate(): Unit =
-    transferMigrationService.setupChargeIds()
+  fun populateChargesToMigrate(): Unit = transferMigrationService.setupChargeIds()
 
   @PostMapping("/migration-process-charges")
   fun processCharges() {

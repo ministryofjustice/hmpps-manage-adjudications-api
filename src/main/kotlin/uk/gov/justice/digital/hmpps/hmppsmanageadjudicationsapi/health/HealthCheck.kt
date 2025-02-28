@@ -22,6 +22,7 @@ abstract class HealthCheck(private val webClient: WebClient, private val timeout
     log.info(e.message)
     Health.down(e).build()
   }
+
   companion object {
     private val log = LoggerFactory.getLogger(this::class.java)
   }

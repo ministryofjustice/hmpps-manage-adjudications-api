@@ -126,9 +126,15 @@ data class OffenceDto(
   val offenceRule: OffenceRuleDto,
   @Schema(description = "The prison number of the victim involved in the incident, if relevant", example = "G2996UX")
   val victimPrisonersNumber: String? = null,
-  @Schema(description = "The username of the member of staff who is a victim of the incident, if relevant", example = "ABC12D")
+  @Schema(
+    description = "The username of the member of staff who is a victim of the incident, if relevant",
+    example = "ABC12D",
+  )
   val victimStaffUsername: String? = null,
-  @Schema(description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant", example = "Bob Hope")
+  @Schema(
+    description = "The name of the victim (who is not a member of staff or a prisoner) involved in the incident, if relevant",
+    example = "Bob Hope",
+  )
   val victimOtherPersonsName: String? = null,
   @Schema(description = "list of protected characteristics for offence, empty if non involved in offence")
   val protectedCharacteristics: List<Characteristic>,
@@ -138,7 +144,10 @@ data class OffenceDto(
 
 @Schema(description = "Details of a rule they have broken")
 data class OffenceRuleDto(
-  @Schema(description = "The paragraph number relating to the offence rule they have been alleged to have broken", example = "25(a)")
+  @Schema(
+    description = "The paragraph number relating to the offence rule they have been alleged to have broken",
+    example = "25(a)",
+  )
   val paragraphNumber: String,
   @Schema(description = "The name relating to the paragraph description", example = "Committed an assault")
   val paragraphDescription: String,
@@ -178,7 +187,10 @@ data class ReportedEvidenceDto(
 data class ReportedWitnessDto(
   @Schema(description = "The witness code based on an enum for defined witness", example = "PRISON_OFFICER")
   val code: WitnessCode,
-  @Schema(description = "The witness code description based on an enum for defined witness", example = "A prison officer")
+  @Schema(
+    description = "The witness code description based on an enum for defined witness",
+    example = "A prison officer",
+  )
   var codeDescription: String? = null,
   @Schema(description = "Witness first name", example = "Fred")
   val firstName: String,

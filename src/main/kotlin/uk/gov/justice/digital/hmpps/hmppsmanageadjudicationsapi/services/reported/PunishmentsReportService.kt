@@ -36,26 +36,23 @@ class PunishmentsReportQueryService(
     """this can be removed at some point in the near future ie after 1.9.2024 approximately. 
       Its purpose is to include nomis records where nomis allowed the user to incorrectly specify suspended until dates """,
   )
-  fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) =
-    reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
-      prisonerNumber = prisonerNumber,
-      statuses = ReportedAdjudicationStatus.corruptedStatuses(),
-      date = corruptedSuspendedCutOff,
-    )
+  fun getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber: String) = reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
+    prisonerNumber = prisonerNumber,
+    statuses = ReportedAdjudicationStatus.corruptedStatuses(),
+    date = corruptedSuspendedCutOff,
+  )
 
-  fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) =
-    reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
-      prisonerNumber = prisonerNumber,
-      punishmentType = punishmentType,
-    )
+  fun getReportsWithActiveAdditionalDays(prisonerNumber: String, punishmentType: PunishmentType) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
+    status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    prisonerNumber = prisonerNumber,
+    punishmentType = punishmentType,
+  )
 
-  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> =
-    reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-      status = ReportedAdjudicationStatus.CHARGE_PROVED,
-      offenderBookingId = offenderBookingId,
-      cutOff = LocalDate.now().minusDays(1),
-    ).map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
+  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> = reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
+    status = ReportedAdjudicationStatus.CHARGE_PROVED,
+    offenderBookingId = offenderBookingId,
+    cutOff = LocalDate.now().minusDays(1),
+  ).map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
 }
 
 @Transactional(readOnly = true)
@@ -71,9 +68,10 @@ class PunishmentsReportService(
   authenticationFacade,
 ) {
   fun getSuspendedPunishments(prisonerNumber: String, chargeNumber: String): List<SuspendedPunishmentDto> {
-    val reportsWithSuspendedPunishments = punishmentsReportQueryService.getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).toMutableList()
-      .union(punishmentsReportQueryService.getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
-      .filter { it.chargeNumber != chargeNumber }
+    val reportsWithSuspendedPunishments =
+      punishmentsReportQueryService.getReportsWithSuspendedPunishments(prisonerNumber = prisonerNumber).toMutableList()
+        .union(punishmentsReportQueryService.getCorruptedReportsWithSuspendedPunishmentsInLast6Months(prisonerNumber = prisonerNumber))
+        .filter { it.chargeNumber != chargeNumber }
 
     val includeAdditionalDays = includeAdditionalDays(chargeNumber)
 
@@ -81,7 +79,8 @@ class PunishmentsReportService(
       val corrupted = ReportedAdjudicationStatus.corruptedStatuses().contains(it.status)
       val cutOff = if (corrupted) corruptedSuspendedCutOff else suspendedCutOff
       it.getPunishments().suspendedPunishmentsToActivate(cutOff)
-        .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }.map { punishment ->
+        .filter { punishment -> punishment.type.includeInSuspendedPunishments(includeAdditionalDays) }
+        .map { punishment ->
           val schedule = punishment.latestSchedule()
 
           SuspendedPunishmentDto(
@@ -93,15 +92,28 @@ class PunishmentsReportService(
               privilegeType = punishment.privilegeType,
               otherPrivilege = punishment.otherPrivilege,
               stoppagePercentage = punishment.stoppagePercentage,
-              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, suspendedUntil = schedule.suspendedUntil, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(
+                days = schedule.duration ?: 0,
+                suspendedUntil = schedule.suspendedUntil,
+                duration = schedule.duration,
+                measurement = Measurement.DAYS,
+              ),
             ),
           )
         }
     }.flatten()
   }
 
-  fun getReportsWithAdditionalDays(chargeNumber: String, prisonerNumber: String, punishmentType: PunishmentType): List<AdditionalDaysDto> {
-    if (!PunishmentType.additionalDays().contains(punishmentType)) throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+  fun getReportsWithAdditionalDays(
+    chargeNumber: String,
+    prisonerNumber: String,
+    punishmentType: PunishmentType,
+  ): List<AdditionalDaysDto> {
+    if (!PunishmentType.additionalDays()
+        .contains(punishmentType)
+    ) {
+      throw ValidationException("Punishment type must be ADDITIONAL_DAYS or PROSPECTIVE_DAYS")
+    }
 
     val reportedAdjudication = findByChargeNumber(chargeNumber)
 
@@ -120,34 +132,37 @@ class PunishmentsReportService(
               id = punishment.id,
               type = punishment.type,
               consecutiveChargeNumber = punishment.consecutiveToChargeNumber,
-              schedule = PunishmentScheduleDto(days = schedule.duration ?: 0, duration = schedule.duration, measurement = Measurement.DAYS),
+              schedule = PunishmentScheduleDto(
+                days = schedule.duration ?: 0,
+                duration = schedule.duration,
+                measurement = Measurement.DAYS,
+              ),
             ),
           )
         }
       }.flatten()
   }
 
-  fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> =
-    punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
-      .map { chargeAndPunishments ->
-        chargeAndPunishments.second.map {
-          val latestSchedule = it.latestSchedule()
-          ActivePunishmentDto(
-            punishmentType = it.type,
-            privilegeType = it.privilegeType,
-            otherPrivilege = it.otherPrivilege,
-            chargeNumber = chargeAndPunishments.first,
-            startDate = latestSchedule.startDate,
-            lastDay = latestSchedule.endDate,
-            duration = if (latestSchedule.duration == 0) null else latestSchedule.duration,
-            measurement = if (latestSchedule.duration == 0) null else Measurement.DAYS,
-            amount = it.amount,
-            stoppagePercentage = it.stoppagePercentage,
-            // TODO this should really be activated by charge number, set to null for now until UI is updated post design review
-            activatedFrom = null,
-          )
-        }
-      }.flatten().sortedByDescending { it.startDate }
+  fun getActivePunishments(offenderBookingId: Long): List<ActivePunishmentDto> = punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = offenderBookingId)
+    .map { chargeAndPunishments ->
+      chargeAndPunishments.second.map {
+        val latestSchedule = it.latestSchedule()
+        ActivePunishmentDto(
+          punishmentType = it.type,
+          privilegeType = it.privilegeType,
+          otherPrivilege = it.otherPrivilege,
+          chargeNumber = chargeAndPunishments.first,
+          startDate = latestSchedule.startDate,
+          lastDay = latestSchedule.endDate,
+          duration = if (latestSchedule.duration == 0) null else latestSchedule.duration,
+          measurement = if (latestSchedule.duration == 0) null else Measurement.DAYS,
+          amount = it.amount,
+          stoppagePercentage = it.stoppagePercentage,
+          // TODO this should really be activated by charge number, set to null for now until UI is updated post design review
+          activatedFrom = null,
+        )
+      }
+    }.flatten().sortedByDescending { it.startDate }
 
   private fun includeAdditionalDays(chargeNumber: String): Boolean {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
@@ -159,19 +174,15 @@ class PunishmentsReportService(
     val suspendedCutOff: LocalDate = LocalDate.now().minusDays(1)
     val corruptedSuspendedCutOff: LocalDate = LocalDate.now().minusMonths(6)
 
-    fun PunishmentType.includeInSuspendedPunishments(includeAdditionalDays: Boolean): Boolean {
-      return if (!PunishmentType.additionalDays().contains(this)) {
-        true
-      } else {
-        includeAdditionalDays
-      }
+    fun PunishmentType.includeInSuspendedPunishments(includeAdditionalDays: Boolean): Boolean = if (!PunishmentType.additionalDays().contains(this)) {
+      true
+    } else {
+      includeAdditionalDays
     }
 
-    fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean =
-      this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
-        this.chargeNumber != currentAdjudication.chargeNumber
+    fun ReportedAdjudication.includeAdaWithSameHearingDateAndSeparateCharge(currentAdjudication: ReportedAdjudication): Boolean = this.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == currentAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() &&
+      this.chargeNumber != currentAdjudication.chargeNumber
 
-    fun List<Punishment>.suspendedPunishmentsToActivate(cutOff: LocalDate) =
-      this.filter { it.isActiveSuspended(cutOff) && it.rehabilitativeActivities.isEmpty() }
+    fun List<Punishment>.suspendedPunishmentsToActivate(cutOff: LocalDate) = this.filter { it.isActiveSuspended(cutOff) && it.rehabilitativeActivities.isEmpty() }
   }
 }

@@ -1,1 +1,2 @@
-ALTER TABLE outcome ADD COLUMN oic_hearing_id bigint;
+ALTER TABLE outcome
+    ADD COLUMN oic_hearing_id bigint;

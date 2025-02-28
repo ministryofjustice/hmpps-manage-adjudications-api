@@ -59,12 +59,10 @@ class PrintSupportControllerTest : TestControllerBase() {
 
     private fun dis5Request(
       chargeNumber: String,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/$chargeNumber/print-support/dis5")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/$chargeNumber/print-support/dis5")
+          .header("Content-Type", "application/json"),
+      )
   }
 }

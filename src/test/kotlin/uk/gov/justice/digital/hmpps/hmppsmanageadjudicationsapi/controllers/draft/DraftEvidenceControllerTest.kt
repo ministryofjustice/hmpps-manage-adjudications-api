@@ -65,6 +65,7 @@ class DraftEvidenceControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
+    private val EVIDENCE_REQUEST =
+      EvidenceRequest(listOf(EvidenceRequestItem(code = EvidenceCode.PHOTO, details = "details")))
   }
 }

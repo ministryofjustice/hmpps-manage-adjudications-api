@@ -78,7 +78,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `get draft adjudication details`() {
     val testAdjudication = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val userHeaders =
+      setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
     val intTestBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -104,7 +105,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     val testAdjudication = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT
     val intTestData = integrationTestData()
 
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val userHeaders =
+      setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
     val intTestBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -120,7 +122,10 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication, headers = setHeaders(activeCaseload = testAdjudication.agencyId))
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(
+      testAdjudication,
+      headers = setHeaders(activeCaseload = testAdjudication.agencyId),
+    )
 
     testAdjudication.chargeNumber?.let {
       webTestClient.get()
@@ -138,7 +143,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `add offence details to the draft adjudication`() {
     val testAdjudication = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val userHeaders =
+      setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
     val intTestBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -178,7 +184,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
   fun `add offence details with protected characteristics`() {
     val testAdjudication = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT
     val intTestData = integrationTestData()
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val userHeaders =
+      setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
     val intTestBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -359,7 +366,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.draftAdjudication.id").isNumber
-      .jsonPath("$.draftAdjudication.incidentRole.roleCode").isEqualTo(IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.incidentRoleCode)
+      .jsonPath("$.draftAdjudication.incidentRole.roleCode")
+      .isEqualTo(IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.incidentRoleCode)
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersNumber").isEqualTo("A1234AA")
       .jsonPath("$.draftAdjudication.incidentRole.associatedPrisonersName").isEqualTo("Associated Prisoner Name")
   }
@@ -481,7 +489,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.paragraphNumber").isEqualTo(9)
-      .jsonPath("$.paragraphDescription").isEqualTo("Is found with any substance in his urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to him by himself or by another person (but subject to Rule 52)")
+      .jsonPath("$.paragraphDescription")
+      .isEqualTo("Is found with any substance in his urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to him by himself or by another person (but subject to Rule 52)")
   }
 
   @Test
@@ -493,7 +502,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.paragraphNumber").isEqualTo(4)
-      .jsonPath("$.paragraphDescription").isEqualTo("Denies access to any part of the young offender institution to any officer or any person (other than an inmate) who is at the young offender institution for the purpose of working there")
+      .jsonPath("$.paragraphDescription")
+      .isEqualTo("Denies access to any part of the young offender institution to any officer or any person (other than an inmate) who is at the young offender institution for the purpose of working there")
   }
 
   @Test
@@ -793,7 +803,8 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     val testAdjudication = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT
     val intTestData = integrationTestData()
 
-    val userHeaders = setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
+    val userHeaders =
+      setHeaders(username = testAdjudication.createdByUserId, activeCaseload = testAdjudication.agencyId)
     val intTestBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -809,7 +820,10 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .addIncidentStatement()
       .completeDraft()
 
-    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(testAdjudication, headers = setHeaders(activeCaseload = testAdjudication.agencyId))
+    val draftAdjudicationResponse = intTestData.recallCompletedDraftAdjudication(
+      testAdjudication,
+      headers = setHeaders(activeCaseload = testAdjudication.agencyId),
+    )
 
     webTestClient.put()
       .uri("/draft-adjudications/${draftAdjudicationResponse.draftAdjudication.id}/applicable-rules")
@@ -861,12 +875,11 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
     }
   }
 
-  private fun getReportedAdjudicationRequestStatus(chargeNumber: String) =
-    webTestClient.get()
-      .uri("/reported-adjudications/$chargeNumber/v2")
-      .headers(setHeaders())
-      .exchange()
-      .expectStatus()
+  private fun getReportedAdjudicationRequestStatus(chargeNumber: String) = webTestClient.get()
+    .uri("/reported-adjudications/$chargeNumber/v2")
+    .headers(setHeaders())
+    .exchange()
+    .expectStatus()
 
   companion object {
     private val DATE_TIME_OF_INCIDENT = LocalDateTime.of(2010, 10, 12, 10, 0)

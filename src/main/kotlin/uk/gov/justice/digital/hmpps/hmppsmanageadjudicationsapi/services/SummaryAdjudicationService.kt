@@ -36,11 +36,12 @@ class SummaryAdjudicationService(
         cutOff = cutOff.atStartOfDay(),
       )
     val awards =
-      punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }.flatten().map {
-        Award(
-          bookingId = bookingId,
-        )
-      }
+      punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }
+        .flatten().map {
+          Award(
+            bookingId = bookingId,
+          )
+        }
 
     return AdjudicationSummary(
       bookingId = bookingId,

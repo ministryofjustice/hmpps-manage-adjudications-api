@@ -1,1 +1,2 @@
-ALTER TABLE punishment ADD COLUMN deleted boolean;
+ALTER TABLE punishment
+    ADD COLUMN deleted boolean;

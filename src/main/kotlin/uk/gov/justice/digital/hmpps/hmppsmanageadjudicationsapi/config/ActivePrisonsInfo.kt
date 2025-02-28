@@ -11,7 +11,13 @@ class ActivePrisonsInfo(
   override fun contribute(builder: Info.Builder?) {
     builder?.withDetail(
       "activeAgencies",
-      if (activePrisonConfig.activePrisons.trim().isEmpty()) emptyList() else activePrisonConfig.activePrisons.split(","),
+      if (activePrisonConfig.activePrisons.trim()
+          .isEmpty()
+      ) {
+        emptyList()
+      } else {
+        activePrisonConfig.activePrisons.split(",")
+      },
     )
   }
 }

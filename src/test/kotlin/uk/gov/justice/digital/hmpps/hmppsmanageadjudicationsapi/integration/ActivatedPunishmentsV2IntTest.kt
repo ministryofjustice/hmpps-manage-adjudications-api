@@ -24,7 +24,12 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+    createPunishments(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      isSuspended = false,
+      activatedFrom = activatedFrom.first,
+      id = activatedFrom.second,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
@@ -83,7 +88,12 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+    createPunishments(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      isSuspended = false,
+      activatedFrom = activatedFrom.first,
+      id = activatedFrom.second,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
@@ -123,7 +133,12 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+    createPunishments(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      isSuspended = false,
+      activatedFrom = activatedFrom.first,
+      id = activatedFrom.second,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
@@ -150,7 +165,12 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+    createPunishments(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      isSuspended = false,
+      activatedFrom = activatedFrom.first,
+      id = activatedFrom.second,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
@@ -184,7 +204,12 @@ class ActivatedPunishmentsV2IntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing().createChargeProved()
 
-    createPunishments(chargeNumber = scenario.getGeneratedChargeNumber(), isSuspended = false, activatedFrom = activatedFrom.first, id = activatedFrom.second)
+    createPunishments(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      isSuspended = false,
+      activatedFrom = activatedFrom.first,
+      id = activatedFrom.second,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)

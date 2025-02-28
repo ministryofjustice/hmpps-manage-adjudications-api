@@ -94,27 +94,26 @@ class OutcomeController(
   fun createNotProceed(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody notProceedRequest: NotProceedRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      controllerAction = {
-        outcomeService.createNotProceed(
-          chargeNumber = chargeNumber,
-          details = notProceedRequest.details,
-          notProceedReason = notProceedRequest.reason,
-        )
-      },
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = {
-            when (it.outcomes.lastOrNull()?.outcome?.referralOutcome) {
-              null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
-              else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
-            }
-          },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    controllerAction = {
+      outcomeService.createNotProceed(
+        chargeNumber = chargeNumber,
+        details = notProceedRequest.details,
+        notProceedReason = notProceedRequest.reason,
+      )
+    },
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = {
+          when (it.outcomes.lastOrNull()?.outcome?.referralOutcome) {
+            null -> AdjudicationDomainEventType.NOT_PROCEED_OUTCOME
+            else -> AdjudicationDomainEventType.NOT_PROCEED_REFERRAL_OUTCOME
+          }
+        },
       ),
+    ),
 
-    )
+  )
 
   @Operation(
     summary = "create a prosecution outcome",
@@ -139,19 +138,18 @@ class OutcomeController(
   @ResponseStatus(HttpStatus.CREATED)
   fun createProsecution(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.PROSECUTION_REFERRAL_OUTCOME },
       ),
-      controllerAction = {
-        outcomeService.createProsecution(
-          chargeNumber = chargeNumber,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      outcomeService.createProsecution(
+        chargeNumber = chargeNumber,
+      )
+    },
+  )
 
   @Operation(
     summary = "create a referral outcome for refer gov",
@@ -177,21 +175,20 @@ class OutcomeController(
   fun createReferGov(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody referGovRequest: ReferralGovRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.REFERRAL_OUTCOME_REFER_GOV },
       ),
-      controllerAction = {
-        outcomeService.createReferGov(
-          chargeNumber = chargeNumber,
-          details = referGovRequest.details,
-          referGovReason = referGovRequest.referGovReason,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      outcomeService.createReferGov(
+        chargeNumber = chargeNumber,
+        details = referGovRequest.details,
+        referGovReason = referGovRequest.referGovReason,
+      )
+    },
+  )
 
   @Operation(
     summary = "quash an outcome",
@@ -256,21 +253,20 @@ class OutcomeController(
   fun createRefPolice(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody policeReferralRequest: ReferralDetailsRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.REF_POLICE_OUTCOME },
       ),
-      controllerAction = {
-        outcomeService.createReferral(
-          chargeNumber = chargeNumber,
-          code = OutcomeCode.REFER_POLICE,
-          details = policeReferralRequest.details,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      outcomeService.createReferral(
+        chargeNumber = chargeNumber,
+        code = OutcomeCode.REFER_POLICE,
+        details = policeReferralRequest.details,
+      )
+    },
+  )
 
   @Operation(summary = "remove a not proceed without a referral outcome, or a quashed outcome")
   @DeleteMapping(value = ["/{chargeNumber}/outcome"])
@@ -301,21 +297,20 @@ class OutcomeController(
   fun amendOutcome(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody amendOutcomeRequest: AmendOutcomeRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.OUTCOME_UPDATED },
       ),
-      controllerAction = {
-        outcomeService.amendOutcomeViaApi(
-          chargeNumber = chargeNumber,
-          details = amendOutcomeRequest.details,
-          reason = amendOutcomeRequest.reason,
-          quashedReason = amendOutcomeRequest.quashedReason,
-          referGovReason = amendOutcomeRequest.referGovReason,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      outcomeService.amendOutcomeViaApi(
+        chargeNumber = chargeNumber,
+        details = amendOutcomeRequest.details,
+        reason = amendOutcomeRequest.reason,
+        quashedReason = amendOutcomeRequest.quashedReason,
+        referGovReason = amendOutcomeRequest.referGovReason,
+      )
+    },
+  )
 }

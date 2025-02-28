@@ -1,1 +1,2 @@
-ALTER TABLE outcome ADD COLUMN deleted boolean;
+ALTER TABLE outcome
+    ADD COLUMN deleted boolean;

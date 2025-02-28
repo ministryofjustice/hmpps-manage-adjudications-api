@@ -83,23 +83,22 @@ class HearingController(
   fun createHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_CREATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_CREATED },
       ),
-      controllerAction = {
-        hearingService.createHearing(
-          chargeNumber = chargeNumber,
-          locationId = hearingRequest.locationId,
-          locationUuid = hearingRequest.locationUuid,
-          dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
-          oicHearingType = hearingRequest.oicHearingType,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      hearingService.createHearing(
+        chargeNumber = chargeNumber,
+        locationId = hearingRequest.locationId,
+        locationUuid = hearingRequest.locationUuid,
+        dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+        oicHearingType = hearingRequest.oicHearingType,
+      )
+    },
+  )
 
   @PutMapping(value = ["/{chargeNumber}/hearing/v2"])
   @Operation(summary = "Amends latest hearing")
@@ -107,40 +106,38 @@ class HearingController(
   fun amendHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody hearingRequest: HearingRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_UPDATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_UPDATED },
       ),
-      controllerAction = {
-        hearingService.amendHearing(
-          chargeNumber = chargeNumber,
-          locationId = hearingRequest.locationId,
-          locationUuid = hearingRequest.locationUuid,
-          dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
-          oicHearingType = hearingRequest.oicHearingType,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      hearingService.amendHearing(
+        chargeNumber = chargeNumber,
+        locationId = hearingRequest.locationId,
+        locationUuid = hearingRequest.locationUuid,
+        dateTimeOfHearing = hearingRequest.dateTimeOfHearing,
+        oicHearingType = hearingRequest.oicHearingType,
+      )
+    },
+  )
 
   @DeleteMapping(value = ["/{chargeNumber}/hearing/v2"])
   @Operation(summary = "deletes latest hearing")
   @ResponseStatus(HttpStatus.OK)
   fun deleteHearing(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.HEARING_DELETED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.HEARING_DELETED },
       ),
-      controllerAction = {
-        hearingService.deleteHearing(chargeNumber = chargeNumber)
-      },
-    )
+    ),
+    controllerAction = {
+      hearingService.deleteHearing(chargeNumber = chargeNumber)
+    },
+  )
 
   @Operation(summary = "Get a list of hearings for a given date and agency")
   @GetMapping(value = ["/hearings"])

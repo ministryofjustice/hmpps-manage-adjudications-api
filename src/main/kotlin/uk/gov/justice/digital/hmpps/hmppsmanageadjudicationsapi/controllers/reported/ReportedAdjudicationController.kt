@@ -57,11 +57,10 @@ class ReportedAdjudicationController(
   fun getReportedAdjudicationDetailsV2(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestParam(name = "includeActivated", required = false) includeActivated: Boolean = false,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.getReportedAdjudicationDetails(
-      chargeNumber = chargeNumber,
-      includeActivated = includeActivated,
-    ).toResponse()
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.getReportedAdjudicationDetails(
+    chargeNumber = chargeNumber,
+    includeActivated = includeActivated,
+  ).toResponse()
 
   @PutMapping(value = ["/{chargeNumber}/status"])
   @Operation(summary = "Set the status for the reported adjudication.")
@@ -71,23 +70,22 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     reportedAdjudicationStatusRequest: ReportedAdjudicationStatusRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
-          eventSupplier = { AdjudicationDomainEventType.ADJUDICATION_CREATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventRule = { it.status == ReportedAdjudicationStatus.UNSCHEDULED },
+        eventSupplier = { AdjudicationDomainEventType.ADJUDICATION_CREATED },
       ),
-      controllerAction = {
-        reportedAdjudicationService.setStatus(
-          chargeNumber,
-          reportedAdjudicationStatusRequest.status,
-          reportedAdjudicationStatusRequest.statusReason,
-          reportedAdjudicationStatusRequest.statusDetails,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      reportedAdjudicationService.setStatus(
+        chargeNumber,
+        reportedAdjudicationStatusRequest.status,
+        reportedAdjudicationStatusRequest.statusReason,
+        reportedAdjudicationStatusRequest.statusDetails,
+      )
+    },
+  )
 
   @PutMapping(value = ["/{chargeNumber}/issue"])
   @Operation(summary = "Issue DIS Form")
@@ -96,11 +94,10 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     issueRequest: IssueRequest,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.setIssued(
-      chargeNumber,
-      issueRequest.dateTimeOfIssue,
-    ).toResponse()
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.setIssued(
+    chargeNumber,
+    issueRequest.dateTimeOfIssue,
+  ).toResponse()
 
   @PutMapping(value = ["/{chargeNumber}/created-on-behalf-of"])
   @Operation(summary = "Set created on behalf of")
@@ -109,10 +106,9 @@ class ReportedAdjudicationController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     createdOnBehalfOfRequest: CreatedOnBehalfOfRequest,
-  ): ReportedAdjudicationResponse =
-    reportedAdjudicationService.setCreatedOnBehalfOf(
-      chargeNumber,
-      createdOnBehalfOfRequest.createdOnBehalfOfOfficer,
-      createdOnBehalfOfRequest.createdOnBehalfOfReason,
-    ).toResponse()
+  ): ReportedAdjudicationResponse = reportedAdjudicationService.setCreatedOnBehalfOf(
+    chargeNumber,
+    createdOnBehalfOfRequest.createdOnBehalfOfOfficer,
+    createdOnBehalfOfRequest.createdOnBehalfOfReason,
+  ).toResponse()
 }

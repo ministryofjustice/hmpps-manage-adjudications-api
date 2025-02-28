@@ -18,6 +18,7 @@ enum class Pronouns(val value: String, val type: PronounTypes) {
     fun female() = listOf(SHE, HER, POSSESSIVE_HER, HERSELF)
   }
 }
+
 enum class PronounTypes(val tag: String) {
   OBJECT_PERSONAL("<OBJ>"),
   SUBJECT_PERSONAL("<SUB>"),
@@ -88,12 +89,10 @@ enum class Descriptions(val description: String) {
   DEFAULT(""),
   ;
 
-  fun getParagraphDescription(gender: Gender): String {
-    return formatGenderPronouns(
-      description = this.description,
-      gender = gender,
-    )
-  }
+  fun getParagraphDescription(gender: Gender): String = formatGenderPronouns(
+    description = this.description,
+    gender = gender,
+  )
 
   companion object {
 

@@ -1,4 +1,5 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
+
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository

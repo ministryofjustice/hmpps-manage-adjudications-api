@@ -137,19 +137,18 @@ class PunishmentsController(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @PathVariable(name = "punishmentId") punishmentId: Long,
     @RequestBody completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventSupplier = { AdjudicationDomainEventType.PUNISHMENTS_UPDATED },
       ),
-      controllerAction = {
-        punishmentsService.completeRehabilitativeActivity(
-          chargeNumber = chargeNumber,
-          punishmentId = punishmentId,
-          completeRehabilitativeActivityRequest = completeRehabilitativeActivityRequest,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = chargeNumber,
+        punishmentId = punishmentId,
+        completeRehabilitativeActivityRequest = completeRehabilitativeActivityRequest,
+      )
+    },
+  )
 }

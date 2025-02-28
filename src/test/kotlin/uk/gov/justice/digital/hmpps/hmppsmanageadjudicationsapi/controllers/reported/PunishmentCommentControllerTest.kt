@@ -263,13 +263,11 @@ class PunishmentCommentControllerTest : TestControllerBase() {
     private fun deletePunishmentCommentRequest(
       adjudicationNumber: Long,
       punishmentCommentId: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.delete("/reported-adjudications/$adjudicationNumber/punishments/comment/$punishmentCommentId")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.delete("/reported-adjudications/$adjudicationNumber/punishments/comment/$punishmentCommentId")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   companion object {

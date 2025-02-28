@@ -32,7 +32,11 @@ class DraftWitnessesServiceTest : DraftAdjudicationTestBase() {
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = "MDI",
-      incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
+      incidentDetails = DraftAdjudicationServiceTest.incidentDetails(
+        2L,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+        now,
+      ),
       incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
       incidentStatement = IncidentStatement(
         statement = "Example statement",

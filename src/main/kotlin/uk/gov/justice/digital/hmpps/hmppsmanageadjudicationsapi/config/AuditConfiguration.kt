@@ -11,8 +11,7 @@ import java.util.Optional
 @EnableJpaAuditing
 class AuditConfiguration {
   @Bean
-  fun auditorAware(authenticationFacade: AuthenticationFacade): AuditorAware<String> =
-    AuditorAware(authenticationFacade)
+  fun auditorAware(authenticationFacade: AuthenticationFacade): AuditorAware<String> = AuditorAware(authenticationFacade)
 }
 
 class AuditorAware(private val authenticationFacade: AuthenticationFacade) : AuditorAware<String> {

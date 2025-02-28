@@ -18,9 +18,10 @@ class AdjudicationsDpsEndpointsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get adjudications summary for offender`() {
     val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 1000)
-    initDataForUnScheduled(testData = testData).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1)).createChargeProved().createPunishments(
-      startDate = LocalDate.now().plusDays(1),
-    )
+    initDataForUnScheduled(testData = testData).createHearing(dateTimeOfHearing = LocalDateTime.now().plusDays(1))
+      .createChargeProved().createPunishments(
+        startDate = LocalDate.now().plusDays(1),
+      )
 
     webTestClient.get()
       .uri("/adjudications/by-booking-id/1000")

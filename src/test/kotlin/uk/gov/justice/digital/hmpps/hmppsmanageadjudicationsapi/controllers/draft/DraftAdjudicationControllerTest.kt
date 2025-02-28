@@ -308,13 +308,11 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       makeGetDraftAdjudicationRequest(1).andExpect(status().isNotFound)
     }
 
-    private fun makeGetDraftAdjudicationRequest(id: Long): ResultActions {
-      return mockMvc
-        .perform(
-          get("/draft-adjudications/$id")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun makeGetDraftAdjudicationRequest(id: Long): ResultActions = mockMvc
+      .perform(
+        get("/draft-adjudications/$id")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -466,7 +464,14 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       ).thenThrow(
         IllegalStateException::class.java,
       )
-      editIncidentDetailsRequest(1, 2, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), DATE_TIME_OF_INCIDENT, null, INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST)
+      editIncidentDetailsRequest(
+        1,
+        2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+        DATE_TIME_OF_INCIDENT,
+        null,
+        INCIDENT_ROLE_WITH_ALL_VALUES_REQUEST,
+      )
         .andExpect(status().isBadRequest)
     }
 
@@ -546,7 +551,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class InProgressDraftAdjudications {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(anyOrNull(), anyOrNull(), any())).thenReturn(
+      whenever(
+        draftAdjudicationService.getCurrentUsersInProgressDraftAdjudications(
+          anyOrNull(),
+          anyOrNull(),
+          any(),
+        ),
+      ).thenReturn(
         PageImpl(
           listOf(
             DraftAdjudicationDto(

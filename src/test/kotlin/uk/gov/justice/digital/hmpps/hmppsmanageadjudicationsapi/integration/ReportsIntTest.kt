@@ -102,7 +102,10 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     val testData1 = IntegrationTestData.getDefaultAdjudication(plusDays = 1, agencyId = "BFI")
     val testData2 = IntegrationTestData.getDefaultAdjudication(plusDays = 2, agencyId = "BFI")
 
-    val firstDraftUserHeaders = setHeaders(username = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.createdByUserId, activeCaseload = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.agencyId)
+    val firstDraftUserHeaders = setHeaders(
+      username = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.createdByUserId,
+      activeCaseload = IntegrationTestData.USED_BY_DRAFT_NOT_GOING_TO_REFACTOR_OUT.agencyId,
+    )
     val firstDraftIntTestScenarioBuilder = IntegrationTestScenarioBuilder(
       intTestData = intTestData,
       intTestBase = this,
@@ -262,7 +265,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isOk
       .expectBody()
       .jsonPath("$.reportedAdjudications.size()").isEqualTo(1)
-      .jsonPath("$.reportedAdjudications[0].dateTimeOfFirstHearing").isEqualTo(IntegrationTestData.DEFAULT_DATE_TIME_OF_HEARING_TEXT)
+      .jsonPath("$.reportedAdjudications[0].dateTimeOfFirstHearing")
+      .isEqualTo(IntegrationTestData.DEFAULT_DATE_TIME_OF_HEARING_TEXT)
       .jsonPath("$.reportedAdjudications[0].issuingOfficer").doesNotExist()
   }
 
@@ -299,7 +303,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get reports for booking with ADA`() {
     val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 911)
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
 
     webTestClient.get()
       .uri("/reported-adjudications/booking/${testData.offenderBookingId}?status=CHARGE_PROVED&ada=true&agency=${testData.agencyId}&page=0&size=20")
@@ -313,7 +318,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get reports for booking with PADA`() {
     val testData = IntegrationTestData.getDefaultAdjudication(offenderBookingId = 1001)
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
 
     webTestClient.get()
       .uri("/reported-adjudications/booking/${testData.offenderBookingId}?status=CHARGE_PROVED&pada=true&agency=${testData.agencyId}&page=0&size=20")
@@ -356,7 +362,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get reports for prisoner with ADA`() {
     val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "ADA")
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
 
     webTestClient.get()
       .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
@@ -370,7 +377,8 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `get reports for prisoner with PADA`() {
     val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "PADA")
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createChargeProved().createPunishments(punishmentType = PunishmentType.PROSPECTIVE_DAYS)
 
     webTestClient.get()
       .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&pada=true&page=0&size=20")
@@ -481,7 +489,15 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .thenReturn(LocationResponse("A-123", 12345))
 
     whenever(locationService.getLocationDetail("A-123"))
-      .thenReturn(LocationDetailResponse("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c", "LEI", "MAX", "RES-AWING-AWING", "LEI-RES-AWING-AWING"))
+      .thenReturn(
+        LocationDetailResponse(
+          "9d306768-26a3-4bce-8b5d-3ec0f8a57b2c",
+          "LEI",
+          "MAX",
+          "RES-AWING-AWING",
+          "LEI-RES-AWING-AWING",
+        ),
+      )
 
     webTestClient.get()
       .uri("/subject-access-request?prn=${testData.prisonerNumber}")
@@ -506,7 +522,15 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .thenReturn(LocationResponse("A-123", 12345))
 
     whenever(locationService.getLocationDetail("A-123"))
-      .thenReturn(LocationDetailResponse("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c", "LEI", "MAX", "RES-AWING-AWING", "LEI-RES-AWING-AWING"))
+      .thenReturn(
+        LocationDetailResponse(
+          "9d306768-26a3-4bce-8b5d-3ec0f8a57b2c",
+          "LEI",
+          "MAX",
+          "RES-AWING-AWING",
+          "LEI-RES-AWING-AWING",
+        ),
+      )
 
     webTestClient.get()
       .uri("/subject-access-request?prn=${testData.prisonerNumber}&fromDate=1999-01-01")

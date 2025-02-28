@@ -1,1 +1,1 @@
-CREATE index activated_by_charge_number_idx ON punishment(activated_by_charge_number);
+CREATE index activated_by_charge_number_idx ON punishment (activated_by_charge_number);

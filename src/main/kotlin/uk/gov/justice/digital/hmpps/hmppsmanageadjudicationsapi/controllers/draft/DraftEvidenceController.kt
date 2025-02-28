@@ -39,7 +39,10 @@ class DraftEvidenceController(
 ) : DraftAdjudicationBaseController() {
 
   @PutMapping(value = ["/{id}/evidence"])
-  @Operation(summary = "Set the evidence for the draft adjudication.", description = "0 or more evidence to be supplied")
+  @Operation(
+    summary = "Set the evidence for the draft adjudication.",
+    description = "0 or more evidence to be supplied",
+  )
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS') and hasAuthority('SCOPE_write')")
   @ResponseStatus(HttpStatus.CREATED)
   fun setEvidence(

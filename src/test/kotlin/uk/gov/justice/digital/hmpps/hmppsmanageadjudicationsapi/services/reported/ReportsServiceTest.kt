@@ -313,11 +313,39 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get reports count for agency`(): Unit = runBlocking {
-      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus("MDI", ReportedAdjudicationStatus.AWAITING_REVIEW)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countTransfersIn("MDI", transferReviewStatuses.map { it.name })).thenReturn(1)
-      whenever(reportedAdjudicationRepository.countTransfersOut("MDI", transferOutStatuses.map { it.name }, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(2)
-      whenever(reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
-      whenever(reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("MDI", ReportsService.hearingsToScheduleStatuses, transferOutAndHearingsToScheduledCutOffDate)).thenReturn(3)
+      whenever(
+        reportedAdjudicationRepository.countByOriginatingAgencyIdAndStatus(
+          "MDI",
+          ReportedAdjudicationStatus.AWAITING_REVIEW,
+        ),
+      ).thenReturn(2)
+      whenever(
+        reportedAdjudicationRepository.countTransfersIn(
+          "MDI",
+          transferReviewStatuses.map { it.name },
+        ),
+      ).thenReturn(1)
+      whenever(
+        reportedAdjudicationRepository.countTransfersOut(
+          "MDI",
+          transferOutStatuses.map { it.name },
+          transferOutAndHearingsToScheduledCutOffDate,
+        ),
+      ).thenReturn(2)
+      whenever(
+        reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(
+          "MDI",
+          ReportsService.hearingsToScheduleStatuses,
+          transferOutAndHearingsToScheduledCutOffDate,
+        ),
+      ).thenReturn(3)
+      whenever(
+        reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+          "MDI",
+          ReportsService.hearingsToScheduleStatuses,
+          transferOutAndHearingsToScheduledCutOffDate,
+        ),
+      ).thenReturn(3)
 
       val result = reportsService.getReportCounts()
 
@@ -354,7 +382,14 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBooking(any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBooking(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
 
       assertThat(response.content.size).isEqualTo(1)
     }
@@ -362,7 +397,17 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForBookingWithPunishments(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -381,7 +426,17 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(any(), any(), any(), any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForBookingWithPunishments(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
 
       assertThat(response.content.size).isEqualTo(1)
     }
@@ -439,7 +494,13 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisoner(any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisoner(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
 
       assertThat(response.content.size).isEqualTo(1)
     }
@@ -447,7 +508,16 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `gets all reports for agency, punishment and status without any dates`() {
       whenever(
-        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any(), any()),
+        reportedAdjudicationRepository.findAdjudicationsForPrisonerWithPunishments(
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+          any(),
+        ),
       ).thenReturn(
         PageImpl(
           listOf(
@@ -465,7 +535,16 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         pageable = Pageable.ofSize(20).withPage(0),
       )
 
-      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(any(), any(), any(), any(), any(), any(), any(), any())
+      verify(reportedAdjudicationRepository, atLeastOnce()).findAdjudicationsForPrisonerWithPunishments(
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+        any(),
+      )
 
       assertThat(response.content.size).isEqualTo(1)
     }

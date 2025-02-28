@@ -12,6 +12,7 @@ import java.time.LocalDateTime
 interface TestsToImplement {
   fun `throws an entity not found if the reported adjudication for the supplied id does not exists`()
 }
+
 abstract class ReportedAdjudicationTestBase : TestsToImplement {
   internal val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
   internal val authenticationFacade: AuthenticationFacade = mock()

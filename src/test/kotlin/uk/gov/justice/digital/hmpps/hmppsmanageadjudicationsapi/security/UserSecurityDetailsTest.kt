@@ -50,9 +50,10 @@ class UserSecurityDetailsTest {
 
   @Test
   fun `active case load is set `() {
-    SecurityContextHolder.getContext().authentication = TestingAuthenticationToken(mapOf("username" to "user"), "pw").also {
-      it.details = mapOf(ResourceServerConfiguration.ACTIVE_CASELOAD to "TEST")
-    }
+    SecurityContextHolder.getContext().authentication =
+      TestingAuthenticationToken(mapOf("username" to "user"), "pw").also {
+        it.details = mapOf(ResourceServerConfiguration.ACTIVE_CASELOAD to "TEST")
+      }
 
     assertThat(UserDetails().activeCaseload).isEqualTo("TEST")
   }

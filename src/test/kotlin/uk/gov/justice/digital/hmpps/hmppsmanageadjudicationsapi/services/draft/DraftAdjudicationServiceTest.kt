@@ -52,7 +52,11 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       prisonerNumber = "A12345",
       gender = Gender.MALE,
       agencyId = "MDI",
-      incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), DATE_TIME_OF_INCIDENT),
+      incidentDetails = incidentDetails(
+        2L,
+        UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+        DATE_TIME_OF_INCIDENT,
+      ),
     )
 
     @Test
@@ -98,7 +102,12 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
-        .contains(2L, DATE_TIME_OF_INCIDENT, DATE_TIME_OF_INCIDENT.plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .contains(
+          2L,
+          DATE_TIME_OF_INCIDENT,
+          DATE_TIME_OF_INCIDENT.plusDays(1),
+          DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        )
 
       assertThat(draftAdjudication.incidentRole).isNull()
       assertThat(draftAdjudication.isYouthOffender).isNull()
@@ -210,7 +219,9 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         .contains(
           1002,
           offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(1002, isYouthOffender).paragraphDescription.getParagraphDescription(
+            Gender.MALE,
+          ),
           "x",
           "y",
           "z",
@@ -243,25 +254,24 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         isYouthOffender = true,
       )
 
-    private fun draftAdjudicationWithRole(roleCode: String?) =
-      DraftAdjudication(
-        id = 1,
-        prisonerNumber = "A12345",
-        gender = Gender.MALE,
-        agencyId = "MDI",
-        incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
-        offenceDetails = mutableListOf(
-          Offence(
-            offenceCode = 1002,
-          ),
+    private fun draftAdjudicationWithRole(roleCode: String?) = DraftAdjudication(
+      id = 1,
+      prisonerNumber = "A12345",
+      gender = Gender.MALE,
+      agencyId = "MDI",
+      incidentDetails = incidentDetails(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
+      offenceDetails = mutableListOf(
+        Offence(
+          offenceCode = 1002,
         ),
-        incidentStatement = IncidentStatement(
-          statement = "Example statement",
-          completed = false,
-        ),
-        incidentRole = incidentRoleWithValuesSetForRoleCode(roleCode),
-        isYouthOffender = true,
-      )
+      ),
+      incidentStatement = IncidentStatement(
+        statement = "Example statement",
+        completed = false,
+      ),
+      incidentRole = incidentRoleWithValuesSetForRoleCode(roleCode),
+      isYouthOffender = true,
+    )
 
     @Test
     fun `throws state exception if isYouthOffender is not set`() {
@@ -605,7 +615,12 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
-        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident, DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .contains(
+          3L,
+          editedDateTimeOfIncident,
+          editedDateTimeOfIncident,
+          DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -666,7 +681,12 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
       assertThat(draftAdjudication.incidentDetails)
         .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
-        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident.plusDays(1), DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE)
+        .contains(
+          3L,
+          editedDateTimeOfIncident,
+          editedDateTimeOfIncident.plusDays(1),
+          DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+        )
 
       val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
@@ -1024,28 +1044,28 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
-    fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(
-        INCIDENT_ROLE_CODE,
-        OffenceRuleDetailsDto(
-          INCIDENT_ROLE_PARAGRAPH_NUMBER,
-          INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
-        ),
-        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
-        INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
-      )
+    fun incidentRoleDtoWithAllValuesSet(): IncidentRoleDto = IncidentRoleDto(
+      INCIDENT_ROLE_CODE,
+      OffenceRuleDetailsDto(
+        INCIDENT_ROLE_PARAGRAPH_NUMBER,
+        INCIDENT_ROLE_PARAGRAPH_DESCRIPTION,
+      ),
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
+    )
 
-    fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto =
-      IncidentRoleDto(null, null, null, null)
+    fun incidentRoleDtoWithNoValuesSet(): IncidentRoleDto = IncidentRoleDto(null, null, null, null)
 
-    fun incidentRoleWithAllValuesSet(): IncidentRole =
-      IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME)
+    fun incidentRoleWithAllValuesSet(): IncidentRole = IncidentRole(
+      null,
+      INCIDENT_ROLE_CODE,
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
+    )
 
-    fun incidentRoleWithNoValuesSet(): IncidentRole =
-      IncidentRole(null, null, null, null)
+    fun incidentRoleWithNoValuesSet(): IncidentRole = IncidentRole(null, null, null, null)
 
-    fun incidentRoleWithValuesSetForRoleCode(roleCode: String?): IncidentRole =
-      IncidentRole(null, roleCode, "2", "3")
+    fun incidentRoleWithValuesSetForRoleCode(roleCode: String?): IncidentRole = IncidentRole(null, roleCode, "2", "3")
   }
 
   fun testDto(toFind: Optional<DraftAdjudication> = Optional.empty(), toTest: Supplier<DraftAdjudicationDto>) {

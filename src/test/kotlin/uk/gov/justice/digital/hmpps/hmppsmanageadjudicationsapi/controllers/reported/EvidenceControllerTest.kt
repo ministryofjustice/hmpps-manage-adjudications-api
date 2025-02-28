@@ -71,7 +71,18 @@ class EvidenceControllerTest : TestControllerBase() {
       .andExpect(MockMvcResultMatchers.status().isOk)
 
     verify(evidenceService).updateEvidence("1", EVIDENCE_REQUEST.evidence)
-    verify(eventPublishService, if (listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { it == status }) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.EVIDENCE_UPDATED, dto)
+    verify(
+      eventPublishService,
+      if (listOf(
+          ReportedAdjudicationStatus.RETURNED,
+          ReportedAdjudicationStatus.AWAITING_REVIEW,
+        ).none { it == status }
+      ) {
+        atLeastOnce()
+      } else {
+        never()
+      },
+    ).publishEvent(AdjudicationDomainEventType.EVIDENCE_UPDATED, dto)
   }
 
   private fun setEvidenceRequest(
@@ -88,6 +99,7 @@ class EvidenceControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val EVIDENCE_REQUEST = EvidenceRequest(listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details")))
+    private val EVIDENCE_REQUEST =
+      EvidenceRequest(listOf(EvidenceRequestItem(EvidenceCode.PHOTO, "identifier", "details")))
   }
 }

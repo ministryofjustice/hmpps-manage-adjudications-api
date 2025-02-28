@@ -1,2 +1,1 @@
-
 alter table submitted_draft_adjudications rename to submitted_adjudication_history;

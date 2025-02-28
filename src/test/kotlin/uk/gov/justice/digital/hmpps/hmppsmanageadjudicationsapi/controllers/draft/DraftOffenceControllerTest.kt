@@ -108,13 +108,11 @@ class DraftOffenceControllerTest : TestControllerBase() {
       verify(incidentOffenceService, atLeastOnce()).getRule(any(), any(), any())
     }
 
-    private fun getOffenceRuleRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/draft-adjudications/offence-rule/1000?youthOffender=false")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun getOffenceRuleRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/draft-adjudications/offence-rule/1000?youthOffender=false")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -142,13 +140,11 @@ class DraftOffenceControllerTest : TestControllerBase() {
       verify(incidentOffenceService, atLeastOnce()).getRules(any(), any(), any())
     }
 
-    private fun getAllOffenceRulesRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/draft-adjudications/offence-rules?youthOffender=false&version=1")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun getAllOffenceRulesRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/draft-adjudications/offence-rules?youthOffender=false&version=1")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   companion object {

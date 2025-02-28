@@ -1,1 +1,2 @@
-alter table incident_statement add column completed boolean;
+alter table incident_statement
+    add column completed boolean;

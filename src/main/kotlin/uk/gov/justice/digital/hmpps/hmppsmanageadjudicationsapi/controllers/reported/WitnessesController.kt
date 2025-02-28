@@ -21,7 +21,10 @@ class WitnessesController(
 ) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{chargeNumber}/witnesses/edit"])
-  @Operation(summary = "Updates the witnesses for the reported adjudication.", description = "0 or more witnesses to be supplied, only updates records owned by current user")
+  @Operation(
+    summary = "Updates the witnesses for the reported adjudication.",
+    description = "0 or more witnesses to be supplied, only updates records owned by current user",
+  )
   @ResponseStatus(HttpStatus.OK)
   fun updateWitnesses(
     @PathVariable(name = "chargeNumber") chargeNumber: String,

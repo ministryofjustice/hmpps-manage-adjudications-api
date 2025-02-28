@@ -1,1 +1,2 @@
-alter table draft_adjudications add column report_number bigint null;
+alter table draft_adjudications
+    add column report_number bigint null;

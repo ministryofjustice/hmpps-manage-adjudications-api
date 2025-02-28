@@ -20,7 +20,12 @@ class TransferServiceTest : ReportedAdjudicationTestBase() {
     val reportedAdjudication = entityBuilder.reportedAdjudication()
     val reportedAdjudication2 = entityBuilder.reportedAdjudication().also { it.originatingAgencyId = "TJW" }
 
-    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", transferableStatuses)).thenReturn(
+    whenever(
+      reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
+        "AA1234A",
+        transferableStatuses,
+      ),
+    ).thenReturn(
       listOf(reportedAdjudication, reportedAdjudication2),
     )
 
@@ -45,7 +50,12 @@ class TransferServiceTest : ReportedAdjudicationTestBase() {
       it.overrideAgencyId = "LEI"
     }
 
-    whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn("AA1234A", transferableStatuses)).thenReturn(
+    whenever(
+      reportedAdjudicationRepository.findByPrisonerNumberAndStatusIn(
+        "AA1234A",
+        transferableStatuses,
+      ),
+    ).thenReturn(
       listOf(reportedAdjudication),
     )
 

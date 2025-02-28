@@ -33,7 +33,11 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     prisonerNumber = "A12345",
     gender = Gender.MALE,
     agencyId = "MDI",
-    incidentDetails = DraftAdjudicationServiceTest.incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), clock),
+    incidentDetails = DraftAdjudicationServiceTest.incidentDetails(
+      2L,
+      locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+      clock,
+    ),
     incidentRole = DraftAdjudicationServiceTest.incidentRoleWithNoValuesSet(),
   )
 
@@ -157,14 +161,18 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
   fun `gets all offence adult rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = false, gender = Gender.MALE, version = 1)
 
-    assertThat(offenceRules.size).isEqualTo(offenceCodeLookupService.getAdultOffenceCodesByVersion(1).distinctBy { it.paragraph }.size)
+    assertThat(offenceRules.size).isEqualTo(
+      offenceCodeLookupService.getAdultOffenceCodesByVersion(1).distinctBy { it.paragraph }.size,
+    )
   }
 
   @Test
   fun `gets all yoi offence rules`() {
     val offenceRules = incidentOffenceService.getRules(isYouthOffender = true, gender = Gender.MALE, version = 1)
 
-    assertThat(offenceRules.size).isEqualTo(offenceCodeLookupService.getYouthOffenceCodesByVersion(1).distinctBy { it.paragraph }.size)
+    assertThat(offenceRules.size).isEqualTo(
+      offenceCodeLookupService.getYouthOffenceCodesByVersion(1).distinctBy { it.paragraph }.size,
+    )
   }
 
   @Test

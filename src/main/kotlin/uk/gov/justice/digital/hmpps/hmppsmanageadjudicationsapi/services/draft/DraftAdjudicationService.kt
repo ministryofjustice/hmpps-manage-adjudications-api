@@ -61,7 +61,8 @@ enum class ValidationChecks(val errorMessage: String) {
         throw IllegalStateException(errorMessage)
       }
     }
-  }, ;
+  },
+  ;
 
   abstract fun validate(draftAdjudication: DraftAdjudication)
 }
@@ -215,7 +216,11 @@ class DraftAdjudicationService(
 
     ValidationChecks.INCIDENT_ROLE.validate(draftAdjudication)
 
-    if (draftAdjudication.prisonerNumber == incidentRoleAssociatedPrisoner.associatedPrisonersNumber) throw ValidationException("offender can not be an associate")
+    if (draftAdjudication.prisonerNumber == incidentRoleAssociatedPrisoner.associatedPrisonersNumber) {
+      throw ValidationException(
+        "offender can not be an associate",
+      )
+    }
 
     incidentRoleAssociatedPrisoner.let {
       draftAdjudication.incidentRole!!.associatedPrisonersNumber = it.associatedPrisonersNumber
@@ -264,12 +269,20 @@ class DraftAdjudicationService(
     return saveToDto(draftAdjudication)
   }
 
-  fun getCurrentUsersInProgressDraftAdjudications(startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DraftAdjudicationDto> {
+  fun getCurrentUsersInProgressDraftAdjudications(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    pageable: Pageable,
+  ): Page<DraftAdjudicationDto> {
     val username = authenticationFacade.currentUsername ?: return Page.empty()
     return getInProgress(authenticationFacade.activeCaseload, username, startDate, endDate, pageable)
   }
 
-  fun setCreatedOnBehalfOf(id: Long, createdOnBehalfOfOfficer: String, createdOnBehalfOfReason: String): DraftAdjudicationDto {
+  fun setCreatedOnBehalfOf(
+    id: Long,
+    createdOnBehalfOfOfficer: String,
+    createdOnBehalfOfReason: String,
+  ): DraftAdjudicationDto {
     val draftAdjudication = find(id).also {
       it.createdOnBehalfOfOfficer = createdOnBehalfOfOfficer
       it.createdOnBehalfOfReason = createdOnBehalfOfReason

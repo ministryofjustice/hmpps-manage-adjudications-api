@@ -12,8 +12,7 @@ data class DraftProtectedCharacteristics(
   @Enumerated(EnumType.STRING)
   var characteristic: Characteristic,
 ) : BaseEntity() {
-  fun toProtectedCharacteristics(): ProtectedCharacteristics =
-    ProtectedCharacteristics(characteristic = this.characteristic)
+  fun toProtectedCharacteristics(): ProtectedCharacteristics = ProtectedCharacteristics(characteristic = this.characteristic)
 }
 
 @Entity
@@ -23,8 +22,7 @@ data class ProtectedCharacteristics(
   @Enumerated(EnumType.STRING)
   var characteristic: Characteristic,
 ) : BaseEntity() {
-  fun toDraftProtectedCharacteristics(): DraftProtectedCharacteristics =
-    DraftProtectedCharacteristics(characteristic = this.characteristic)
+  fun toDraftProtectedCharacteristics(): DraftProtectedCharacteristics = DraftProtectedCharacteristics(characteristic = this.characteristic)
 }
 
 enum class Characteristic {

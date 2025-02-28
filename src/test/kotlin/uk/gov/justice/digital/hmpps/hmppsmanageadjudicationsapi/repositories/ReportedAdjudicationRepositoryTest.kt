@@ -386,11 +386,12 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `find reported adjudications by agency id`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(chargeNumber = "excluded", agencyId = "LEI", dateTime = LocalDateTime.now()).also {
-        it.hearings.clear()
-        it.overrideAgencyId = "MDI"
-        it.status = ReportedAdjudicationStatus.ADJOURNED
-      },
+      entityBuilder.reportedAdjudication(chargeNumber = "excluded", agencyId = "LEI", dateTime = LocalDateTime.now())
+        .also {
+          it.hearings.clear()
+          it.overrideAgencyId = "MDI"
+          it.status = ReportedAdjudicationStatus.ADJOURNED
+        },
     )
 
     val foundAdjudications = reportedAdjudicationRepository.findAllReportsByAgency(
@@ -414,11 +415,12 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `awaiting review reports include transferred out`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(chargeNumber = "transferred", agencyId = "IWI", dateTime = LocalDateTime.now()).also {
-        it.hearings.clear()
-        it.overrideAgencyId = "FKI"
-        it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
-      },
+      entityBuilder.reportedAdjudication(chargeNumber = "transferred", agencyId = "IWI", dateTime = LocalDateTime.now())
+        .also {
+          it.hearings.clear()
+          it.overrideAgencyId = "FKI"
+          it.status = ReportedAdjudicationStatus.AWAITING_REVIEW
+        },
     )
 
     val foundAdjudications = reportedAdjudicationRepository.findAllReportsByAgency(
@@ -583,14 +585,23 @@ class ReportedAdjudicationRepositoryTest {
             Punishment(
               type = PunishmentType.CONFINEMENT,
               suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()),
-              schedule = mutableListOf(PunishmentSchedule(duration = 10, suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()))),
+              schedule = mutableListOf(
+                PunishmentSchedule(
+                  duration = 10,
+                  suspendedUntil = LocalDate.now().minusDays(2).plusDays(i.toLong()),
+                ),
+              ),
             ),
           )
         },
       )
     }
 
-    val suspendedResult = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", LocalDate.now())
+    val suspendedResult = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+      ReportedAdjudicationStatus.CHARGE_PROVED,
+      "TEST",
+      LocalDate.now(),
+    )
 
     assertThat(suspendedResult.size).isEqualTo(8)
   }
@@ -630,7 +641,12 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val additionalDaysReports = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(ReportedAdjudicationStatus.CHARGE_PROVED, "TEST", PunishmentType.ADDITIONAL_DAYS)
+    val additionalDaysReports =
+      reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
+        ReportedAdjudicationStatus.CHARGE_PROVED,
+        "TEST",
+        PunishmentType.ADDITIONAL_DAYS,
+      )
 
     assertThat(additionalDaysReports.size).isEqualTo(1)
   }
@@ -666,21 +682,32 @@ class ReportedAdjudicationRepositoryTest {
   @Test
   fun `count by agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.UNSCHEDULED), LocalDateTime.now()),
+      reportedAdjudicationRepository.countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(
+        "LEI",
+        listOf(ReportedAdjudicationStatus.UNSCHEDULED),
+        LocalDateTime.now(),
+      ),
     ).isEqualTo(1)
   }
 
   @Test
   fun `count by override agency and status in `() {
     assertThat(
-      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter("LEI", listOf(ReportedAdjudicationStatus.ADJOURNED), LocalDateTime.now()),
+      reportedAdjudicationRepository.countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+        "LEI",
+        listOf(ReportedAdjudicationStatus.ADJOURNED),
+        LocalDateTime.now(),
+      ),
     ).isEqualTo(1)
   }
 
   @Test
   fun `count by transfer in`() {
     assertThat(
-      reportedAdjudicationRepository.countTransfersIn("MDI", listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name }),
+      reportedAdjudicationRepository.countTransfersIn(
+        "MDI",
+        listOf(ReportedAdjudicationStatus.UNSCHEDULED).map { it.name },
+      ),
     ).isEqualTo(1)
   }
 
@@ -736,7 +763,10 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1234", listOf(PunishmentType.PROSPECTIVE_DAYS))
+    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+      "1234",
+      listOf(PunishmentType.PROSPECTIVE_DAYS),
+    )
     assertThat(result.size).isEqualTo(1)
   }
 
@@ -974,7 +1004,11 @@ class ReportedAdjudicationRepositoryTest {
   @ParameterizedTest
   fun `reports for prisoner with punishments excludes suspended activated`(activatedBy: String?, expected: Int) {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "TESTING_SUM", prisonerNumber = "testing").also {
+      entityBuilder.reportedAdjudication(
+        offenderBookingId = 3L,
+        chargeNumber = "TESTING_SUM",
+        prisonerNumber = "testing",
+      ).also {
         it.hearings.clear()
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
         it.dateTimeOfDiscovery = LocalDateTime.now().minusDays(1)
@@ -1038,7 +1072,12 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith("A12345", "12345-").size).isEqualTo(2)
+    assertThat(
+      reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
+        "A12345",
+        "12345-",
+      ).size,
+    ).isEqualTo(2)
   }
 
   @Test
@@ -1049,7 +1088,9 @@ class ReportedAdjudicationRepositoryTest {
         it.hearings.clear()
       },
     )
-    assertThat(reportedAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("FROM").first().chargeNumber).isEqualTo(
+    assertThat(
+      reportedAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("FROM").first().chargeNumber,
+    ).isEqualTo(
       "12345-2",
     )
   }
@@ -1062,7 +1103,9 @@ class ReportedAdjudicationRepositoryTest {
         it.hearings.clear()
       },
     )
-    assertThat(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("FROM").first().chargeNumber).isEqualTo(
+    assertThat(
+      reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("FROM").first().chargeNumber,
+    ).isEqualTo(
       "12345-2",
     )
   }
@@ -1087,19 +1130,31 @@ class ReportedAdjudicationRepositoryTest {
         it.status = ReportedAdjudicationStatus.CHARGE_PROVED
       },
     )
-    assertThat(reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(3L, ReportedAdjudicationStatus.CHARGE_PROVED).size).isEqualTo(1)
+    assertThat(
+      reportedAdjudicationRepository.findByOffenderBookingIdAndStatus(
+        3L,
+        ReportedAdjudicationStatus.CHARGE_PROVED,
+      ).size,
+    ).isEqualTo(1)
   }
 
   @Test
   fun `find by prisoner number and date time`() {
     reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2", prisonerNumber = "XZY").also {
-        it.hearings.clear()
-        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
-        it.dateTimeOfDiscovery = LocalDateTime.now()
-      },
+      entityBuilder.reportedAdjudication(offenderBookingId = 3L, chargeNumber = "12345-2", prisonerNumber = "XZY")
+        .also {
+          it.hearings.clear()
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.dateTimeOfDiscovery = LocalDateTime.now()
+        },
     )
-    assertThat(reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween("XZY", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1)).size).isEqualTo(1)
+    assertThat(
+      reportedAdjudicationRepository.findByPrisonerNumberAndDateTimeOfDiscoveryBetween(
+        "XZY",
+        LocalDateTime.now().minusDays(1),
+        LocalDateTime.now().plusDays(1),
+      ).size,
+    ).isEqualTo(1)
   }
 
   @Test
@@ -1175,12 +1230,21 @@ class ReportedAdjudicationRepositoryTest {
 
   @CsvSource("IN,0", "OUT,1")
   @ParameterizedTest
-  fun `transfers out migrated data does not mark the last updated, therefore need to join scheduled to hearings to check agency`(agencyId: String, expected: Int) {
+  fun `transfers out migrated data does not mark the last updated, therefore need to join scheduled to hearings to check agency`(
+    agencyId: String,
+    expected: Int,
+  ) {
     reportedAdjudicationRepository.save(
       entityBuilder.reportedAdjudication(agencyId = "OUT", chargeNumber = "12345-2").also {
         it.hearings.clear()
         it.hearings.add(
-          Hearing(locationId = 1, dateTimeOfHearing = LocalDateTime.now(), chargeNumber = "12345-2", oicHearingType = OicHearingType.GOV_ADULT, agencyId = agencyId),
+          Hearing(
+            locationId = 1,
+            dateTimeOfHearing = LocalDateTime.now(),
+            chargeNumber = "12345-2",
+            oicHearingType = OicHearingType.GOV_ADULT,
+            agencyId = agencyId,
+          ),
         )
         it.status = ReportedAdjudicationStatus.SCHEDULED
         it.dateTimeOfDiscovery = LocalDateTime.now()
@@ -1257,6 +1321,8 @@ class ReportedAdjudicationRepositoryTest {
       },
     )
 
-    assertThat(reportedAdjudicationRepository.findByChargeNumber("rehab")!!.getPunishments().first().rehabilitativeActivities).isNotEmpty
+    assertThat(
+      reportedAdjudicationRepository.findByChargeNumber("rehab")!!.getPunishments().first().rehabilitativeActivities,
+    ).isNotEmpty
   }
 }

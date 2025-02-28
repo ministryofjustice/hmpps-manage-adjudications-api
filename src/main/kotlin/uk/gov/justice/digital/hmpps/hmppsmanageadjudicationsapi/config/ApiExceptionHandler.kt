@@ -25,12 +25,10 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.Forbidd
 class ApiExceptionHandler {
 
   @ExceptionHandler(NoResourceFoundException::class)
-  fun handleEntityNotFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> {
-    return ResponseEntity
-      .status(HttpStatus.NOT_FOUND)
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(ErrorResponse(status = HttpStatus.NOT_FOUND.value(), developerMessage = e.message))
-  }
+  fun handleEntityNotFoundException(e: NoResourceFoundException): ResponseEntity<ErrorResponse> = ResponseEntity
+    .status(NOT_FOUND)
+    .contentType(MediaType.APPLICATION_JSON)
+    .body(ErrorResponse(status = NOT_FOUND.value(), developerMessage = e.message))
 
   @ExceptionHandler(WebClientResponseException::class)
   fun handleException(e: WebClientResponseException): ResponseEntity<ErrorResponse> {
@@ -169,11 +167,29 @@ data class ErrorResponse(
   val status: Int,
   @Schema(description = "Error Code", example = "500", required = false)
   val errorCode: Int? = null,
-  @Schema(description = "User Message of error", example = "Bad Data", required = false, maxLength = 200, pattern = "^[a-zA-Z\\d. _-]{1,200}\$")
+  @Schema(
+    description = "User Message of error",
+    example = "Bad Data",
+    required = false,
+    maxLength = 200,
+    pattern = "^[a-zA-Z\\d. _-]{1,200}\$",
+  )
   val userMessage: String? = null,
-  @Schema(description = "More detailed error message", example = "This is a stack trace", required = false, maxLength = 4000, pattern = "^[a-zA-Z\\d. _-]*\$")
+  @Schema(
+    description = "More detailed error message",
+    example = "This is a stack trace",
+    required = false,
+    maxLength = 4000,
+    pattern = "^[a-zA-Z\\d. _-]*\$",
+  )
   val developerMessage: String? = null,
-  @Schema(description = "More information about the error", example = "More info", required = false, maxLength = 4000, pattern = "^[a-zA-Z\\d. _-]*\$")
+  @Schema(
+    description = "More information about the error",
+    example = "More info",
+    required = false,
+    maxLength = 4000,
+    pattern = "^[a-zA-Z\\d. _-]*\$",
+  )
   val moreInfo: String? = null,
 ) {
   constructor(

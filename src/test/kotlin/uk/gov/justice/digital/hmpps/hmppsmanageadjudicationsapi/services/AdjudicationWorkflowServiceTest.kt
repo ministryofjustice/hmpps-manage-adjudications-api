@@ -177,7 +177,10 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .contains(
           1002,
           offenceCodeLookupService.getOffenceCode(1002, false).paragraph,
-          offenceCodeLookupService.getOffenceCode(1002, false).paragraphDescription.getParagraphDescription(Gender.MALE),
+          offenceCodeLookupService.getOffenceCode(
+            1002,
+            false,
+          ).paragraphDescription.getParagraphDescription(Gender.MALE),
           "A1234AA",
           "ABC12D",
           "A Person",
@@ -229,7 +232,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         prisonerNumber = "A12345",
         gender = Gender.MALE,
         agencyId = "MDI",
-        incidentDetails = incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), incidentTime),
+        incidentDetails = incidentDetails(
+          1L,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          incidentTime,
+        ),
         incidentRole = incidentRoleWithAllValuesSet(),
         offenceDetails = mutableListOf(
           Offence(
@@ -349,7 +356,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             prisonerNumber = "A12345",
             gender = Gender.MALE,
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now),
+            incidentDetails = incidentDetails(
+              2L,
+              locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+              now,
+            ),
           ).also {
             when (validationCheck) {
               ValidationChecks.INCIDENT_ROLE -> {
@@ -409,7 +420,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             gender = Gender.MALE,
             chargeNumber = "123",
             agencyId = "MDI",
-            incidentDetails = incidentDetails(2L, locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), incidentTime),
+            incidentDetails = incidentDetails(
+              2L,
+              locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+              incidentTime,
+            ),
             incidentRole = incidentRoleWithNoValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -468,7 +483,8 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
   @Nested
   inner class CompleteAPreviouslyCompletedAdjudication {
 
-    private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now(clock).minusDays(2))
+    private val reportedAdjudication =
+      entityBuilder.reportedAdjudication(dateTime = LocalDateTime.now(clock).minusDays(2))
 
     @BeforeEach
     fun beforeEach() {
@@ -481,7 +497,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
-            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), clock),
+            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(
+              1L,
+              locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+              clock,
+            ),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -673,7 +693,11 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
             chargeNumber = "123",
             reportByUserId = "A_SMITH",
             agencyId = "MDI",
-            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(1L, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), clock),
+            incidentDetails = DraftAdjudicationServiceTest.incidentDetails(
+              1L,
+              locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+              clock,
+            ),
             incidentRole = DraftAdjudicationServiceTest.incidentRoleWithAllValuesSet(),
             offenceDetails = mutableListOf(
               Offence(
@@ -728,11 +752,14 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
     private const val INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME = "Associated Prisoner"
     private val DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE = LocalDateTime.of(2010, 10, 14, 10, 0)
 
-    fun incidentRoleWithAllValuesSet(): IncidentRole =
-      IncidentRole(null, INCIDENT_ROLE_CODE, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER, INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME)
+    fun incidentRoleWithAllValuesSet(): IncidentRole = IncidentRole(
+      null,
+      INCIDENT_ROLE_CODE,
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NUMBER,
+      INCIDENT_ROLE_ASSOCIATED_PRISONERS_NAME,
+    )
 
-    fun incidentRoleWithNoValuesSet(): IncidentRole =
-      IncidentRole(null, null, null, null)
+    fun incidentRoleWithNoValuesSet(): IncidentRole = IncidentRole(null, null, null, null)
 
     fun incidentDetails(locationId: Long, locationUuid: UUID? = null, clock: Clock) = IncidentDetails(
       locationId = locationId,

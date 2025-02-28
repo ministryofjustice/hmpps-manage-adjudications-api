@@ -69,7 +69,18 @@ class DamagesControllerTest : TestControllerBase() {
 
     verify(damagesService).updateDamages("1", DAMAGES_REQUEST.damages)
 
-    verify(eventPublishService, if (listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { it == status }) atLeastOnce() else never()).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, dto)
+    verify(
+      eventPublishService,
+      if (listOf(
+          ReportedAdjudicationStatus.RETURNED,
+          ReportedAdjudicationStatus.AWAITING_REVIEW,
+        ).none { it == status }
+      ) {
+        atLeastOnce()
+      } else {
+        never()
+      },
+    ).publishEvent(AdjudicationDomainEventType.DAMAGES_UPDATED, dto)
   }
 
   private fun setDamagesRequest(

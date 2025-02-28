@@ -66,6 +66,14 @@ class DraftWitnessesControllerTest : TestControllerBase() {
   }
 
   companion object {
-    private val WITNESSES_REQUEST = WitnessesRequest(listOf(WitnessRequestItem(code = WitnessCode.OFFICER, firstName = "prison", lastName = "officer")))
+    private val WITNESSES_REQUEST = WitnessesRequest(
+      listOf(
+        WitnessRequestItem(
+          code = WitnessCode.OFFICER,
+          firstName = "prison",
+          lastName = "officer",
+        ),
+      ),
+    )
   }
 }
