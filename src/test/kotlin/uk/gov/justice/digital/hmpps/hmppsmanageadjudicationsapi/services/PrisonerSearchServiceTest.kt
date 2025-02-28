@@ -38,7 +38,7 @@ class PrisonerSearchServiceTest {
       val responseSpec = mock<WebClient.ResponseSpec>()
 
       whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/api/offenders/{prisonerNumber}", prisonerNumber))
+      whenever(requestHeadersUriSpec.uri("/prisoner/{prisonerNumber}", prisonerNumber))
         .thenReturn(requestHeadersSpec)
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
       whenever(responseSpec.bodyToMono(PrisonerResponse::class.java))
@@ -79,7 +79,7 @@ class PrisonerSearchServiceTest {
       val responseSpec = mock<WebClient.ResponseSpec>()
 
       whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
-      whenever(requestHeadersUriSpec.uri("/api/offenders/{prisonerNumber}", prisonerNumber))
+      whenever(requestHeadersUriSpec.uri("/prisoner/{prisonerNumber}", prisonerNumber))
         .thenReturn(requestHeadersSpec)
 
       whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)

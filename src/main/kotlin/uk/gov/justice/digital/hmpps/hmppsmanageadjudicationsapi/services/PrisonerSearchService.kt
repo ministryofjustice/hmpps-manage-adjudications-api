@@ -33,7 +33,7 @@ class PrisonerSearchService(
     logger.info("Fetching prisoner details for ID: $prisonerNumber")
     return try {
       webClient.get()
-        .uri("/api/offenders/{prisonerNumber}", prisonerNumber)
+        .uri("/prisoner/{prisonerNumber}", prisonerNumber)
         .retrieve()
         .bodyToMono(PrisonerResponse::class.java)
         .block()

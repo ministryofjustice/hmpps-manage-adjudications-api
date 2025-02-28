@@ -137,5 +137,5 @@ prison:
   prisoner-search:
     api:
       endpoint:
-        url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prison-api-dev.prison.service.justice.gov.uk}
+        url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prisoner-search-dev.prison.service.justice.gov.uk}
   timeout: 10s
