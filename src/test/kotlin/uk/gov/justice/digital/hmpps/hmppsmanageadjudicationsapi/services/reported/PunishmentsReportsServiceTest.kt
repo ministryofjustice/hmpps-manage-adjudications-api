@@ -108,7 +108,13 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments only returns the active ones from a charge`() {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication().also {
             it.status = ReportedAdjudicationStatus.CHARGE_PROVED
@@ -141,8 +147,20 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments `() {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
-      whenever(reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(reportedAdjudications)
+      whenever(
+        reportedAdjudicationRepository.findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication(chargeNumber = "5").also {
             it.status = ReportedAdjudicationStatus.INVALID_OUTCOME
@@ -174,7 +192,13 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("INAD_ADULT", "INAD_YOI")
     @ParameterizedTest
     fun `get suspended punishments for reported adjudication from independent adjudicator `(oicHearingType: OicHearingType) {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(reportedAdjudications)
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(reportedAdjudications)
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.hearings.first().oicHearingType = oicHearingType
@@ -196,11 +220,23 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
 
     @Test
     fun `get suspended punishments filters out any with rehabilitative activities`() {
-      whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+          any(),
+          any(),
+          any(),
+        ),
+      ).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication().also {
             it.clearPunishments()
-            it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, suspendedUntil = LocalDate.now().plusDays(10), schedule = mutableListOf(PunishmentSchedule(duration = 10))))
+            it.addPunishment(
+              Punishment(
+                type = PunishmentType.CONFINEMENT,
+                suspendedUntil = LocalDate.now().plusDays(10),
+                schedule = mutableListOf(PunishmentSchedule(duration = 10)),
+              ),
+            )
             it.addPunishment(
               Punishment(
                 type = PunishmentType.REMOVAL_WING,
@@ -420,7 +456,11 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
                 type = PunishmentType.EARNINGS,
                 stoppagePercentage = 90,
                 schedule = mutableListOf(
-                  PunishmentSchedule(duration = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now().minusDays(2)),
+                  PunishmentSchedule(
+                    duration = 0,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().minusDays(2),
+                  ),
                 ),
               ),
             )
@@ -432,7 +472,11 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
                 suspendedUntil = LocalDate.now(),
                 stoppagePercentage = 90,
                 schedule = mutableListOf(
-                  PunishmentSchedule(duration = 0, startDate = LocalDate.now().minusDays(2), endDate = LocalDate.now().minusDays(2)),
+                  PunishmentSchedule(
+                    duration = 0,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().minusDays(2),
+                  ),
                 ),
               ),
             )

@@ -66,13 +66,11 @@ class AdjudicationSummaryControllerTest : TestControllerBase() {
       )
     }
 
-    private fun profileRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/adjudications/by-booking-id/1")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun profileRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/adjudications/by-booking-id/1")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -97,12 +95,10 @@ class AdjudicationSummaryControllerTest : TestControllerBase() {
       verify(summaryAdjudicationService).hasAdjudications(any())
     }
 
-    private fun hasAdjudicationsRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/adjudications/booking/1/exists")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun hasAdjudicationsRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/adjudications/booking/1/exists")
+          .header("Content-Type", "application/json"),
+      )
   }
 }

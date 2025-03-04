@@ -9,8 +9,5 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 @Configuration
 class ObjectMapperConfig {
   @Bean
-  fun objectMapper(mapperBuilder: Jackson2ObjectMapperBuilder): ObjectMapper? {
-    return mapperBuilder.build<ObjectMapper>()
-      .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-  }
+  fun objectMapper(mapperBuilder: Jackson2ObjectMapperBuilder): ObjectMapper? = mapperBuilder.build<ObjectMapper>().setSerializationInclusion(JsonInclude.Include.NON_NULL)
 }

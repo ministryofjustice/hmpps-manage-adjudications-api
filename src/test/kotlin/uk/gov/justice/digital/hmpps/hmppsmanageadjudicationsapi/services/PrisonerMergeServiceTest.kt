@@ -66,7 +66,11 @@ class PrisonerMergeServiceTest : ReportedAdjudicationTestBase() {
     val fromReport = entityBuilder.reportedAdjudication(prisonerNumber = "RANDOM").also {
       it.incidentRoleAssociatedPrisonersNumber = "FROM"
     }
-    whenever(reportedAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber(any())).thenReturn(listOf(fromReport))
+    whenever(reportedAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber(any())).thenReturn(
+      listOf(
+        fromReport,
+      ),
+    )
 
     prisonerMergeService.merge(
       prisonerFrom = "FROM",
@@ -82,7 +86,11 @@ class PrisonerMergeServiceTest : ReportedAdjudicationTestBase() {
     val fromReport = entityBuilder.reportedAdjudication(prisonerNumber = "RANDOM").also {
       it.offenceDetails.first().victimPrisonersNumber = "FROM"
     }
-    whenever(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(any())).thenReturn(listOf(fromReport))
+    whenever(reportedAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber(any())).thenReturn(
+      listOf(
+        fromReport,
+      ),
+    )
 
     prisonerMergeService.merge(
       prisonerFrom = "FROM",
@@ -105,7 +113,12 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
       prisonerNumber = "FROM",
       gender = Gender.MALE,
       incidentDetails =
-      IncidentDetails(dateTimeOfDiscovery = LocalDateTime.now(), dateTimeOfIncident = LocalDateTime.now(), handoverDeadline = LocalDateTime.now(), locationId = 1),
+      IncidentDetails(
+        dateTimeOfDiscovery = LocalDateTime.now(),
+        dateTimeOfIncident = LocalDateTime.now(),
+        handoverDeadline = LocalDateTime.now(),
+        locationId = 1,
+      ),
     )
     whenever(draftAdjudicationRepository.findByPrisonerNumber(any())).thenReturn(listOf(fromReport))
 
@@ -125,10 +138,19 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
       prisonerNumber = "RANDOM",
       gender = Gender.MALE,
       incidentDetails =
-      IncidentDetails(dateTimeOfDiscovery = LocalDateTime.now(), dateTimeOfIncident = LocalDateTime.now(), handoverDeadline = LocalDateTime.now(), locationId = 1),
+      IncidentDetails(
+        dateTimeOfDiscovery = LocalDateTime.now(),
+        dateTimeOfIncident = LocalDateTime.now(),
+        handoverDeadline = LocalDateTime.now(),
+        locationId = 1,
+      ),
       incidentRole = IncidentRole(associatedPrisonersNumber = "FROM", associatedPrisonersName = "", roleCode = ""),
     )
-    whenever(draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber(any())).thenReturn(listOf(fromReport))
+    whenever(draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber(any())).thenReturn(
+      listOf(
+        fromReport,
+      ),
+    )
 
     prisonerMergeService.merge(
       prisonerFrom = "FROM",
@@ -146,7 +168,12 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
       prisonerNumber = "RANDOM",
       gender = Gender.MALE,
       incidentDetails =
-      IncidentDetails(dateTimeOfDiscovery = LocalDateTime.now(), dateTimeOfIncident = LocalDateTime.now(), handoverDeadline = LocalDateTime.now(), locationId = 1),
+      IncidentDetails(
+        dateTimeOfDiscovery = LocalDateTime.now(),
+        dateTimeOfIncident = LocalDateTime.now(),
+        handoverDeadline = LocalDateTime.now(),
+        locationId = 1,
+      ),
       offenceDetails = mutableListOf(
         Offence(
           offenceCode = 1,

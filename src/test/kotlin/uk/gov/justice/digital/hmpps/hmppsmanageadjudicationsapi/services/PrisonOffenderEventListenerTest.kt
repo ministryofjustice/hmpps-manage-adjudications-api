@@ -45,8 +45,6 @@ class PrisonOffenderEventListenerTest {
     verify(prisonerMergeService, atLeastOnce()).merge(prisonerFrom = "A0237FC", prisonerTo = "A3203AJ")
   }
 
-  private fun String.readResourceAsText(): String {
-    return PrisonOffenderEventListenerTest::class.java.getResource(this)?.readText()
-      ?: throw AssertionError("can not find file")
-  }
+  private fun String.readResourceAsText(): String = PrisonOffenderEventListenerTest::class.java.getResource(this)?.readText()
+    ?: throw AssertionError("can not find file")
 }

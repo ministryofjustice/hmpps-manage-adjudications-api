@@ -53,11 +53,10 @@ data class ReportedWitness(
   @field:Length(max = 240)
   var comment: String? = null,
 ) : BaseEntity() {
-  fun toDto(): ReportedWitnessDto =
-    ReportedWitnessDto(
-      code = this.code,
-      firstName = this.firstName,
-      lastName = this.lastName,
-      reporter = this.reporter,
-    )
+  fun toDto(): ReportedWitnessDto = ReportedWitnessDto(
+    code = this.code,
+    firstName = this.firstName,
+    lastName = this.lastName,
+    reporter = this.reporter,
+  )
 }

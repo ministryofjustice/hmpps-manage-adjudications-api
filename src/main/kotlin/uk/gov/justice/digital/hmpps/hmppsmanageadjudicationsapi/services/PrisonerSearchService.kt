@@ -52,21 +52,19 @@ class PrisonerSearchService(
    * @param ex The exception containing the API response.
    * @return The parsed error response.
    */
-  private fun handleError(ex: WebClientResponseException): ErrorResponse {
-    return try {
-      logger.warn("Handling error response: ${ex.statusCode}")
-      ex.responseBodyAsString?.let { body ->
-        objectMapper.readValue(body, ErrorResponse::class.java)
-      } ?: throw IllegalArgumentException("Empty error response body")
-    } catch (parseException: Exception) {
-      logger.error("Failed to parse error response body for status: ${ex.statusCode}", parseException)
-      ErrorResponse(
-        status = ex.statusCode.value(),
-        errorCode = "UNKNOWN",
-        userMessage = "Unable to parse error response from server.",
-        developerMessage = parseException.message ?: "Error parsing response body.",
-        moreInfo = "No additional information available.",
-      )
-    }
+  private fun handleError(ex: WebClientResponseException): ErrorResponse = try {
+    logger.warn("Handling error response: ${ex.statusCode}")
+    ex.responseBodyAsString?.let { body ->
+      objectMapper.readValue(body, ErrorResponse::class.java)
+    } ?: throw IllegalArgumentException("Empty error response body")
+  } catch (parseException: Exception) {
+    logger.error("Failed to parse error response body for status: ${ex.statusCode}", parseException)
+    ErrorResponse(
+      status = ex.statusCode.value(),
+      errorCode = "UNKNOWN",
+      userMessage = "Unable to parse error response from server.",
+      developerMessage = parseException.message ?: "Error parsing response body.",
+      moreInfo = "No additional information available.",
+    )
   }
 }

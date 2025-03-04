@@ -80,7 +80,10 @@ class PunishmentsControllerTest : TestControllerBase() {
         chargeNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, duration = PUNISHMENT_REQUEST.duration)),
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_CREATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.PUNISHMENTS_CREATED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun createPunishmentsRequest(
@@ -149,7 +152,10 @@ class PunishmentsControllerTest : TestControllerBase() {
         chargeNumber = "1",
         listOf(PunishmentRequest(type = PUNISHMENT_REQUEST.type, duration = PUNISHMENT_REQUEST.duration)),
       )
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun updatePunishmentsRequest(
@@ -212,7 +218,10 @@ class PunishmentsControllerTest : TestControllerBase() {
         completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = true),
       )
 
-      verify(eventPublishService, atLeastOnce()).publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, REPORTED_ADJUDICATION_DTO)
+      verify(eventPublishService, atLeastOnce()).publishEvent(
+        AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
+        REPORTED_ADJUDICATION_DTO,
+      )
     }
 
     private fun completeRehabilitativeActivityRequest(

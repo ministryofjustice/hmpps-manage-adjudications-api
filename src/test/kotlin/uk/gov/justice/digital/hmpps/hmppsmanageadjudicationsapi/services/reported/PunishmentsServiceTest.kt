@@ -60,7 +60,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
-    whenever(reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(any(), any(), any())).thenReturn(
+    whenever(
+      reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+        any(),
+        any(),
+        any(),
+      ),
+    ).thenReturn(
       listOf(
         entityBuilder.reportedAdjudication().also {
           it.addPunishment(
@@ -100,7 +106,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `throws a runtime exception if punishments already exist - ie the user has pressed back and resubmitted`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         entityBuilder.reportedAdjudication().also {
-          it.addPunishment(Punishment(type = PunishmentType.CONFINEMENT, schedule = mutableListOf(PunishmentSchedule(duration = 0))))
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.CONFINEMENT,
+              schedule = mutableListOf(PunishmentSchedule(duration = 0)),
+            ),
+          )
         },
       )
       assertThatThrownBy {
@@ -298,7 +309,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().startDate).isEqualTo(reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate())
+      assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().startDate).isEqualTo(
+        reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+      )
       assertThat(argumentCaptor.value.getPunishments().first().paybackNotes).isEqualTo("notes")
     }
 
@@ -381,7 +394,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `activated from punishment not found `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("2"))).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")))
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("2"))).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(
+            chargeNumber = "2",
+          ),
+        ),
+      )
 
       assertThatThrownBy {
         punishmentsService.create(
@@ -617,17 +636,30 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             duration = 1,
             suspendedUntil = LocalDate.now(),
             rehabilitativeActivities = listOf(
-              RehabilitativeActivityRequest(details = "details", monitor = "monitor", endDate = LocalDate.now(), totalSessions = 10),
+              RehabilitativeActivityRequest(
+                details = "details",
+                monitor = "monitor",
+                endDate = LocalDate.now(),
+                totalSessions = 10,
+              ),
             ),
           ),
         ),
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().details).isEqualTo("details")
-      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().monitor).isEqualTo("monitor")
-      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().totalSessions).isEqualTo(10)
-      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().endDate).isEqualTo(LocalDate.now())
+      assertThat(
+        argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().details,
+      ).isEqualTo("details")
+      assertThat(
+        argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().monitor,
+      ).isEqualTo("monitor")
+      assertThat(
+        argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().totalSessions,
+      ).isEqualTo(10)
+      assertThat(argumentCaptor.value.getPunishments().first().rehabilitativeActivities.first().endDate).isEqualTo(
+        LocalDate.now(),
+      )
     }
   }
 
@@ -892,7 +924,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+          "1",
+          listOf(type),
+        ),
+      ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -907,7 +944,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
-    fun `throws validation exception when amending a punishment to a non additional days type that is linked to another report `(type: PunishmentType) {
+    fun `throws validation exception when amending a punishment to a non additional days type that is linked to another report `(
+      type: PunishmentType,
+    ) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
@@ -921,7 +960,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+          "1",
+          listOf(type),
+        ),
+      ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -929,7 +973,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         punishmentsService.update(
           chargeNumber = "1",
           punishments = listOf(
-            PunishmentRequest(id = 1, type = PunishmentType.EXTRA_WORK, duration = 10, suspendedUntil = LocalDate.now()),
+            PunishmentRequest(
+              id = 1,
+              type = PunishmentType.EXTRA_WORK,
+              duration = 10,
+              suspendedUntil = LocalDate.now(),
+            ),
           ),
         )
       }.isInstanceOf(ValidationException::class.java)
@@ -953,7 +1002,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn("1", listOf(type))).thenReturn(
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+          "1",
+          listOf(type),
+        ),
+      ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
       )
 
@@ -987,7 +1041,14 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThatThrownBy {
         punishmentsService.update(
           chargeNumber = "1",
-          listOf(PunishmentRequest(id = 2, type = PunishmentType.REMOVAL_ACTIVITY, duration = 1, suspendedUntil = LocalDate.now())),
+          listOf(
+            PunishmentRequest(
+              id = 2,
+              type = PunishmentType.REMOVAL_ACTIVITY,
+              duration = 1,
+              suspendedUntil = LocalDate.now(),
+            ),
+          ),
         )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Punishment 2 is not associated with ReportedAdjudication")
@@ -1003,7 +1064,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               id = 1,
               type = PunishmentType.PAYBACK,
               schedule = mutableListOf(
-                PunishmentSchedule(id = 1, duration = 1, startDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate()).also {
+                PunishmentSchedule(
+                  id = 1,
+                  duration = 1,
+                  startDate = reportedAdjudication.getLatestHearing()!!.dateTimeOfHearing.toLocalDate(),
+                ).also {
                   it.createDateTime = LocalDateTime.now()
                 },
               ),
@@ -1137,7 +1202,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication.also {
           it.addPunishment(
-            Punishment(id = 1, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(duration = 1))),
+            Punishment(
+              id = 1,
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+            ),
           )
         },
       )
@@ -1165,12 +1234,22 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication.also {
           it.addPunishment(
-            Punishment(id = 1, type = PunishmentType.PROSPECTIVE_DAYS, schedule = mutableListOf(PunishmentSchedule(duration = 1))),
+            Punishment(
+              id = 1,
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+            ),
           )
         },
       )
 
-      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("2"))).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")))
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("2"))).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(
+            chargeNumber = "2",
+          ),
+        ),
+      )
 
       assertThatThrownBy {
         punishmentsService.update(
@@ -1284,7 +1363,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             Punishment(
               id = 1,
               type = PunishmentType.CONFINEMENT,
-              rehabilitativeActivities = mutableListOf(RehabilitativeActivity(), RehabilitativeActivity(), RehabilitativeActivity()),
+              rehabilitativeActivities = mutableListOf(
+                RehabilitativeActivity(),
+                RehabilitativeActivity(),
+                RehabilitativeActivity(),
+              ),
               schedule = mutableListOf(
                 PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now()).also {
                   it.createDateTime = LocalDateTime.now()
@@ -1434,7 +1517,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
-        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+        SuspendedPunishmentEvent(
+          chargeNumber = reportToActivateFrom.chargeNumber,
+          agencyId = reportToActivateFrom.originatingAgencyId,
+          status = reportToActivateFrom.status,
+        ),
       )
     }
 
@@ -1478,7 +1565,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
-        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+        SuspendedPunishmentEvent(
+          chargeNumber = reportToActivateFrom.chargeNumber,
+          agencyId = reportToActivateFrom.originatingAgencyId,
+          status = reportToActivateFrom.status,
+        ),
       )
     }
 
@@ -1489,8 +1580,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         it.getPunishments().forEach {
           it.activatedByChargeNumber = currentCharge.chargeNumber
           it.addSchedule(
-            PunishmentSchedule(id = 2, startDate = LocalDate.now(), endDate = LocalDate.now(), duration = 10).also {
-                s ->
+            PunishmentSchedule(
+              id = 2,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
+              duration = 10,
+            ).also { s ->
               s.createDateTime = LocalDateTime.now().plusDays(1)
             },
           )
@@ -1505,7 +1600,12 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       val response = punishmentsServiceV2.update(
         chargeNumber = "12345",
         punishments = listOf(
-          PunishmentRequest(type = PunishmentType.EXCLUSION_WORK, duration = 10, startDate = LocalDate.now(), endDate = LocalDate.now()),
+          PunishmentRequest(
+            type = PunishmentType.EXCLUSION_WORK,
+            duration = 10,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now(),
+          ),
         ),
       )
       assertThat(currentCharge.getPunishments().size).isEqualTo(1)
@@ -1524,7 +1624,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.suspendedPunishmentEvents!!.size).isEqualTo(1)
       assertThat(response.suspendedPunishmentEvents!!.first()).isEqualTo(
-        SuspendedPunishmentEvent(chargeNumber = reportToActivateFrom.chargeNumber, agencyId = reportToActivateFrom.originatingAgencyId, status = reportToActivateFrom.status),
+        SuspendedPunishmentEvent(
+          chargeNumber = reportToActivateFrom.chargeNumber,
+          agencyId = reportToActivateFrom.originatingAgencyId,
+          status = reportToActivateFrom.status,
+        ),
       )
     }
   }
@@ -1571,7 +1675,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         punishmentsService.completeRehabilitativeActivity(
           chargeNumber = "1",
           punishmentId = 1,
-          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE),
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+            completed = false,
+            outcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+          ),
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("punishment 1 on charge 1 has no rehabilitative activities")
@@ -1621,7 +1728,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         punishmentsService.completeRehabilitativeActivity(
           chargeNumber = "1",
           punishmentId = 1,
-          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE),
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+            completed = false,
+            outcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+          ),
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("PARTIAL_ACTIVATE requires daysToActivate")
@@ -1646,7 +1756,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         punishmentsService.completeRehabilitativeActivity(
           chargeNumber = "1",
           punishmentId = 1,
-          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.EXT_SUSPEND),
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+            completed = false,
+            outcome = NotCompletedOutcome.EXT_SUSPEND,
+          ),
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("EXT_SUSPEND requires a suspendedUntil")
@@ -1700,7 +1813,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.completeRehabilitativeActivity(
         chargeNumber = "1",
         punishmentId = 1,
-        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.FULL_ACTIVATE),
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.FULL_ACTIVATE,
+        ),
       )
 
       assertThat(punishment.rehabCompleted).isFalse()
@@ -1733,7 +1849,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.completeRehabilitativeActivity(
         chargeNumber = "1",
         punishmentId = 1,
-        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.PARTIAL_ACTIVATE, daysToActivate = 5),
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+          daysToActivate = 5,
+        ),
       )
 
       assertThat(punishment.rehabCompleted).isFalse()
@@ -1766,7 +1886,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.completeRehabilitativeActivity(
         chargeNumber = "1",
         punishmentId = 1,
-        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.EXT_SUSPEND, suspendedUntil = LocalDate.now().plusDays(10)),
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.EXT_SUSPEND,
+          suspendedUntil = LocalDate.now().plusDays(10),
+        ),
       )
 
       assertThat(punishment.rehabCompleted).isFalse()
@@ -1774,7 +1898,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.getSuspendedUntil()).isEqualTo(LocalDate.now().plusDays(10))
       assertThat(punishment.getSchedule().size).isEqualTo(2)
       assertThat(punishment.getSchedule().first { it.id == null }.duration).isEqualTo(10)
-      assertThat(punishment.getSchedule().first { it.id == null }.suspendedUntil).isEqualTo(LocalDate.now().plusDays(10))
+      assertThat(punishment.getSchedule().first { it.id == null }.suspendedUntil).isEqualTo(
+        LocalDate.now().plusDays(10),
+      )
     }
 
     @Test
@@ -1798,7 +1924,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.completeRehabilitativeActivity(
         chargeNumber = "1",
         punishmentId = 1,
-        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.NO_ACTION),
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.NO_ACTION,
+        ),
       )
 
       assertThat(punishment.rehabCompleted).isFalse()
@@ -1807,9 +1936,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.getSchedule().size).isEqualTo(1)
     }
 
-    @CsvSource("FULL_ACTIVATE, NO_ACTION", "PARTIAL_ACTIVATE, NO_ACTION", "EXT_SUSPEND, NO_ACTION", "FULL_ACTIVATE,", "PARTIAL_ACTIVATE,", "EXT_SUSPEND,")
+    @CsvSource(
+      "FULL_ACTIVATE, NO_ACTION",
+      "PARTIAL_ACTIVATE, NO_ACTION",
+      "EXT_SUSPEND, NO_ACTION",
+      "FULL_ACTIVATE,",
+      "PARTIAL_ACTIVATE,",
+      "EXT_SUSPEND,",
+    )
     @ParameterizedTest
-    fun `SPIKE calling endpoint twice, case to handle is switch to no action, remove latest schedule`(notCompletedOutcome: NotCompletedOutcome, newOutcome: NotCompletedOutcome?) {
+    fun `SPIKE calling endpoint twice, case to handle is switch to no action, remove latest schedule`(
+      notCompletedOutcome: NotCompletedOutcome,
+      newOutcome: NotCompletedOutcome?,
+    ) {
       val punishment = Punishment(
         id = 1,
         type = PunishmentType.CONFINEMENT,
@@ -1838,7 +1977,10 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       punishmentsService.completeRehabilitativeActivity(
         chargeNumber = "1",
         punishmentId = 1,
-        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(completed = false, outcome = NotCompletedOutcome.NO_ACTION),
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.NO_ACTION,
+        ),
       )
 
       assertThat(punishment.rehabCompleted).isFalse()
@@ -1850,12 +1992,31 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
   companion object {
 
-    fun getRequest(id: Long? = null, type: PunishmentType, startDate: LocalDate? = null, endDate: LocalDate? = null): PunishmentRequest =
-      when (type) {
-        PunishmentType.PRIVILEGE -> PunishmentRequest(id = id, type = type, privilegeType = PrivilegeType.ASSOCIATION, duration = 1, startDate = startDate, endDate = endDate)
-        PunishmentType.EARNINGS -> PunishmentRequest(id = id, type = type, stoppagePercentage = 10, duration = 1, startDate = startDate, endDate = endDate)
+    fun getRequest(
+      id: Long? = null,
+      type: PunishmentType,
+      startDate: LocalDate? = null,
+      endDate: LocalDate? = null,
+    ): PunishmentRequest = when (type) {
+      PunishmentType.PRIVILEGE -> PunishmentRequest(
+        id = id,
+        type = type,
+        privilegeType = PrivilegeType.ASSOCIATION,
+        duration = 1,
+        startDate = startDate,
+        endDate = endDate,
+      )
 
-        else -> PunishmentRequest(id = id, type = type, duration = 1, startDate = startDate, endDate = endDate)
-      }
+      PunishmentType.EARNINGS -> PunishmentRequest(
+        id = id,
+        type = type,
+        stoppagePercentage = 10,
+        duration = 1,
+        startDate = startDate,
+        endDate = endDate,
+      )
+
+      else -> PunishmentRequest(id = id, type = type, duration = 1, startDate = startDate, endDate = endDate)
+    }
   }
 }

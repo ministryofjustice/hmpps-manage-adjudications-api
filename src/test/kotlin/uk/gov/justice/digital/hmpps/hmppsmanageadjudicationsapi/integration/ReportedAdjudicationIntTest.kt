@@ -85,7 +85,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.reportedAdjudication.incidentStatement.completed").isEqualTo(true)
         .jsonPath("$.reportedAdjudication.createdByUserId")
         .isEqualTo(testData.createdByUserId)
-        .jsonPath("$.reportedAdjudication.createdDateTime").isEqualTo(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
+        .jsonPath("$.reportedAdjudication.createdDateTime")
+        .isEqualTo(IntegrationTestData.DEFAULT_REPORTED_DATE_TIME_TEXT)
         .jsonPath("$.reportedAdjudication.damages[0].code")
         .isEqualTo(DamageCode.CLEANING.name)
         .jsonPath("$.reportedAdjudication.damages[0].details")
@@ -106,8 +107,10 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .isEqualTo("B_MILLS")
         .jsonPath("\$.reportedAdjudication.offenceDetails.protectedCharacteristics.size()").isEqualTo(0)
         .jsonPath("$.reportedAdjudication.gender").isEqualTo(Gender.MALE.name)
-        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
-        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
+        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.nomisCode")
+        .isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
+        .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode")
+        .isEqualTo(OffenceCodes.ADULT_51_4.nomisCode)
     }
   }
 
@@ -127,7 +130,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
         .exchange()
         .expectStatus().is2xxSuccessful
         .expectBody()
-        .jsonPath("$.reportedAdjudication.offenceDetails.protectedCharacteristics[0]").isEqualTo(Characteristic.AGE.name)
+        .jsonPath("$.reportedAdjudication.offenceDetails.protectedCharacteristics[0]")
+        .isEqualTo(Characteristic.AGE.name)
     }
   }
 
@@ -142,7 +146,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().is2xxSuccessful
       .expectBody()
-      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode").isEqualTo(OffenceCodes.ADULT_51_2A.getNomisCodeWithOthers())
+      .jsonPath("$.reportedAdjudication.offenceDetails.offenceRule.withOthersNomisCode")
+      .isEqualTo(OffenceCodes.ADULT_51_2A.getNomisCodeWithOthers())
   }
 
   @Test
@@ -352,7 +357,8 @@ class ReportedAdjudicationIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isBadRequest
       .expectBody()
-      .jsonPath("$.userMessage").isEqualTo("ReportedAdjudication ${scenario.getGeneratedChargeNumber()} cannot transition from ${ReportedAdjudicationStatus.REJECTED.name} to ${ReportedAdjudicationStatus.UNSCHEDULED.name}")
+      .jsonPath("$.userMessage")
+      .isEqualTo("ReportedAdjudication ${scenario.getGeneratedChargeNumber()} cannot transition from ${ReportedAdjudicationStatus.REJECTED.name} to ${ReportedAdjudicationStatus.UNSCHEDULED.name}")
   }
 
   @Test

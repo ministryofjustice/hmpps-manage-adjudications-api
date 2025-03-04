@@ -43,12 +43,24 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
     whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(null)
 
     Assertions.assertThatThrownBy {
-      hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+      hearingService.createHearing(
+        "1",
+        1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+        LocalDateTime.now(),
+        OicHearingType.GOV,
+      )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
     Assertions.assertThatThrownBy {
-      hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+      hearingService.amendHearing(
+        "1",
+        1,
+        locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+        LocalDateTime.now(),
+        OicHearingType.GOV,
+      )
     }.isInstanceOf(EntityNotFoundException::class.java)
       .hasMessageContaining("ReportedAdjudication not found for 1")
 
@@ -112,7 +124,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.createHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now(),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -122,12 +140,25 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now().minusDays(10), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", chargeNumber = "1"),
+            Hearing(
+              dateTimeOfHearing = LocalDateTime.now().minusDays(10),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV,
+              oicHearingId = 1,
+              agencyId = "",
+              chargeNumber = "1",
+            ),
           )
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.createHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now(),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Adjudication already has a hearing without outcome")
     }
@@ -137,12 +168,25 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(10), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", chargeNumber = "1"),
+            Hearing(
+              dateTimeOfHearing = LocalDateTime.now().plusDays(10),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV,
+              oicHearingId = 1,
+              agencyId = "",
+              chargeNumber = "1",
+            ),
           )
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now().minusDays(10), OicHearingType.GOV)
+        hearingService.createHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now().minusDays(10),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -153,12 +197,25 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.add(
-            Hearing(dateTimeOfHearing = now, locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", chargeNumber = "1"),
+            Hearing(
+              dateTimeOfHearing = now,
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV,
+              oicHearingId = 1,
+              agencyId = "",
+              chargeNumber = "1",
+            ),
           )
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.createHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), now, OicHearingType.GOV)
+        hearingService.createHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          now,
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -199,14 +256,12 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
           it.hearings.clear()
           it.addOutcome(
-            Outcome(code = if (code == OutcomeCode.REFER_INAD) OutcomeCode.REFER_POLICE else OutcomeCode.REFER_INAD).also {
-                o ->
+            Outcome(code = if (code == OutcomeCode.REFER_INAD) OutcomeCode.REFER_POLICE else OutcomeCode.REFER_INAD).also { o ->
               o.createDateTime = LocalDateTime.now()
             },
           )
           it.addOutcome(
-            Outcome(code = code).also {
-                o ->
+            Outcome(code = code).also { o ->
               o.createDateTime = LocalDateTime.now().plusDays(1)
             },
           )
@@ -241,8 +296,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
           it.hearings.clear()
           it.addOutcome(
-            Outcome(code = OutcomeCode.NOT_PROCEED).also {
-                o ->
+            Outcome(code = OutcomeCode.NOT_PROCEED).also { o ->
               o.createDateTime = LocalDateTime.now()
             },
           )
@@ -318,7 +372,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now(),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Invalid status transition")
     }
@@ -328,12 +388,25 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
           it.hearings.add(
-            Hearing(dateTimeOfHearing = LocalDateTime.now().plusDays(3), locationId = 1, oicHearingType = OicHearingType.GOV, oicHearingId = 1, agencyId = "", chargeNumber = "1"),
+            Hearing(
+              dateTimeOfHearing = LocalDateTime.now().plusDays(3),
+              locationId = 1,
+              oicHearingType = OicHearingType.GOV,
+              oicHearingId = 1,
+              agencyId = "",
+              chargeNumber = "1",
+            ),
           )
         },
       )
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now().plusDays(1), OicHearingType.GOV)
+        hearingService.amendHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now().plusDays(1),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("A hearing can not be before or at the same time as the previous hearing")
     }
@@ -371,7 +444,13 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       )
 
       Assertions.assertThatThrownBy {
-        hearingService.amendHearing("1", 1, locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"), LocalDateTime.now(), OicHearingType.GOV)
+        hearingService.amendHearing(
+          "1",
+          1,
+          locationUuid = UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
+          LocalDateTime.now(),
+          OicHearingType.GOV,
+        )
       }.isInstanceOf(EntityNotFoundException::class.java)
         .hasMessageContaining("Hearing not found")
     }
@@ -457,12 +536,31 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication()
           .also {
             it.hearings.add(
-              Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, chargeNumber = "1"),
+              Hearing(
+                agencyId = "",
+                locationId = 1L,
+                oicHearingType = OicHearingType.INAD_ADULT,
+                dateTimeOfHearing = LocalDateTime.now().plusDays(5),
+                oicHearingId = 1L,
+                chargeNumber = "1",
+              ),
             )
             it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
-            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1).minusHours(1) })
-            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
-            it.addOutcome(Outcome(code = OutcomeCode.REFER_POLICE).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+            it.addOutcome(
+              Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o ->
+                o.createDateTime = LocalDateTime.now().plusDays(1).minusHours(1)
+              },
+            )
+            it.addOutcome(
+              Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o ->
+                o.createDateTime = LocalDateTime.now().plusDays(2)
+              },
+            )
+            it.addOutcome(
+              Outcome(code = OutcomeCode.REFER_POLICE).also { o ->
+                o.createDateTime = LocalDateTime.now().plusDays(1)
+              },
+            )
           },
       )
 
@@ -484,11 +582,26 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
           .also {
             it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_INAD, adjudicator = "")
             it.hearings.add(
-              Hearing(agencyId = "", locationId = 1L, oicHearingType = OicHearingType.INAD_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(5), oicHearingId = 1L, chargeNumber = "1"),
+              Hearing(
+                agencyId = "",
+                locationId = 1L,
+                oicHearingType = OicHearingType.INAD_ADULT,
+                dateTimeOfHearing = LocalDateTime.now().plusDays(5),
+                oicHearingId = 1L,
+                chargeNumber = "1",
+              ),
             )
             it.addOutcome(Outcome(code = OutcomeCode.REFER_INAD).also { o -> o.createDateTime = LocalDateTime.now() })
-            it.addOutcome(Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o -> o.createDateTime = LocalDateTime.now().plusDays(2) })
-            it.addOutcome(Outcome(code = OutcomeCode.REFER_GOV).also { o -> o.createDateTime = LocalDateTime.now().plusDays(1) })
+            it.addOutcome(
+              Outcome(code = OutcomeCode.SCHEDULE_HEARING).also { o ->
+                o.createDateTime = LocalDateTime.now().plusDays(2)
+              },
+            )
+            it.addOutcome(
+              Outcome(code = OutcomeCode.REFER_GOV).also { o ->
+                o.createDateTime = LocalDateTime.now().plusDays(1)
+              },
+            )
           },
       )
 

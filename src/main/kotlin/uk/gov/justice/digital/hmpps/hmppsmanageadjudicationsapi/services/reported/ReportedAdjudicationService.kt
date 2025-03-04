@@ -26,7 +26,9 @@ class ReportedAdjudicationService(
   fun getReportedAdjudicationDetails(chargeNumber: String, includeActivated: Boolean = false): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val hasLinkedAda = hasLinkedAda(reportedAdjudication)
-    val consecutiveReportsAvailable = reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }.map { it.consecutiveToChargeNumber!! }
+    val consecutiveReportsAvailable =
+      reportedAdjudication.getPunishments().filter { it.consecutiveToChargeNumber != null }
+        .map { it.consecutiveToChargeNumber!! }
     return reportedAdjudication.toDto(
       offenceCodeLookupService = offenceCodeLookupService,
       activeCaseload = authenticationFacade.activeCaseload,
@@ -56,11 +58,16 @@ class ReportedAdjudicationService(
     }
   }
 
-  fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean =
-    findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
+  fun lastOutcomeHasReferralOutcome(chargeNumber: String): Boolean = findByChargeNumber(chargeNumber).getOutcomeHistory().lastOrNull()?.outcome?.referralOutcome != null
 
-  fun setStatus(chargeNumber: String, status: ReportedAdjudicationStatus, statusReason: String? = null, statusDetails: String? = null): ReportedAdjudicationDto {
-    val username = if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
+  fun setStatus(
+    chargeNumber: String,
+    status: ReportedAdjudicationStatus,
+    statusReason: String? = null,
+    statusDetails: String? = null,
+  ): ReportedAdjudicationDto {
+    val username =
+      if (status == ReportedAdjudicationStatus.AWAITING_REVIEW) null else authenticationFacade.currentUsername
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val reportedAdjudicationToReturn = reportedAdjudication.let {
       it.transition(to = status, reason = statusReason, details = statusDetails, reviewUserId = username)
@@ -86,7 +93,11 @@ class ReportedAdjudicationService(
     return saveToDto(reportedAdjudication)
   }
 
-  fun setCreatedOnBehalfOf(chargeNumber: String, createdOnBehalfOfOfficer: String, createdOnBehalfOfReason: String): ReportedAdjudicationDto {
+  fun setCreatedOnBehalfOf(
+    chargeNumber: String,
+    createdOnBehalfOfOfficer: String,
+    createdOnBehalfOfReason: String,
+  ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.createdOnBehalfOfOfficer = createdOnBehalfOfOfficer
       it.createdOnBehalfOfReason = createdOnBehalfOfReason

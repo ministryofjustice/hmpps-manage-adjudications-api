@@ -32,7 +32,9 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
 
   @Test
   fun `create outcome and hearing outcome for referral`() {
-    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(
+      REPORTED_ADJUDICATION_DTO,
+    )
 
     referralService.createReferral(
       chargeNumber = "1",
@@ -48,12 +50,18 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       details = "details",
     )
 
-    verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_POLICE, details = "details")
+    verify(outcomeService, atLeastOnce()).createReferral(
+      chargeNumber = "1",
+      code = OutcomeCode.REFER_POLICE,
+      details = "details",
+    )
   }
 
   @Test
   fun `refer to gov passes reason to service`() {
-    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
+    whenever(outcomeService.createReferral(any(), any(), anyOrNull(), any(), any())).thenReturn(
+      REPORTED_ADJUDICATION_DTO,
+    )
 
     referralService.createReferral(
       chargeNumber = "1",
@@ -63,7 +71,12 @@ class ReferralServiceTest : ReportedAdjudicationTestBase() {
       referGovReason = ReferGovReason.OTHER,
     )
 
-    verify(outcomeService, atLeastOnce()).createReferral(chargeNumber = "1", code = OutcomeCode.REFER_GOV, details = "details", referGovReason = ReferGovReason.OTHER)
+    verify(outcomeService, atLeastOnce()).createReferral(
+      chargeNumber = "1",
+      code = OutcomeCode.REFER_GOV,
+      details = "details",
+      referGovReason = ReferGovReason.OTHER,
+    )
   }
 
   @Test

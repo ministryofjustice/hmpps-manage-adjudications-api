@@ -109,11 +109,19 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `runtime exception if a hearing outcome already exists, due to usage of back key in browser`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication
-          .also { it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "") },
+          .also {
+            it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "")
+          },
       )
 
       Assertions.assertThatThrownBy {
-        hearingOutcomeService.createAdjourn("1", adjudicator = "", adjournReason = HearingOutcomeAdjournReason.OTHER, details = "", plea = HearingOutcomePlea.NOT_ASKED)
+        hearingOutcomeService.createAdjourn(
+          "1",
+          adjudicator = "",
+          adjournReason = HearingOutcomeAdjournReason.OTHER,
+          details = "",
+          plea = HearingOutcomePlea.NOT_ASKED,
+        )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("back key detected")
     }
@@ -297,7 +305,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `delete adjourn outcome calls prison api to update hearing`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
+          it.hearings.first().hearingOutcome =
+            HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = "testing")
           it.hearings.first().oicHearingId = 1
         },
       )
@@ -483,7 +492,16 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     private val reportedAdjudication = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT)
       .also {
         it.hearings.clear()
-        it.hearings.add(Hearing(dateTimeOfHearing = LocalDateTime.now(), oicHearingId = 1L, chargeNumber = "1", agencyId = "", oicHearingType = OicHearingType.GOV, locationId = 1L))
+        it.hearings.add(
+          Hearing(
+            dateTimeOfHearing = LocalDateTime.now(),
+            oicHearingId = 1L,
+            chargeNumber = "1",
+            agencyId = "",
+            oicHearingType = OicHearingType.GOV,
+            locationId = 1L,
+          ),
+        )
         it.createdByUserId = ""
         it.createDateTime = LocalDateTime.now()
         it.hearings.first().oicHearingId = 1
@@ -549,7 +567,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `throws validation exception if the latest outcome is not of the correct type `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(adjudicator = "", code = HearingOutcomeCode.entries.first { hoc -> hoc != code })
+          it.hearings.first().hearingOutcome =
+            HearingOutcome(adjudicator = "", code = HearingOutcomeCode.entries.first { hoc -> hoc != code })
         },
       )
       Assertions.assertThatThrownBy {
@@ -563,7 +582,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     fun `amend referrals `(code: HearingOutcomeCode) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
-          it.hearings.first().hearingOutcome = HearingOutcome(code = code, adjudicator = "adjudicator", details = "details")
+          it.hearings.first().hearingOutcome =
+            HearingOutcome(code = code, adjudicator = "adjudicator", details = "details")
           it.addOutcome(Outcome(code = code.outcomeCode!!, details = "details"))
         },
       )
@@ -616,7 +636,9 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.code).isEqualTo(HearingOutcomeCode.ADJOURN)
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjudicator).isEqualTo("updated adjudicator")
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.plea).isEqualTo(HearingOutcomePlea.GUILTY)
-      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason).isEqualTo(HearingOutcomeAdjournReason.HELP)
+      assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.adjournReason).isEqualTo(
+        HearingOutcomeAdjournReason.HELP,
+      )
       assertThat(argumentCaptor.value.hearings.first().hearingOutcome!!.details).isEqualTo("updated details")
 
       assertThat(response).isNotNull
@@ -694,7 +716,8 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.DISMISSED
-          it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test")
+          it.hearings.first().hearingOutcome =
+            HearingOutcome(code = HearingOutcomeCode.REFER_POLICE, adjudicator = "test")
         },
       )
 

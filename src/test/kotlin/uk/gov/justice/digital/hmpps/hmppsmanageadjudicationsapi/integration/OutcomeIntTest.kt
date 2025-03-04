@@ -107,7 +107,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
         .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").exists()
         .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
+        .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+        .isEqualTo(OutcomeCode.PROSECUTION.name)
         .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
         .jsonPath("$.reportedAdjudication.hearings.size()").isEqualTo(0)
     }
@@ -115,7 +116,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - refer police without hearing `() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createOutcomeReferPolice().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createOutcomeReferPolice().getGeneratedChargeNumber()
 
       webTestClient.put()
         .uri("/reported-adjudications/$chargeNumber/outcome")
@@ -277,7 +279,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `remove completed hearing outcome `() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
       webTestClient.delete()
         .uri("/reported-adjudications/$chargeNumber/remove-completed-hearing")
@@ -297,7 +300,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `quash completed hearing outcome `() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
 
       webTestClient.post()
         .uri("/reported-adjudications/$chargeNumber/outcome/quashed")
@@ -315,7 +319,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
         .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
         .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.CHARGE_PROVED.name)
-        .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason").isEqualTo(QuashedReason.APPEAL_UPHELD.name)
+        .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.quashedReason")
+        .isEqualTo(QuashedReason.APPEAL_UPHELD.name)
         .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.details").isEqualTo("details")
         .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.QUASHED.name)
     }
@@ -323,7 +328,9 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `remove quashed outcome `() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createQuashed().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createQuashed()
+          .getGeneratedChargeNumber()
 
       webTestClient.delete()
         .uri("/reported-adjudications/$chargeNumber/outcome")
@@ -340,7 +347,9 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - quashed `() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createQuashed().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing().createChargeProved().createQuashed()
+          .getGeneratedChargeNumber()
 
       webTestClient.put()
         .uri("/reported-adjudications/$chargeNumber/outcome")
@@ -369,7 +378,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `create refer gov referral outcome`() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      initDataForUnScheduled(testData = testData).createHearing().createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
+      initDataForUnScheduled(testData = testData).createHearing().createReferral(HearingOutcomeCode.REFER_INAD)
+        .createOutcomeReferGov()
         .expectStatus().isCreated
         .expectBody()
         .jsonPath("$.reportedAdjudication.status")
@@ -381,7 +391,9 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - not proceed when its a referral outcome`() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing().createReferral(HearingOutcomeCode.REFER_POLICE).createOutcomeNotProceed().getGeneratedChargeNumber()
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing().createReferral(HearingOutcomeCode.REFER_POLICE)
+          .createOutcomeNotProceed().getGeneratedChargeNumber()
 
       webTestClient.put()
         .uri("/reported-adjudications/$chargeNumber/outcome")
@@ -406,11 +418,13 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - refer gov when its a referral outcome`() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
-        .returnResult(ReportedAdjudicationResponse::class.java)
-        .responseBody
-        .blockFirst()!!
-        .reportedAdjudication.chargeNumber
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+          .createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
+          .returnResult(ReportedAdjudicationResponse::class.java)
+          .responseBody
+          .blockFirst()!!
+          .reportedAdjudication.chargeNumber
 
       webTestClient.put()
         .uri("/reported-adjudications/$chargeNumber/outcome")
@@ -435,11 +449,13 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - not proceed when its a ref gov referral outcome`() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
-        .returnResult(ReportedAdjudicationResponse::class.java)
-        .responseBody
-        .blockFirst()!!
-        .reportedAdjudication.chargeNumber
+      val chargeNumber =
+        initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+          .createReferral(HearingOutcomeCode.REFER_INAD).createOutcomeReferGov()
+          .returnResult(ReportedAdjudicationResponse::class.java)
+          .responseBody
+          .blockFirst()!!
+          .reportedAdjudication.chargeNumber
 
       integrationTestData().createOutcomeNotProceed(testDataSet = testData).expectStatus().isCreated
 
@@ -463,7 +479,9 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     @Test
     fun `amend outcome - not proceed when its a ref gov hearing outcome`() {
       val testData = IntegrationTestData.getDefaultAdjudication()
-      val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV).createOutcomeNotProceed()
+      val scenario =
+        initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+          .createReferral(HearingOutcomeCode.REFER_GOV).createOutcomeNotProceed()
 
       webTestClient.put()
         .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/outcome")
@@ -541,7 +559,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome").exists()
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome").exists()
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
   }
 
   @Test
@@ -567,15 +586,22 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
   fun `activate a suspended punishment, then remove the charge proved outcome and ensure the suspended punishment is available for selection again`() {
     val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "OUTCO")
     val dummyCharge = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
-    val suspended = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
+    val suspended =
+      initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
     val punishmentId = createPunishments(suspended).expectStatus().isCreated
       .returnResult(ReportedAdjudicationResponse::class.java)
       .responseBody
       .blockFirst()!!
       .reportedAdjudication.punishments.first().id
 
-    val activated = initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
-    createPunishments(chargeNumber = activated, activatedFrom = suspended, isSuspended = false, id = punishmentId).expectStatus().isCreated
+    val activated =
+      initDataForUnScheduled(testData = testData).createHearing().createChargeProved().getGeneratedChargeNumber()
+    createPunishments(
+      chargeNumber = activated,
+      activatedFrom = suspended,
+      isSuspended = false,
+      id = punishmentId,
+    ).expectStatus().isCreated
 
     getSuspendedPunishments(chargeNumber = dummyCharge, prisonerNumber = testData.prisonerNumber).expectStatus().isOk
       .expectBody().jsonPath("$.size()").isEqualTo(0)

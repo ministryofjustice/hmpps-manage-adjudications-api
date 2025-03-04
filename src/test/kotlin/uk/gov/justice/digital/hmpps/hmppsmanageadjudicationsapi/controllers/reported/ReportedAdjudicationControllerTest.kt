@@ -60,20 +60,20 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
     fun `responds with an not found status code`() {
-      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString(), any())).thenThrow(EntityNotFoundException::class.java)
+      whenever(reportedAdjudicationService.getReportedAdjudicationDetails(anyString(), any())).thenThrow(
+        EntityNotFoundException::class.java,
+      )
 
       makeGetAdjudicationRequest(1).andExpect(status().isNotFound)
     }
 
     private fun makeGetAdjudicationRequest(
       adjudicationNumber: Long,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          get("/reported-adjudications/$adjudicationNumber/v2")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        get("/reported-adjudications/$adjudicationNumber/v2")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -82,14 +82,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private fun makeReportedAdjudicationSetStatusRequest(
       adjudicationNumber: Long,
       body: Map<String, Any>,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/status")
-            .header("Content-Type", "application/json")
-            .content(objectMapper.writeValueAsString(body)),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/status")
+          .header("Content-Type", "application/json")
+          .content(objectMapper.writeValueAsString(body)),
+      )
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
@@ -119,11 +117,22 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS", "SCOPE_write"])
     fun `does not call event service on exception`() {
-      whenever(reportedAdjudicationService.setStatus("123", ReportedAdjudicationStatus.RETURNED, "reason", "details")).thenThrow(RuntimeException())
+      whenever(
+        reportedAdjudicationService.setStatus(
+          "123",
+          ReportedAdjudicationStatus.RETURNED,
+          "reason",
+          "details",
+        ),
+      ).thenThrow(RuntimeException())
 
       makeReportedAdjudicationSetStatusRequest(
         123,
-        mapOf("status" to ReportedAdjudicationStatus.RETURNED, "statusReason" to "reason", "statusDetails" to "details"),
+        mapOf(
+          "status" to ReportedAdjudicationStatus.RETURNED,
+          "statusReason" to "reason",
+          "statusDetails" to "details",
+        ),
       )
 
       verify(eventPublishService, never()).publishEvent(any(), any())
@@ -132,7 +141,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     @CsvSource("RETURNED,false", "REJECTED,false", "UNSCHEDULED,true")
     @ParameterizedTest
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
-    fun `makes a call to set the status of the reported adjudication`(status: ReportedAdjudicationStatus, eventCalled: Boolean) {
+    fun `makes a call to set the status of the reported adjudication`(
+      status: ReportedAdjudicationStatus,
+      eventCalled: Boolean,
+    ) {
       whenever(reportedAdjudicationService.setStatus("123", status, "reason", "details")).thenReturn(
         reportedAdjudicationDto(status),
       )
@@ -144,7 +156,10 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
 
       val verificationMode = if (eventCalled) atLeastOnce() else never()
 
-      verify(eventPublishService, verificationMode).publishEvent(AdjudicationDomainEventType.ADJUDICATION_CREATED, reportedAdjudicationDto((status)))
+      verify(eventPublishService, verificationMode).publishEvent(
+        AdjudicationDomainEventType.ADJUDICATION_CREATED,
+        reportedAdjudicationDto((status)),
+      )
     }
 
     @Test
@@ -163,14 +178,12 @@ class ReportedAdjudicationControllerTest : TestControllerBase() {
     private fun makeIssuedRequest(
       adjudicationNumber: Long,
       issuedRequest: IssueRequest,
-    ): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/issue")
-            .header("Content-Type", "application/json")
-            .content(objectMapper.writeValueAsString(issuedRequest)),
-        )
-    }
+    ): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.put("/reported-adjudications/$adjudicationNumber/issue")
+          .header("Content-Type", "application/json")
+          .content(objectMapper.writeValueAsString(issuedRequest)),
+      )
 
     @Test
     fun `responds with a unauthorised status code`() {

@@ -28,7 +28,11 @@ class TransfersIntTest : SqsIntegrationTestBase() {
 
     fun setUp(from: String = "BXI", to: String = "BLI", prisonerNumber: String) {
       setAuditTime()
-      val testData = IntegrationTestData.getDefaultAdjudication(agencyId = from, dateTimeOfIncident = LocalDateTime.now(), prisonerNumber = prisonerNumber)
+      val testData = IntegrationTestData.getDefaultAdjudication(
+        agencyId = from,
+        dateTimeOfIncident = LocalDateTime.now(),
+        prisonerNumber = prisonerNumber,
+      )
 
       chargeNumber = initDataForUnScheduled(testData = testData).createHearing().getGeneratedChargeNumber()
       initDataForAccept(
@@ -157,8 +161,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       setAuditTime()
-      val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "TCI", dateTimeOfIncident = LocalDateTime.now(), prisonerNumber = "T1000")
-      chargeNumberAwaitingReview = initDataForAccept(testData = testData, overrideActiveCaseLoad = "TCI").getGeneratedChargeNumber()
+      val testData = IntegrationTestData.getDefaultAdjudication(
+        agencyId = "TCI",
+        dateTimeOfIncident = LocalDateTime.now(),
+        prisonerNumber = "T1000",
+      )
+      chargeNumberAwaitingReview =
+        initDataForAccept(testData = testData, overrideActiveCaseLoad = "TCI").getGeneratedChargeNumber()
 
       sendEvent(prisonerNumber = testData.prisonerNumber, agencyId = "TSI")
 
@@ -171,7 +180,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberAwaitingReview?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "TCI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "TCI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -181,7 +196,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberAwaitingReview?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=AWAITING_REVIEW&type=OUT&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "TCI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "TCI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -213,7 +234,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberAwaitingReview?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "TSI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "TSI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -223,7 +250,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberAwaitingReview?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "TSI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "TSI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -247,7 +280,11 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       setAuditTime()
-      val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "T1", agencyId = "PVI", dateTimeOfIncident = LocalDateTime.now())
+      val testData = IntegrationTestData.getDefaultAdjudication(
+        prisonerNumber = "T1",
+        agencyId = "PVI",
+        dateTimeOfIncident = LocalDateTime.now(),
+      )
 
       chargeNumberUnscheduled = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
       sendEvent(prisonerNumber = testData.prisonerNumber, agencyId = "LPI")
@@ -261,7 +298,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberUnscheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "LPI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "LPI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -271,7 +314,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberUnscheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=UNSCHEDULED&type=IN&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "LPI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "LPI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -329,7 +378,11 @@ class TransfersIntTest : SqsIntegrationTestBase() {
     @BeforeEach
     fun setUp() {
       setAuditTime()
-      val testData = IntegrationTestData.getDefaultAdjudication(agencyId = "WLI", dateTimeOfIncident = LocalDateTime.now(), prisonerNumber = "T3")
+      val testData = IntegrationTestData.getDefaultAdjudication(
+        agencyId = "WLI",
+        dateTimeOfIncident = LocalDateTime.now(),
+        prisonerNumber = "T3",
+      )
 
       chargeNumberScheduled = initDataForUnScheduled(testData = testData).createHearing().getGeneratedChargeNumber()
       sendEvent(prisonerNumber = testData.prisonerNumber, agencyId = "CFI")
@@ -342,7 +395,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberScheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "WLI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -352,7 +411,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberScheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=SCHEDULED&type=OUT&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "WLI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "WLI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -362,7 +427,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberScheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/reports?startDate=2010-11-10&endDate=2030-11-13&status=SCHEDULED&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "CFI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -374,7 +445,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberScheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=ALL&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "CFI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -384,7 +461,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
       chargeNumberScheduled?.let {
         webTestClient.get()
           .uri("/reported-adjudications/transfer-reports?status=ADJOURNED&type=IN&page=0&size=20")
-          .headers(setHeaders(activeCaseload = "CFI", username = "P_NESS", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .headers(
+            setHeaders(
+              activeCaseload = "CFI",
+              username = "P_NESS",
+              roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+            ),
+          )
           .exchange()
           .expectStatus().isOk.expectBody()
           .jsonPath("$.content.size()").isEqualTo(1)
@@ -416,7 +499,8 @@ class TransfersIntTest : SqsIntegrationTestBase() {
         )
         .messageAttributes(
           mapOf(
-            "eventType" to MessageAttributeValue.builder().dataType("String").stringValue(PrisonOffenderEventListener.PRISONER_TRANSFER_EVENT_TYPE).build(),
+            "eventType" to MessageAttributeValue.builder().dataType("String")
+              .stringValue(PrisonOffenderEventListener.PRISONER_TRANSFER_EVENT_TYPE).build(),
           ),
         )
         .build(),
@@ -426,7 +510,13 @@ class TransfersIntTest : SqsIntegrationTestBase() {
   private fun adjourn(activeCaseLoad: String = "MDI", chargeNumber: String) {
     webTestClient.post()
       .uri("/reported-adjudications/$chargeNumber/hearing/outcome/adjourn")
-      .headers(setHeaders(activeCaseload = activeCaseLoad, username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .headers(
+        setHeaders(
+          activeCaseload = activeCaseLoad,
+          username = "ITAG_ALO",
+          roles = listOf("ROLE_ADJUDICATIONS_REVIEWER"),
+        ),
+      )
       .bodyValue(
         mapOf(
           "adjudicator" to "test",

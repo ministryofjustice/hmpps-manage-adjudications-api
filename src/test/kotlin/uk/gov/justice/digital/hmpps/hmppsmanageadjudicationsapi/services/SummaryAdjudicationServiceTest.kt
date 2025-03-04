@@ -23,6 +23,7 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     offenceCodeLookupService,
     authenticationFacade,
   )
+
   override fun `throws an entity not found if the reported adjudication for the supplied id does not exists`() {
     // na
   }
@@ -80,7 +81,11 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(listOf(basicData))
 
       val response =
-        summaryAdjudicationService.getAdjudicationSummary(bookingId = 1L, awardCutoffDate = null, adjudicationCutoffDate = null)
+        summaryAdjudicationService.getAdjudicationSummary(
+          bookingId = 1L,
+          awardCutoffDate = null,
+          adjudicationCutoffDate = null,
+        )
       assertThat(response.adjudicationCount).isEqualTo(2)
       assertThat(response.awards.size).isEqualTo(2)
       assertThat(response.bookingId).isEqualTo(1L)

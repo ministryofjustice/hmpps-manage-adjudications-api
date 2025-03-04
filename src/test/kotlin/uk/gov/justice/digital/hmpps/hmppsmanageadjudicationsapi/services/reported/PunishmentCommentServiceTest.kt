@@ -88,7 +88,8 @@ class PunishmentCommentServiceTest : ReportedAdjudicationTestBase() {
       )
 
       verify(reportedAdjudicationRepository).save(argumentCaptor.capture())
-      Assertions.assertThat(argumentCaptor.value.punishmentComments[0].reasonForChange).isEqualTo(ReasonForChange.APPEAL)
+      Assertions.assertThat(argumentCaptor.value.punishmentComments[0].reasonForChange)
+        .isEqualTo(ReasonForChange.APPEAL)
     }
   }
 

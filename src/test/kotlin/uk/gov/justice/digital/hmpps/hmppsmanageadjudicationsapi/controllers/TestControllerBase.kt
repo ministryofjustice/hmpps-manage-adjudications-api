@@ -101,51 +101,50 @@ open class TestControllerBase {
       status: ReportedAdjudicationStatus,
       hearingIdActioned: Long? = null,
       outcomes: List<OutcomeHistoryDto> = emptyList(),
-    ) =
-      ReportedAdjudicationDto(
-        chargeNumber = "1",
-        prisonerNumber = "A12345",
-        incidentDetails = IncidentDetailsDto(
-          locationId = 2,
-          locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
-          dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
-          dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
-          handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+    ) = ReportedAdjudicationDto(
+      chargeNumber = "1",
+      prisonerNumber = "A12345",
+      incidentDetails = IncidentDetailsDto(
+        locationId = 2,
+        locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
+        dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
+        dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
+        handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
+      ),
+      isYouthOffender = false,
+      incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
+      offenceDetails =
+      OffenceDto(
+        offenceCode = 2,
+        protectedCharacteristics = emptyList(),
+        offenceRule = OffenceRuleDto(
+          paragraphNumber = "3",
+          paragraphDescription = "A paragraph description",
+          nomisCode = null,
+          withOthersNomisCode = null,
         ),
-        isYouthOffender = false,
-        incidentRole = INCIDENT_ROLE_WITH_ALL_VALUES,
-        offenceDetails =
-        OffenceDto(
-          offenceCode = 2,
-          protectedCharacteristics = emptyList(),
-          offenceRule = OffenceRuleDto(
-            paragraphNumber = "3",
-            paragraphDescription = "A paragraph description",
-            nomisCode = null,
-            withOthersNomisCode = null,
-          ),
-        ),
-        incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
-        createdByUserId = "A_SMITH",
-        createdDateTime = REPORTED_DATE_TIME,
-        status = status,
-        reviewedByUserId = null,
-        statusReason = null,
-        statusDetails = null,
-        damages = listOf(),
-        evidence = listOf(),
-        witnesses = listOf(),
-        hearings = listOf(),
-        disIssueHistory = listOf(),
-        gender = Gender.MALE,
-        outcomes = outcomes,
-        punishments = mutableListOf(),
-        punishmentComments = listOf(),
-        overrideAgencyId = null,
-        originatingAgencyId = "MDI",
-        hearingIdActioned = hearingIdActioned,
-        linkedChargeNumbers = emptyList(),
-      )
+      ),
+      incidentStatement = IncidentStatementDto(statement = INCIDENT_STATEMENT),
+      createdByUserId = "A_SMITH",
+      createdDateTime = REPORTED_DATE_TIME,
+      status = status,
+      reviewedByUserId = null,
+      statusReason = null,
+      statusDetails = null,
+      damages = listOf(),
+      evidence = listOf(),
+      witnesses = listOf(),
+      hearings = listOf(),
+      disIssueHistory = listOf(),
+      gender = Gender.MALE,
+      outcomes = outcomes,
+      punishments = mutableListOf(),
+      punishmentComments = listOf(),
+      overrideAgencyId = null,
+      originatingAgencyId = "MDI",
+      hearingIdActioned = hearingIdActioned,
+      linkedChargeNumbers = emptyList(),
+    )
 
     val INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO =
       IncidentRoleDto("25a", OffenceRuleDetailsDto("", ""), "B23456", "Associated Prisoner")
@@ -158,6 +157,7 @@ open class TestControllerBase {
         paragraphDescription = "A description",
       ),
     )
+
     fun draftAdjudicationDto(statement: String = "test") = DraftAdjudicationDto(
       id = 1L,
       chargeNumber = null,
