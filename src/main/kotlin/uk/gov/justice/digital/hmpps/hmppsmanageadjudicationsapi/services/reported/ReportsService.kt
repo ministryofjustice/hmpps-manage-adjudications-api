@@ -38,51 +38,56 @@ class ReportsService(
     endDate: LocalDate,
     statuses: List<ReportedAdjudicationStatus>,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findAllReportsByAgency(
-      agencyId = authenticationFacade.activeCaseload,
-      startDate = reportsFrom(startDate),
-      endDate = reportsTo(endDate),
-      statuses = statuses.map { it.name },
-      pageable = pageable,
-    ).map {
-      it.toDto(
-        offenceCodeLookupService = offenceCodeLookupService,
-        activeCaseload = authenticationFacade.activeCaseload,
-      )
-    }
+  ): Page<ReportedAdjudicationDto> = reportedAdjudicationRepository.findAllReportsByAgency(
+    agencyId = authenticationFacade.activeCaseload,
+    startDate = reportsFrom(startDate),
+    endDate = reportsTo(endDate),
+    statuses = statuses.map { it.name },
+    pageable = pageable,
+  ).map {
+    it.toDto(
+      offenceCodeLookupService = offenceCodeLookupService,
+      activeCaseload = authenticationFacade.activeCaseload,
+    )
+  }
 
   fun getTransferReportedAdjudications(
     statuses: List<ReportedAdjudicationStatus>,
     transferType: TransferType,
     pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    when (transferType) {
-      TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
-        agencyId = authenticationFacade.activeCaseload,
-        statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
-        pageable = pageable,
-      )
-      TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
-        agencyId = authenticationFacade.activeCaseload,
-        statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
-        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-        pageable = pageable,
-      )
-      TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
-        agencyId = authenticationFacade.activeCaseload,
-        statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
-        cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
-        pageable = pageable,
-      )
-    }.map {
-      it.toDto(
-        offenceCodeLookupService = offenceCodeLookupService,
-        activeCaseload = authenticationFacade.activeCaseload,
-      )
-    }
+  ): Page<ReportedAdjudicationDto> = when (transferType) {
+    TransferType.IN -> reportedAdjudicationRepository.findTransfersInByAgency(
+      agencyId = authenticationFacade.activeCaseload,
+      statuses = statuses.filter { transferReviewStatuses.contains(it) }.map { it.name },
+      pageable = pageable,
+    )
 
-  fun getMyReportedAdjudications(startDate: LocalDate, endDate: LocalDate, statuses: List<ReportedAdjudicationStatus>, pageable: Pageable): Page<ReportedAdjudicationDto> {
+    TransferType.OUT -> reportedAdjudicationRepository.findTransfersOutByAgency(
+      agencyId = authenticationFacade.activeCaseload,
+      statuses = statuses.filter { transferOutStatuses.contains(it) }.map { it.name },
+      cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+      pageable = pageable,
+    )
+
+    TransferType.ALL -> reportedAdjudicationRepository.findTransfersAllByAgency(
+      agencyId = authenticationFacade.activeCaseload,
+      statuses = statuses.filter { transferOutStatuses.plus(transferReviewStatuses).contains(it) }.map { it.name },
+      cutOffDate = transferOutAndHearingsToScheduledCutOffDate,
+      pageable = pageable,
+    )
+  }.map {
+    it.toDto(
+      offenceCodeLookupService = offenceCodeLookupService,
+      activeCaseload = authenticationFacade.activeCaseload,
+    )
+  }
+
+  fun getMyReportedAdjudications(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    statuses: List<ReportedAdjudicationStatus>,
+    pageable: Pageable,
+  ): Page<ReportedAdjudicationDto> {
     val username = authenticationFacade.currentUsername
 
     val reportedAdjudicationsPage =
@@ -115,7 +120,11 @@ class ReportsService(
     )
   }
 
-  fun getAdjudicationsForPrint(startDate: LocalDate, endDate: LocalDate, issueStatuses: List<IssuedStatus>): List<ReportedAdjudicationDto> {
+  fun getAdjudicationsForPrint(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    issueStatuses: List<IssuedStatus>,
+  ): List<ReportedAdjudicationDto> {
     val reportsForPrint = reportedAdjudicationRepository.findReportsForPrint(
       agencyId = authenticationFacade.activeCaseload,
       startDate = reportsFrom(startDate),
@@ -274,11 +283,10 @@ class ReportsService(
     )
   }
 
-  fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber).map { it.toDto(offenceCodeLookupService) }
+  fun getReportsForPrisoner(prisonerNumber: String): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByPrisonerNumber(prisonerNumber = prisonerNumber)
+    .map { it.toDto(offenceCodeLookupService) }
 
-  fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> =
-    reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
+  fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
 
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH

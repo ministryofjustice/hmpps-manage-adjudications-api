@@ -35,15 +35,17 @@ open class ReportedAdjudicationBaseService(
     return reportedAdjudication
   }
 
-  protected fun saveToDto(reportedAdjudication: ReportedAdjudication, logLastModified: Boolean = true): ReportedAdjudicationDto =
-    reportedAdjudicationRepository.save(
-      reportedAdjudication.also {
-        if (logLastModified) it.lastModifiedAgencyId = authenticationFacade.activeCaseload
-      },
-    ).toDto(
-      offenceCodeLookupService = offenceCodeLookupService,
-      activeCaseload = authenticationFacade.activeCaseload,
-    )
+  protected fun saveToDto(
+    reportedAdjudication: ReportedAdjudication,
+    logLastModified: Boolean = true,
+  ): ReportedAdjudicationDto = reportedAdjudicationRepository.save(
+    reportedAdjudication.also {
+      if (logLastModified) it.lastModifiedAgencyId = authenticationFacade.activeCaseload
+    },
+  ).toDto(
+    offenceCodeLookupService = offenceCodeLookupService,
+    activeCaseload = authenticationFacade.activeCaseload,
+  )
 
   protected fun getNextChargeNumber(agency: String): String {
     val next = reportedAdjudicationRepository.getNextChargeSequence("${agency}_CHARGE_SEQUENCE")
@@ -53,8 +55,10 @@ open class ReportedAdjudicationBaseService(
 
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
-  protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean =
-    reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(consecutiveChargeNumber, types).isNotEmpty()
+  protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+    consecutiveChargeNumber,
+    types,
+  ).isNotEmpty()
 
   protected fun isLinkedToReportV2(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean {
     val stringTypes = types.map { it.name }
@@ -64,42 +68,42 @@ open class ReportedAdjudicationBaseService(
     ).isNotEmpty()
   }
 
-  protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> =
-    reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
-      prisonerNumber = prisonerNumber,
-      chargeNumber = "${chargeNumber.substringBefore("-")}-",
-    )
-      .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
-      .sortedBy { it }
+  protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> = reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
+    prisonerNumber = prisonerNumber,
+    chargeNumber = "${chargeNumber.substringBefore("-")}-",
+  )
+    .filter { it.chargeNumber != chargeNumber }.map { it.chargeNumber }
+    .sortedBy { it }
 
-  protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean =
-    when (reportedAdjudication.status) {
-      ReportedAdjudicationStatus.CHARGE_PROVED ->
-        if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
-          false
-        } else {
-          isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
-        }
-      else -> false
-    }
+  protected fun hasLinkedAda(reportedAdjudication: ReportedAdjudication): Boolean = when (reportedAdjudication.status) {
+    ReportedAdjudicationStatus.CHARGE_PROVED ->
+      if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
+        false
+      } else {
+        isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+      }
 
-  protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long =
-    reportedAdjudicationRepository.activeChargeProvedForBookingId(
-      bookingId = offenderBookingId,
-      cutOff = cutOff,
-    )
+    else -> false
+  }
+
+  protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long = reportedAdjudicationRepository.activeChargeProvedForBookingId(
+    bookingId = offenderBookingId,
+    cutOff = cutOff,
+  )
 
   protected fun offenderHasAdjudications(offenderBookingId: Long): Boolean = reportedAdjudicationRepository.existsByOffenderBookingId(
     offenderBookingId = offenderBookingId,
   )
 
-  protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> =
-    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
-      it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber }
-        .map { toPair -> Pair(it.chargeNumber, toPair) }
-    }.flatten()
+  protected fun getActivatedPunishments(chargeNumber: String): List<Pair<String, Punishment>> = reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).map {
+    it.getPunishments().filter { p -> p.activatedByChargeNumber == chargeNumber }
+      .map { toPair -> Pair(it.chargeNumber, toPair) }
+  }.flatten()
 
-  protected fun deactivateActivatedPunishments(chargeNumber: String, idsToIgnore: List<Long>): Set<SuspendedPunishmentEvent> {
+  protected fun deactivateActivatedPunishments(
+    chargeNumber: String,
+    idsToIgnore: List<Long>,
+  ): Set<SuspendedPunishmentEvent> {
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
 
     reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach {
@@ -124,7 +128,6 @@ open class ReportedAdjudicationBaseService(
   }
 
   companion object {
-    fun throwEntityNotFoundException(id: String): Nothing =
-      throw EntityNotFoundException("ReportedAdjudication not found for $id")
+    fun throwEntityNotFoundException(id: String): Nothing = throw EntityNotFoundException("ReportedAdjudication not found for $id")
   }
 }

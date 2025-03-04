@@ -1,7 +1,8 @@
 ALTER TABLE reported_adjudications ALTER COLUMN report_number TYPE VARCHAR(16);
 ALTER TABLE reported_adjudications DROP CONSTRAINT unique_report_number;
 ALTER TABLE reported_adjudications RENAME COLUMN report_number TO charge_number;
-ALTER TABLE reported_adjudications ADD CONSTRAINT unique_report_number UNIQUE (charge_number);
+ALTER TABLE reported_adjudications
+    ADD CONSTRAINT unique_report_number UNIQUE (charge_number);
 ALTER TABLE punishment ALTER COLUMN consecutive_report_number TYPE VARCHAR(16);
 ALTER TABLE punishment RENAME COLUMN consecutive_report_number TO consecutive_charge_number;
 ALTER TABLE punishment ALTER COLUMN activated_from TYPE VARCHAR(16);

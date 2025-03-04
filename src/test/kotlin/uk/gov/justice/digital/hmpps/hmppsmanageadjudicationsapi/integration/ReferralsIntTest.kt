@@ -28,8 +28,10 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `hearing referral leads to NOT_PROCEED`(hearingOutcomeCode: HearingOutcomeCode) {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
-      .getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT)
+        .createReferral(hearingOutcomeCode)
+        .getGeneratedChargeNumber()
 
     webTestClient.post()
       .uri("/reported-adjudications/$chargeNumber/outcome/not-proceed")
@@ -51,8 +53,10 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `remove referral with hearing`(hearingOutcomeCode: HearingOutcomeCode) {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
-      .getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT)
+        .createReferral(hearingOutcomeCode)
+        .getGeneratedChargeNumber()
 
     webTestClient.delete()
       .uri("/reported-adjudications/$chargeNumber/remove-referral")
@@ -68,7 +72,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   fun `remove referral with hearing and referral outcome`(hearingOutcomeCode: HearingOutcomeCode) {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT).createReferral(hearingOutcomeCode)
+    val scenario =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = if (hearingOutcomeCode == HearingOutcomeCode.REFER_GOV) OicHearingType.INAD_ADULT else OicHearingType.GOV_ADULT)
+        .createReferral(hearingOutcomeCode)
 
     webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/outcome/not-proceed")
@@ -206,9 +212,11 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].hearing").doesNotExist()
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[1].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].hearing.oicHearingType").isEqualTo(OicHearingType.INAD_ADULT.name)
       .jsonPath("$.reportedAdjudication.outcomes[2].hearing.outcome").exists()
       .jsonPath("$.reportedAdjudication.outcomes[2].outcome").exists()
@@ -232,7 +240,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.NOT_PROCEED.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.NOT_PROCEED.name)
 
     webTestClient.delete()
@@ -252,7 +261,11 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val chargeNumber = initDataForUnScheduled(testData = testData).getGeneratedChargeNumber()
 
-    integrationTestData().createHearing(oicHearingType = OicHearingType.GOV_ADULT, testDataSet = testData, dateTimeOfHearing = LocalDateTime.now())
+    integrationTestData().createHearing(
+      oicHearingType = OicHearingType.GOV_ADULT,
+      testDataSet = testData,
+      dateTimeOfHearing = LocalDateTime.now(),
+    )
 
     integrationTestData().createReferral(
       testData,
@@ -264,7 +277,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome").doesNotExist()
 
     webTestClient.delete()
@@ -296,7 +310,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome").doesNotExist()
 
     webTestClient.delete()
@@ -330,7 +345,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_POLICE.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.PROSECUTION.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.PROSECUTION.name)
       .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.PROSECUTION.name)
 
     webTestClient.delete()
@@ -348,7 +364,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome of REFER_GOV`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -359,7 +376,8 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_GOV referral outcome of NOT_PROCEED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
+    val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_GOV)
 
     webTestClient.post()
       .uri("/reported-adjudications/${scenario.getGeneratedChargeNumber()}/outcome/not-proceed")
@@ -374,27 +392,31 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.NOT_PROCEED.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.NOT_PROCEED.name)
   }
 
   @Test
   fun `REFER_GOV referral outcome of SCHEDULE_HEARING`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).createReferral(HearingOutcomeCode.REFER_GOV)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_GOV)
 
     integrationTestData().createHearing(testData, LocalDateTime.now().plusDays(1))
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(2)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code")
+      .isEqualTo(OutcomeCode.SCHEDULE_HEARING.name)
       .jsonPath("$.reportedAdjudication.outcomes[1].outcome").doesNotExist()
   }
 
   @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps NOT_PROCEED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
@@ -413,13 +435,14 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps NOT_PROCEED - remove NOT PROCEED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
-      .createReferral(HearingOutcomeCode.REFER_INAD)
-      .createOutcomeReferGov().expectStatus().isCreated
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-      .reportedAdjudication.chargeNumber
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD)
+        .createOutcomeReferGov().expectStatus().isCreated
+        .returnResult(ReportedAdjudicationResponse::class.java)
+        .responseBody
+        .blockFirst()!!
+        .reportedAdjudication.chargeNumber
 
     integrationTestData().createOutcomeNotProceed(testDataSet = testData)
       .expectStatus().isCreated
@@ -438,14 +461,19 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps SCHEDULE_HEARING`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_INAD.name)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.referralOutcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
 
-    integrationTestData().createHearing(testDataSet = testData, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.GOV_ADULT)
+    integrationTestData().createHearing(
+      testDataSet = testData,
+      dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+      oicHearingType = OicHearingType.GOV_ADULT,
+    )
       .expectStatus().isCreated
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(3)
@@ -460,11 +488,16 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps SCHEDULE_HEARING - CHARGE_PROVED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
 
-    integrationTestData().createHearing(testDataSet = testData, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.GOV_ADULT)
+    integrationTestData().createHearing(
+      testDataSet = testData,
+      dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+      oicHearingType = OicHearingType.GOV_ADULT,
+    )
       .expectStatus().isCreated
       .expectBody()
 
@@ -484,11 +517,16 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV next steps SCHEDULE_HEARING - CHARGE_PROVED - QUASHED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
+    initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+      .createReferral(HearingOutcomeCode.REFER_INAD)
       .createOutcomeReferGov().expectStatus().isCreated
       .expectBody()
 
-    integrationTestData().createHearing(testDataSet = testData, dateTimeOfHearing = LocalDateTime.now().plusDays(1), oicHearingType = OicHearingType.GOV_ADULT)
+    integrationTestData().createHearing(
+      testDataSet = testData,
+      dateTimeOfHearing = LocalDateTime.now().plusDays(1),
+      oicHearingType = OicHearingType.GOV_ADULT,
+    )
       .expectStatus().isCreated
       .expectBody()
 
@@ -511,8 +549,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
-      .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
 
     integrationTestData().createHearing(
       testData,
@@ -569,8 +608,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING - CHARGE_PROVED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
-      .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
 
     integrationTestData().createHearing(
       testData,
@@ -614,8 +654,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING - CHARGE_PROVED - QUASHED`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
-      .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
 
     integrationTestData().createHearing(
       testData,
@@ -663,8 +704,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD - SCHEDULE_HEARING - REFER_GOV - SCHEDULE_HEARING - remove hearing`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
-      .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD).getGeneratedChargeNumber()
 
     integrationTestData().createHearing(
       testData,
@@ -710,12 +752,14 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV remove referral`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val reportedAdjudication = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
-      .createOutcomeReferGov().expectStatus().isCreated
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-      .reportedAdjudication
+    val reportedAdjudication =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD)
+        .createOutcomeReferGov().expectStatus().isCreated
+        .returnResult(ReportedAdjudicationResponse::class.java)
+        .responseBody
+        .blockFirst()!!
+        .reportedAdjudication
 
     assertThat(reportedAdjudication.outcomes.size).isEqualTo(1)
     assertThat(reportedAdjudication.outcomes[0].outcome!!.outcome.code).isEqualTo(OutcomeCode.REFER_INAD)
@@ -736,14 +780,20 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `REFER_INAD referral outcome REFER_GOV SCHEDULE_HEARING remove hearing`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT).createReferral(HearingOutcomeCode.REFER_INAD)
-      .createOutcomeReferGov().expectStatus().isCreated
-      .returnResult(ReportedAdjudicationResponse::class.java)
-      .responseBody
-      .blockFirst()!!
-      .reportedAdjudication.chargeNumber
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.GOV_ADULT)
+        .createReferral(HearingOutcomeCode.REFER_INAD)
+        .createOutcomeReferGov().expectStatus().isCreated
+        .returnResult(ReportedAdjudicationResponse::class.java)
+        .responseBody
+        .blockFirst()!!
+        .reportedAdjudication.chargeNumber
 
-    integrationTestData().createHearing(testDataSet = testData, oicHearingType = OicHearingType.GOV_ADULT, dateTimeOfHearing = LocalDateTime.now().plusDays(3))
+    integrationTestData().createHearing(
+      testDataSet = testData,
+      oicHearingType = OicHearingType.GOV_ADULT,
+      dateTimeOfHearing = LocalDateTime.now().plusDays(3),
+    )
 
     webTestClient.delete()
       .uri("/reported-adjudications/$chargeNumber/hearing/v2")
@@ -759,7 +809,9 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
   @Test
   fun `create refer to gov from hearing`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
-    val chargeNumber = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT).getGeneratedChargeNumber()
+    val chargeNumber =
+      initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
+        .getGeneratedChargeNumber()
 
     webTestClient.post()
       .uri("/reported-adjudications/$chargeNumber/hearing/outcome/referral")
@@ -777,6 +829,7 @@ class ReferralsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.reportedAdjudication.outcomes.size()").isEqualTo(1)
       .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code").isEqualTo(OutcomeCode.REFER_GOV.name)
-      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason").isEqualTo(ReferGovReason.GOV_INQUIRY.name)
+      .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.referGovReason")
+      .isEqualTo(ReferGovReason.GOV_INQUIRY.name)
   }
 }

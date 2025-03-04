@@ -38,10 +38,8 @@ private class DraftAdjudicationServiceWrapper(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun get(id: Long) =
-    find(id)
+  fun get(id: Long) = find(id)
   fun remove(draftAdjudication: DraftAdjudication) = delete(draftAdjudication)
-
   fun save(draftAdjudication: DraftAdjudication) = saveToDto(draftAdjudication)
 }
 
@@ -54,8 +52,7 @@ private class ReportedAdjudicationServiceWrapper(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
-  fun get(chargeNumber: String) =
-    findByChargeNumber(chargeNumber)
+  fun get(chargeNumber: String) = findByChargeNumber(chargeNumber)
 
   fun save(reportedAdjudication: ReportedAdjudication) = saveToDto(reportedAdjudication)
 
@@ -74,8 +71,10 @@ class AdjudicationWorkflowService(
   private val draftOffenceService: DraftOffenceService,
 ) {
 
-  private val draftAdjudicationService = DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
-  private val reportedAdjudicationService = ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val draftAdjudicationService =
+    DraftAdjudicationServiceWrapper(draftAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
+  private val reportedAdjudicationService =
+    ReportedAdjudicationServiceWrapper(reportedAdjudicationRepository, offenceCodeLookupService, authenticationFacade)
 
   fun completeDraftAdjudication(id: Long): ReportedAdjudicationDto {
     val draftAdjudication = draftAdjudicationService.get(id)
@@ -236,9 +235,24 @@ class AdjudicationWorkflowService(
       it.evidence.addAll(evidencePreserve)
       it.witnesses.addAll(witnessesPreserve)
 
-      it.damages.addAll(toReportedDamages(draftAdjudication.damages.filter { d -> d.reporter == reporter }.toMutableList()))
-      it.evidence.addAll(toReportedEvidence(draftAdjudication.evidence.filter { e -> e.reporter == reporter }.toMutableList()))
-      it.witnesses.addAll(toReportedWitnesses(draftAdjudication.witnesses.filter { w -> w.reporter == reporter }.toMutableList()))
+      it.damages.addAll(
+        toReportedDamages(
+          draftAdjudication.damages.filter { d -> d.reporter == reporter }
+            .toMutableList(),
+        ),
+      )
+      it.evidence.addAll(
+        toReportedEvidence(
+          draftAdjudication.evidence.filter { e -> e.reporter == reporter }
+            .toMutableList(),
+        ),
+      )
+      it.witnesses.addAll(
+        toReportedWitnesses(
+          draftAdjudication.witnesses.filter { w -> w.reporter == reporter }
+            .toMutableList(),
+        ),
+      )
       it.createdOnBehalfOfOfficer = draftAdjudication.createdOnBehalfOfOfficer
       it.createdOnBehalfOfReason = draftAdjudication.createdOnBehalfOfReason
 
@@ -246,89 +260,79 @@ class AdjudicationWorkflowService(
     }
   }
 
-  private fun toDraftOffence(offences: MutableList<ReportedOffence>): MutableList<Offence> =
-    offences.map { offence ->
-      Offence(
-        offenceCode = offence.offenceCode,
-        victimPrisonersNumber = offence.victimPrisonersNumber,
-        victimStaffUsername = offence.victimStaffUsername,
-        victimOtherPersonsName = offence.victimOtherPersonsName,
-        protectedCharacteristics = offence.protectedCharacteristics.map { it.toDraftProtectedCharacteristics() }.toMutableList(),
-      )
-    }.toMutableList()
+  private fun toDraftOffence(offences: MutableList<ReportedOffence>): MutableList<Offence> = offences.map { offence ->
+    Offence(
+      offenceCode = offence.offenceCode,
+      victimPrisonersNumber = offence.victimPrisonersNumber,
+      victimStaffUsername = offence.victimStaffUsername,
+      victimOtherPersonsName = offence.victimOtherPersonsName,
+      protectedCharacteristics = offence.protectedCharacteristics.map { it.toDraftProtectedCharacteristics() }
+        .toMutableList(),
+    )
+  }.toMutableList()
 
-  private fun toDraftDamages(damages: MutableList<ReportedDamage>): MutableList<Damage> =
-    damages.map {
-      Damage(
-        code = it.code,
-        details = it.details,
-        reporter = it.reporter,
-      )
-    }.toMutableList()
+  private fun toDraftDamages(damages: MutableList<ReportedDamage>): MutableList<Damage> = damages.map {
+    Damage(
+      code = it.code,
+      details = it.details,
+      reporter = it.reporter,
+    )
+  }.toMutableList()
 
-  private fun toDraftEvidence(evidence: MutableList<ReportedEvidence>): MutableList<Evidence> =
-    evidence.map {
-      Evidence(
-        code = it.code,
-        details = it.details,
-        reporter = it.reporter,
-        identifier = it.identifier,
-      )
-    }.toMutableList()
+  private fun toDraftEvidence(evidence: MutableList<ReportedEvidence>): MutableList<Evidence> = evidence.map {
+    Evidence(
+      code = it.code,
+      details = it.details,
+      reporter = it.reporter,
+      identifier = it.identifier,
+    )
+  }.toMutableList()
 
-  private fun toDraftWitnesses(witnesses: MutableList<ReportedWitness>): MutableList<Witness> =
-    witnesses.map {
-      Witness(
-        code = it.code,
-        firstName = it.firstName,
-        lastName = it.lastName,
-        reporter = it.reporter,
-        username = it.username,
-      )
-    }.toMutableList()
+  private fun toDraftWitnesses(witnesses: MutableList<ReportedWitness>): MutableList<Witness> = witnesses.map {
+    Witness(
+      code = it.code,
+      firstName = it.firstName,
+      lastName = it.lastName,
+      reporter = it.reporter,
+      username = it.username,
+    )
+  }.toMutableList()
 
-  private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> {
-    return (draftOffences ?: listOf()).map {
-      ReportedOffence(
-        offenceCode = it.offenceCode,
-        victimPrisonersNumber = it.victimPrisonersNumber,
-        victimStaffUsername = it.victimStaffUsername,
-        victimOtherPersonsName = it.victimOtherPersonsName,
-        protectedCharacteristics = it.protectedCharacteristics.map { pc -> pc.toProtectedCharacteristics() }.toMutableList(),
-      )
-    }.toMutableList()
-  }
+  private fun toReportedOffence(draftOffences: MutableList<Offence>?): MutableList<ReportedOffence> = (draftOffences ?: listOf()).map {
+    ReportedOffence(
+      offenceCode = it.offenceCode,
+      victimPrisonersNumber = it.victimPrisonersNumber,
+      victimStaffUsername = it.victimStaffUsername,
+      victimOtherPersonsName = it.victimOtherPersonsName,
+      protectedCharacteristics = it.protectedCharacteristics.map { pc -> pc.toProtectedCharacteristics() }
+        .toMutableList(),
+    )
+  }.toMutableList()
 
-  private fun toReportedDamages(damages: MutableList<Damage>): MutableList<ReportedDamage> {
-    return damages.map {
-      ReportedDamage(
-        code = it.code,
-        details = it.details,
-        reporter = it.reporter,
-      )
-    }.toMutableList()
-  }
+  private fun toReportedDamages(damages: MutableList<Damage>): MutableList<ReportedDamage> = damages.map {
+    ReportedDamage(
+      code = it.code,
+      details = it.details,
+      reporter = it.reporter,
+    )
+  }.toMutableList()
 
-  private fun toReportedEvidence(evidence: MutableList<Evidence>): MutableList<ReportedEvidence> {
-    return evidence.map {
-      ReportedEvidence(
-        code = it.code,
-        identifier = it.identifier,
-        details = it.details,
-        reporter = it.reporter,
-      )
-    }.toMutableList()
-  }
+  private fun toReportedEvidence(evidence: MutableList<Evidence>): MutableList<ReportedEvidence> = evidence.map {
+    ReportedEvidence(
+      code = it.code,
+      identifier = it.identifier,
+      details = it.details,
+      reporter = it.reporter,
+    )
+  }.toMutableList()
 
-  private fun toReportedWitnesses(witnesses: MutableList<Witness>): MutableList<ReportedWitness> {
-    return witnesses.map {
-      ReportedWitness(
-        code = it.code,
-        firstName = it.firstName,
-        lastName = it.lastName,
-        reporter = it.reporter,
-        username = it.username,
-      )
-    }.toMutableList()
-  }
+  private fun toReportedWitnesses(witnesses: MutableList<Witness>): MutableList<ReportedWitness> = witnesses.map {
+    ReportedWitness(
+      code = it.code,
+      firstName = it.firstName,
+      lastName = it.lastName,
+      reporter = it.reporter,
+      username = it.username,
+    )
+  }.toMutableList()
 }

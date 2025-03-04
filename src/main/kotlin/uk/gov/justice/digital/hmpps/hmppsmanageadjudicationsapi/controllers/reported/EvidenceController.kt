@@ -23,25 +23,32 @@ class EvidenceController(
 ) : ReportedAdjudicationBaseController() {
 
   @PutMapping(value = ["/{chargeNumber}/evidence/edit"])
-  @Operation(summary = "Updates the evidence for the reported adjudication.", description = "0 or more evidence to be supplied, only updates records owned by current user")
+  @Operation(
+    summary = "Updates the evidence for the reported adjudication.",
+    description = "0 or more evidence to be supplied, only updates records owned by current user",
+  )
   @ResponseStatus(HttpStatus.OK)
   fun updateEvidence(
     @PathVariable(name = "chargeNumber") chargeNumber: String,
     @RequestBody @Valid
     evidenceRequest: EvidenceRequest,
-  ): ReportedAdjudicationResponse =
-    eventPublishWrapper(
-      events = listOf(
-        EventRuleAndSupplier(
-          eventRule = { listOf(ReportedAdjudicationStatus.RETURNED, ReportedAdjudicationStatus.AWAITING_REVIEW).none { s -> it.status == s } },
-          eventSupplier = { AdjudicationDomainEventType.EVIDENCE_UPDATED },
-        ),
+  ): ReportedAdjudicationResponse = eventPublishWrapper(
+    events = listOf(
+      EventRuleAndSupplier(
+        eventRule = {
+          listOf(
+            ReportedAdjudicationStatus.RETURNED,
+            ReportedAdjudicationStatus.AWAITING_REVIEW,
+          ).none { s -> it.status == s }
+        },
+        eventSupplier = { AdjudicationDomainEventType.EVIDENCE_UPDATED },
       ),
-      controllerAction = {
-        evidenceService.updateEvidence(
-          chargeNumber,
-          evidenceRequest.evidence,
-        )
-      },
-    )
+    ),
+    controllerAction = {
+      evidenceService.updateEvidence(
+        chargeNumber,
+        evidenceRequest.evidence,
+      )
+    },
+  )
 }

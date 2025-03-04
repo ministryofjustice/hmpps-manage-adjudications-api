@@ -47,11 +47,10 @@ data class ReportedEvidence(
   var reporter: String,
   var dateAdded: LocalDateTime? = null,
 ) : BaseEntity() {
-  fun toDto(): ReportedEvidenceDto =
-    ReportedEvidenceDto(
-      code = this.code,
-      identifier = this.identifier,
-      details = this.details,
-      reporter = this.reporter,
-    )
+  fun toDto(): ReportedEvidenceDto = ReportedEvidenceDto(
+    code = this.code,
+    identifier = this.identifier,
+    details = this.details,
+    reporter = this.reporter,
+  )
 }

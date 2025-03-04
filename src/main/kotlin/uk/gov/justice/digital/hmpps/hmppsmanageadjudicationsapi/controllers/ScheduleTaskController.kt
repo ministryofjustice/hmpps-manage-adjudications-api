@@ -16,6 +16,5 @@ class ScheduleTaskController(
 ) {
 
   @DeleteMapping(value = ["/delete-orphaned-draft-adjudications"])
-  fun deleteOrphanedDraftAdjudications(): Unit =
-    draftAdjudicationService.deleteOrphanedDraftAdjudications()
+  fun deleteOrphanedDraftAdjudications(): Unit = draftAdjudicationService.deleteOrphanedDraftAdjudications()
 }

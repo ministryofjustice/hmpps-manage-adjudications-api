@@ -101,19 +101,42 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByChargeNumberIn(chargeNumbers: List<String>): List<ReportedAdjudication>
 
-  fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(status: ReportedAdjudicationStatus, prisonerNumber: String, date: LocalDate): List<ReportedAdjudication>
+  fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
+    status: ReportedAdjudicationStatus,
+    prisonerNumber: String,
+    date: LocalDate,
+  ): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>, date: LocalDate): List<ReportedAdjudication>
+  fun findByPrisonerNumberAndStatusInAndPunishmentsSuspendedUntilAfter(
+    prisonerNumber: String,
+    statuses: List<ReportedAdjudicationStatus>,
+    date: LocalDate,
+  ): List<ReportedAdjudication>
 
-  fun findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(status: ReportedAdjudicationStatus, prisonerNumber: String, punishmentType: PunishmentType): List<ReportedAdjudication>
+  fun findByStatusAndPrisonerNumberAndPunishmentsTypeAndPunishmentsSuspendedUntilIsNull(
+    status: ReportedAdjudicationStatus,
+    prisonerNumber: String,
+    punishmentType: PunishmentType,
+  ): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndStatusIn(prisonerNumber: String, statuses: List<ReportedAdjudicationStatus>): List<ReportedAdjudication>
+  fun findByPrisonerNumberAndStatusIn(
+    prisonerNumber: String,
+    statuses: List<ReportedAdjudicationStatus>,
+  ): List<ReportedAdjudication>
 
   fun countByOriginatingAgencyIdAndStatus(agencyId: String, status: ReportedAdjudicationStatus): Long
 
-  fun countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
+  fun countByOverrideAgencyIdAndStatusInAndDateTimeOfDiscoveryAfter(
+    agencyId: String,
+    statuses: List<ReportedAdjudicationStatus>,
+    cutOffDate: LocalDateTime,
+  ): Long
 
-  fun countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(agencyId: String, statuses: List<ReportedAdjudicationStatus>, cutOffDate: LocalDateTime): Long
+  fun countByOriginatingAgencyIdAndOverrideAgencyIdIsNullAndStatusInAndDateTimeOfDiscoveryAfter(
+    agencyId: String,
+    statuses: List<ReportedAdjudicationStatus>,
+    cutOffDate: LocalDateTime,
+  ): Long
 
   fun findByPunishmentsActivatedByChargeNumber(chargeNumber: String): List<ReportedAdjudication>
 
@@ -144,7 +167,10 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("cutOffDate") cutOffDate: LocalDateTime,
   ): Long
 
-  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(chargeNumber: String, types: List<PunishmentType>): List<ReportedAdjudication>
+  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+    chargeNumber: String,
+    types: List<PunishmentType>,
+  ): List<ReportedAdjudication>
 
   @Query(
     value = """
@@ -249,7 +275,11 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByPrisonerNumber(prisonerNumber: String): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndDateTimeOfDiscoveryBetween(prisonerNumber: String, fromDate: LocalDateTime, toDate: LocalDateTime): List<ReportedAdjudication>
+  fun findByPrisonerNumberAndDateTimeOfDiscoveryBetween(
+    prisonerNumber: String,
+    fromDate: LocalDateTime,
+    toDate: LocalDateTime,
+  ): List<ReportedAdjudication>
 
   fun findByIncidentRoleAssociatedPrisonersNumber(prisonerNumber: String): List<ReportedAdjudication>
 
@@ -257,7 +287,10 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByOffenderBookingId(offenderBookingId: Long): List<ReportedAdjudication>
 
-  fun findByOffenderBookingIdAndStatus(offenderBookingId: Long, status: ReportedAdjudicationStatus): List<ReportedAdjudication>
+  fun findByOffenderBookingIdAndStatus(
+    offenderBookingId: Long,
+    status: ReportedAdjudicationStatus,
+  ): List<ReportedAdjudication>
 
   fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
     status: ReportedAdjudicationStatus,
@@ -265,16 +298,22 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     cutOff: LocalDate,
   ): List<ReportedAdjudication>
 
-  fun findByPrisonerNumberAndChargeNumberStartsWith(prisonerNumber: String, chargeNumber: String): List<ReportedAdjudication>
+  fun findByPrisonerNumberAndChargeNumberStartsWith(
+    prisonerNumber: String,
+    chargeNumber: String,
+  ): List<ReportedAdjudication>
 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
   companion object {
 
     private const val STATUS_FILTER = "ra.status in :statuses "
-    private const val DATE_AND_STATUS_FILTER = "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and $STATUS_FILTER"
-    private const val AGENCY_AND_TRANSFER_STATUS_FILTER = "and ((ra.originating_agency_id = :agencyId and (ra.override_agency_id is null or ra.status = 'AWAITING_REVIEW')) or ra.override_agency_id = :agencyId)"
-    private const val AGENCIES_INC_TRANSFERS_FILTER = "and (ra.originating_agency_id in :agencies or ra.override_agency_id in :agencies)"
+    private const val DATE_AND_STATUS_FILTER =
+      "ra.date_time_of_discovery > :startDate and ra.date_time_of_discovery <= :endDate and $STATUS_FILTER"
+    private const val AGENCY_AND_TRANSFER_STATUS_FILTER =
+      "and ((ra.originating_agency_id = :agencyId and (ra.override_agency_id is null or ra.status = 'AWAITING_REVIEW')) or ra.override_agency_id = :agencyId)"
+    private const val AGENCIES_INC_TRANSFERS_FILTER =
+      "and (ra.originating_agency_id in :agencies or ra.override_agency_id in :agencies)"
     private const val TRANSFER_OUT = """
       and ra.override_agency_id is not null 
       and ra.originating_agency_id = :agencyId 
@@ -289,7 +328,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
        )
        """
 
-    private const val TRANSFER_IN = "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
+    private const val TRANSFER_IN =
+      "and ra.override_agency_id = :agencyId and coalesce(ra.last_modified_agency_id,ra.originating_agency_id) != :agencyId"
 
     private const val PUNISHMENTS_FILTER = """
       (
@@ -301,7 +341,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
        )
     """
 
-    const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
+    const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE =
+      "where ra.offender_booking_id = :offenderBookingId and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER"
 
     const val BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE = """
       join punishment p on p.reported_adjudication_fk_id = ra.id 
@@ -309,7 +350,8 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
       and $PUNISHMENTS_FILTER and $DATE_AND_STATUS_FILTER $AGENCIES_INC_TRANSFERS_FILTER
       """
 
-    const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE = "where ra.prisoner_number = :prisonerNumber and $DATE_AND_STATUS_FILTER"
+    const val PRISONER_REPORTS_WITH_DATE_WHERE_CLAUSE =
+      "where ra.prisoner_number = :prisonerNumber and $DATE_AND_STATUS_FILTER"
 
     const val PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE = """
       join punishment p on p.reported_adjudication_fk_id = ra.id 

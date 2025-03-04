@@ -73,13 +73,11 @@ class PunishmentsReportControllerTest : TestControllerBase() {
       verify(punishmentsReportsService).getSuspendedPunishments("AE1234", "12345")
     }
 
-    private fun getSuspendedPunishmentsRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended/v2?chargeNumber=12345")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun getSuspendedPunishmentsRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/suspended/v2?chargeNumber=12345")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -121,13 +119,11 @@ class PunishmentsReportControllerTest : TestControllerBase() {
       verify(punishmentsReportsService).getReportsWithAdditionalDays("12345", "AE1234", PunishmentType.ADDITIONAL_DAYS)
     }
 
-    private fun getReportsWithAdditionalDaysRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/for-consecutive?type=ADDITIONAL_DAYS&chargeNumber=12345")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun getReportsWithAdditionalDaysRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/punishments/AE1234/for-consecutive?type=ADDITIONAL_DAYS&chargeNumber=12345")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   @Nested
@@ -162,13 +158,11 @@ class PunishmentsReportControllerTest : TestControllerBase() {
       verify(punishmentsReportsService).getActivePunishments(any())
     }
 
-    private fun activePunishmentsRequest(): ResultActions {
-      return mockMvc
-        .perform(
-          MockMvcRequestBuilders.get("/reported-adjudications/punishments/1234567/active")
-            .header("Content-Type", "application/json"),
-        )
-    }
+    private fun activePunishmentsRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/punishments/1234567/active")
+          .header("Content-Type", "application/json"),
+      )
   }
 
   companion object {

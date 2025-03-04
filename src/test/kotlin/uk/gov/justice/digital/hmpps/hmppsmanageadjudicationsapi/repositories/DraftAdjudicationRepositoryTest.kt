@@ -307,7 +307,9 @@ class DraftAdjudicationRepositoryTest {
     val draft = draftWithAllData("1")
     entityManager.persistAndFlush(draft)
 
-    assertThat(draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("B23456").first().prisonerNumber).isEqualTo(
+    assertThat(
+      draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("B23456").first().prisonerNumber,
+    ).isEqualTo(
       draft.prisonerNumber,
     )
   }
@@ -317,7 +319,9 @@ class DraftAdjudicationRepositoryTest {
     val draft = draftWithAllData("1")
     entityManager.persistAndFlush(draft)
 
-    assertThat(draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("A1234AA").first().prisonerNumber).isEqualTo(
+    assertThat(
+      draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("A1234AA").first().prisonerNumber,
+    ).isEqualTo(
       draft.prisonerNumber,
     )
   }
@@ -330,90 +334,89 @@ class DraftAdjudicationRepositoryTest {
       )
     }
     val id = draftAdjudicationRepository.save(draft).id
-    assertThat(draftAdjudicationRepository.findById(id).get().offenceDetails.first().protectedCharacteristics.first().characteristic == Characteristic.AGE).isTrue
+    assertThat(
+      draftAdjudicationRepository.findById(id)
+        .get().offenceDetails.first().protectedCharacteristics.first().characteristic == Characteristic.AGE,
+    ).isTrue
   }
 
-  private fun newDraft(): DraftAdjudication {
-    return DraftAdjudication(
-      prisonerNumber = "A12345",
-      gender = Gender.MALE,
-      agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 2,
-        dateTimeOfIncident = DEFAULT_DATE_TIME,
-        dateTimeOfDiscovery = DEFAULT_DATE_TIME,
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
-      ),
-      incidentRole = IncidentRole(
-        roleCode = "25a",
-        associatedPrisonersNumber = "B23456",
-        associatedPrisonersName = "Associated Prisoner",
-      ),
-      isYouthOffender = true,
-    )
-  }
+  private fun newDraft(): DraftAdjudication = DraftAdjudication(
+    prisonerNumber = "A12345",
+    gender = Gender.MALE,
+    agencyId = "MDI",
+    incidentDetails = IncidentDetails(
+      locationId = 2,
+      dateTimeOfIncident = DEFAULT_DATE_TIME,
+      dateTimeOfDiscovery = DEFAULT_DATE_TIME,
+      handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
+    ),
+    incidentRole = IncidentRole(
+      roleCode = "25a",
+      associatedPrisonersNumber = "B23456",
+      associatedPrisonersName = "Associated Prisoner",
+    ),
+    isYouthOffender = true,
+  )
 
-  private fun draftWithAllData(chargeNumber: String? = null): DraftAdjudication {
-    return DraftAdjudication(
-      chargeNumber = chargeNumber,
-      prisonerNumber = "A12345",
-      gender = Gender.MALE,
-      agencyId = "MDI",
-      incidentDetails = IncidentDetails(
-        locationId = 2,
-        dateTimeOfIncident = DEFAULT_DATE_TIME,
-        dateTimeOfDiscovery = DEFAULT_DATE_TIME.plusDays(1),
-        handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
+  private fun draftWithAllData(chargeNumber: String? = null): DraftAdjudication = DraftAdjudication(
+    chargeNumber = chargeNumber,
+    prisonerNumber = "A12345",
+    gender = Gender.MALE,
+    agencyId = "MDI",
+    incidentDetails = IncidentDetails(
+      locationId = 2,
+      dateTimeOfIncident = DEFAULT_DATE_TIME,
+      dateTimeOfDiscovery = DEFAULT_DATE_TIME.plusDays(1),
+      handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
+    ),
+    incidentRole = IncidentRole(
+      roleCode = "25a",
+      associatedPrisonersNumber = "B23456",
+      associatedPrisonersName = "Associated Prisoner",
+    ),
+    offenceDetails = mutableListOf(
+      Offence(
+        // offence with minimal data set
+        offenceCode = 2,
       ),
-      incidentRole = IncidentRole(
-        roleCode = "25a",
-        associatedPrisonersNumber = "B23456",
-        associatedPrisonersName = "Associated Prisoner",
+      Offence(
+        offenceCode = 3,
+        victimPrisonersNumber = "A1234AA",
+        victimStaffUsername = "ABC12D",
+        victimOtherPersonsName = "Someones Name Here",
       ),
-      offenceDetails = mutableListOf(
-        Offence(
-          // offence with minimal data set
-          offenceCode = 2,
-        ),
-        Offence(
-          offenceCode = 3,
-          victimPrisonersNumber = "A1234AA",
-          victimStaffUsername = "ABC12D",
-          victimOtherPersonsName = "Someones Name Here",
-        ),
+    ),
+    incidentStatement = IncidentStatement(
+      statement = "Example statement",
+      completed = false,
+    ),
+    isYouthOffender = true,
+    damages = mutableListOf(
+      Damage(
+        code = DamageCode.CLEANING,
+        details = "details",
+        reporter = "Fred",
       ),
-      incidentStatement = IncidentStatement(
-        statement = "Example statement",
-        completed = false,
+    ),
+    evidence = mutableListOf(
+      Evidence(
+        code = EvidenceCode.PHOTO,
+        details = "details",
+        reporter = "Fred",
       ),
-      isYouthOffender = true,
-      damages = mutableListOf(
-        Damage(
-          code = DamageCode.CLEANING,
-          details = "details",
-          reporter = "Fred",
-        ),
+    ),
+    witnesses = mutableListOf(
+      Witness(
+        code = WitnessCode.OFFICER,
+        firstName = "prison",
+        lastName = "officer",
+        reporter = "Fred",
       ),
-      evidence = mutableListOf(
-        Evidence(
-          code = EvidenceCode.PHOTO,
-          details = "details",
-          reporter = "Fred",
-        ),
-      ),
-      witnesses = mutableListOf(
-        Witness(
-          code = WitnessCode.OFFICER,
-          firstName = "prison",
-          lastName = "officer",
-          reporter = "Fred",
-        ),
-      ),
-      witnessesSaved = true,
-      damagesSaved = true,
-      evidenceSaved = true,
-    )
-  }
+    ),
+    witnessesSaved = true,
+    damagesSaved = true,
+    evidenceSaved = true,
+  )
 
   companion object {
     val DEFAULT_DATE_TIME = LocalDateTime.of(2021, 10, 3, 10, 10, 22)

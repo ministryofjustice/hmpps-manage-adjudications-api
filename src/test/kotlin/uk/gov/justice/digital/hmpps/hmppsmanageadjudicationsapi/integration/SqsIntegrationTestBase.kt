@@ -33,9 +33,8 @@ class SqsIntegrationTestBase : IntegrationTestBase() {
   protected val auditQueue by lazy { hmppsQueueService.findByQueueId("audit") as HmppsQueue }
   protected val adjudicationsQueue by lazy { hmppsQueueService.findByQueueId("adjudications") as HmppsQueue }
 
-  fun HmppsSqsProperties.domaineventsTopicConfig() =
-    topics["domainevents"]
-      ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
+  fun HmppsSqsProperties.domaineventsTopicConfig() = topics["domainevents"]
+    ?: throw MissingTopicException("domainevents has not been loaded from configuration properties")
 
   @BeforeEach
   fun cleanQueue() {
@@ -58,6 +57,5 @@ class SqsIntegrationTestBase : IntegrationTestBase() {
 
   protected fun jsonString(any: Any) = objectMapper.writeValueAsString(any) as String
 
-  fun getNumberOfMessagesCurrentlyOnQueue(): Int? =
-    adjudicationsQueue.sqsClient.countMessagesOnQueue(adjudicationsQueue.queueUrl).get()
+  fun getNumberOfMessagesCurrentlyOnQueue(): Int? = adjudicationsQueue.sqsClient.countMessagesOnQueue(adjudicationsQueue.queueUrl).get()
 }

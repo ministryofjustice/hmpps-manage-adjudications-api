@@ -37,13 +37,12 @@ class HearingOutcomeService(
     code: HearingOutcomeCode,
     adjudicator: String,
     details: String,
-  ): ReportedAdjudicationDto =
-    createHearingOutcome(
-      chargeNumber = chargeNumber,
-      code = code.validateReferral(),
-      adjudicator = adjudicator,
-      details = details,
-    )
+  ): ReportedAdjudicationDto = createHearingOutcome(
+    chargeNumber = chargeNumber,
+    code = code.validateReferral(),
+    adjudicator = adjudicator,
+    details = details,
+  )
 
   fun createAdjourn(
     chargeNumber: String,
@@ -51,17 +50,16 @@ class HearingOutcomeService(
     adjournReason: HearingOutcomeAdjournReason,
     details: String,
     plea: HearingOutcomePlea,
-  ): ReportedAdjudicationDto =
-    createHearingOutcome(
-      chargeNumber = chargeNumber,
-      code = HearingOutcomeCode.ADJOURN,
-      adjudicator = adjudicator,
-      adjournReason = adjournReason,
-      plea = plea,
-      details = details,
-    ).also {
-      it.hearingIdActioned = it.hearings.getLatestHearingId()
-    }
+  ): ReportedAdjudicationDto = createHearingOutcome(
+    chargeNumber = chargeNumber,
+    code = HearingOutcomeCode.ADJOURN,
+    adjudicator = adjudicator,
+    adjournReason = adjournReason,
+    plea = plea,
+    details = details,
+  ).also {
+    it.hearingIdActioned = it.hearings.getLatestHearingId()
+  }
 
   fun createCompletedHearing(
     chargeNumber: String,
@@ -138,13 +136,17 @@ class HearingOutcomeService(
     referGovReason: ReferGovReason? = null,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
-    val hearingOutcomeToAmend = reportedAdjudication.latestHearingOutcome().isLatestSameAsAmendRequest(outcomeCodeToAmend)
+    val hearingOutcomeToAmend =
+      reportedAdjudication.latestHearingOutcome().isLatestSameAsAmendRequest(outcomeCodeToAmend)
 
     adjudicator?.let { hearingOutcomeToAmend.adjudicator = it }
 
     when (outcomeCodeToAmend) {
       HearingOutcomeCode.COMPLETE -> plea?.let { hearingOutcomeToAmend.plea = it }
-      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV -> details?.let { hearingOutcomeToAmend.details = it }
+      HearingOutcomeCode.REFER_POLICE, HearingOutcomeCode.REFER_INAD, HearingOutcomeCode.REFER_GOV -> details?.let {
+        hearingOutcomeToAmend.details = it
+      }
+
       HearingOutcomeCode.ADJOURN -> {
         details?.let { hearingOutcomeToAmend.details = it }
         plea?.let { hearingOutcomeToAmend.plea = it }
@@ -160,7 +162,8 @@ class HearingOutcomeService(
   fun getHearingOutcomeForReferral(chargeNumber: String, code: OutcomeCode, outcomeIndex: Int): HearingOutcome? {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     if (reportedAdjudication.hearings.none { it.hearingOutcome?.code?.outcomeCode == code }) return null
-    val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }.sortedBy { it.dateTimeOfHearing }
+    val matched = reportedAdjudication.hearings.filter { it.hearingOutcome?.code?.outcomeCode == code }
+      .sortedBy { it.dateTimeOfHearing }
     // note: you can only REFER_POLICE once without a hearing
     val actualIndex = if (matched.size > outcomeIndex) outcomeIndex else outcomeIndex - 1
 
@@ -177,8 +180,7 @@ class HearingOutcomeService(
       }
     }
 
-    fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome =
-      this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
+    fun ReportedAdjudication.latestHearingOutcome(): HearingOutcome = this.getHearing().hearingOutcome ?: throw EntityNotFoundException("outcome not found for hearing")
   }
 
   fun HearingOutcome.isLatestSameAsAmendRequest(outcomeCodeToAmend: HearingOutcomeCode): HearingOutcome {
@@ -191,8 +193,18 @@ class HearingOutcomeService(
   fun Hearing.validateCanRefer(hearingOutcomeCode: HearingOutcomeCode) {
     val exceptionMsg = "hearing type ${this.oicHearingType} can not $hearingOutcomeCode"
     when (hearingOutcomeCode) {
-      HearingOutcomeCode.REFER_INAD -> if (OicHearingType.inadTypes().contains(this.oicHearingType)) throw ValidationException(exceptionMsg)
-      HearingOutcomeCode.REFER_GOV -> if (OicHearingType.govTypes().contains(this.oicHearingType)) throw ValidationException(exceptionMsg)
+      HearingOutcomeCode.REFER_INAD -> if (OicHearingType.inadTypes()
+          .contains(this.oicHearingType)
+      ) {
+        throw ValidationException(exceptionMsg)
+      }
+
+      HearingOutcomeCode.REFER_GOV -> if (OicHearingType.govTypes()
+          .contains(this.oicHearingType)
+      ) {
+        throw ValidationException(exceptionMsg)
+      }
+
       else -> {}
     }
   }

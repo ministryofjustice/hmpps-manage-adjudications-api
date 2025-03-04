@@ -45,8 +45,16 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   }
 
   @CsvSource(
-    "HEARING_CREATED", "HEARING_UPDATED", "HEARING_DELETED", "HEARING_COMPLETED_CREATED", "HEARING_COMPLETED_DELETED", "HEARING_REFERRAL_CREATED",
-    "HEARING_REFERRAL_DELETED", "HEARING_OUTCOME_UPDATED", "HEARING_ADJOURN_CREATED", "HEARING_ADJOURN_DELETED",
+    "HEARING_CREATED",
+    "HEARING_UPDATED",
+    "HEARING_DELETED",
+    "HEARING_COMPLETED_CREATED",
+    "HEARING_COMPLETED_DELETED",
+    "HEARING_REFERRAL_CREATED",
+    "HEARING_REFERRAL_DELETED",
+    "HEARING_OUTCOME_UPDATED",
+    "HEARING_ADJOURN_CREATED",
+    "HEARING_ADJOURN_DELETED",
   )
   @ParameterizedTest
   fun `hearing event provides hearing id`(event: AdjudicationDomainEventType) {
@@ -78,7 +86,11 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
       AdjudicationDomainEventType.PUNISHMENTS_CREATED,
       REPORTED_ADJUDICATION_DTO.also {
         it.suspendedPunishmentEvents = setOf(
-          SuspendedPunishmentEvent(agencyId = "LEI", chargeNumber = "suspended", status = ReportedAdjudicationStatus.CHARGE_PROVED),
+          SuspendedPunishmentEvent(
+            agencyId = "LEI",
+            chargeNumber = "suspended",
+            status = ReportedAdjudicationStatus.CHARGE_PROVED,
+          ),
         )
       },
     )

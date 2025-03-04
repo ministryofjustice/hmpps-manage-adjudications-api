@@ -1,1 +1,1 @@
-CREATE index hearing_to_schedule_idx ON reported_adjudications(originating_agency_id, override_agency_id, status);
+CREATE index hearing_to_schedule_idx ON reported_adjudications (originating_agency_id, override_agency_id, status);

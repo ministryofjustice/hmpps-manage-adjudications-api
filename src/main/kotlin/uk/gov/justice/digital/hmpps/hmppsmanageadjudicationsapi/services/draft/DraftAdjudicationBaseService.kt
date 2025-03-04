@@ -44,8 +44,7 @@ open class DraftAdjudicationBaseService(
 
   protected fun findToDto(id: Long): DraftAdjudicationDto = find(id).toDto()
 
-  protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto =
-    draftAdjudicationRepository.save(draftAdjudication).toDto()
+  protected fun saveToDto(draftAdjudication: DraftAdjudication): DraftAdjudicationDto = draftAdjudicationRepository.save(draftAdjudication).toDto()
 
   protected fun delete(draftAdjudication: DraftAdjudication) = draftAdjudicationRepository.delete(draftAdjudication)
 
@@ -61,39 +60,37 @@ open class DraftAdjudicationBaseService(
     startDate: LocalDate,
     endDate: LocalDate,
     pageable: Pageable,
-  ): Page<DraftAdjudicationDto> =
-    draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
-      agencyId,
-      username,
-      startDate.atStartOfDay(),
-      endDate.atTime(LocalTime.MAX),
-      pageable,
-    ).map { it.toDto() }
+  ): Page<DraftAdjudicationDto> = draftAdjudicationRepository.findByAgencyIdAndCreatedByUserIdAndChargeNumberIsNullAndIncidentDetailsDateTimeOfDiscoveryBetween(
+    agencyId,
+    username,
+    startDate.atStartOfDay(),
+    endDate.atTime(LocalTime.MAX),
+    pageable,
+  ).map { it.toDto() }
 
-  private fun DraftAdjudication.toDto(): DraftAdjudicationDto =
-    DraftAdjudicationDto(
-      id = this.id!!,
-      prisonerNumber = this.prisonerNumber,
-      gender = this.gender,
-      incidentStatement = this.incidentStatement?.toDto(),
-      incidentDetails = this.incidentDetails.toDto(),
-      incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
-      offenceDetails = this.offenceDetails.firstOrNull()
-        ?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
-      chargeNumber = this.chargeNumber,
-      startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
-      isYouthOffender = this.isYouthOffender,
-      damages = this.damages.map { it.toDto() },
-      evidence = this.evidence.map { it.toDto() },
-      witnesses = this.witnesses.map { it.toDto() },
-      damagesSaved = this.damagesSaved,
-      evidenceSaved = this.evidenceSaved,
-      witnessesSaved = this.witnessesSaved,
-      overrideAgencyId = this.overrideAgencyId,
-      originatingAgencyId = this.agencyId,
-      createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
-      createdOnBehalfOfReason = this.createdOnBehalfOfReason,
-    )
+  private fun DraftAdjudication.toDto(): DraftAdjudicationDto = DraftAdjudicationDto(
+    id = this.id!!,
+    prisonerNumber = this.prisonerNumber,
+    gender = this.gender,
+    incidentStatement = this.incidentStatement?.toDto(),
+    incidentDetails = this.incidentDetails.toDto(),
+    incidentRole = this.incidentRole?.toDto(this.isYouthOffender!!),
+    offenceDetails = this.offenceDetails.firstOrNull()
+      ?.toDto(offenceCodeLookupService, this.isYouthOffender!!, this.gender),
+    chargeNumber = this.chargeNumber,
+    startedByUserId = this.chargeNumber?.let { this.reportByUserId } ?: this.createdByUserId,
+    isYouthOffender = this.isYouthOffender,
+    damages = this.damages.map { it.toDto() },
+    evidence = this.evidence.map { it.toDto() },
+    witnesses = this.witnesses.map { it.toDto() },
+    damagesSaved = this.damagesSaved,
+    evidenceSaved = this.evidenceSaved,
+    witnessesSaved = this.witnessesSaved,
+    overrideAgencyId = this.overrideAgencyId,
+    originatingAgencyId = this.agencyId,
+    createdOnBehalfOfOfficer = this.createdOnBehalfOfOfficer,
+    createdOnBehalfOfReason = this.createdOnBehalfOfReason,
+  )
 
   private fun IncidentDetails.toDto(): IncidentDetailsDto = IncidentDetailsDto(
     locationId = this.locationId,
@@ -158,7 +155,6 @@ open class DraftAdjudicationBaseService(
   )
 
   companion object {
-    fun throwEntityNotFoundException(id: Long): Nothing =
-      throw EntityNotFoundException("DraftAdjudication not found for $id")
+    fun throwEntityNotFoundException(id: Long): Nothing = throw EntityNotFoundException("DraftAdjudication not found for $id")
   }
 }

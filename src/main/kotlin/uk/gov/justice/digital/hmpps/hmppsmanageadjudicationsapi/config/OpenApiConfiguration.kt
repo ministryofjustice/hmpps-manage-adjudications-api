@@ -90,13 +90,20 @@ class OpenApiConfiguration(
   @Bean
   fun openAPICustomiser(): OpenApiCustomizer = OpenApiCustomizer {
     it.paths.forEach { (_, path: PathItem) ->
-      path.addParametersItem(Parameter().`in`(ParameterIn.HEADER.toString()).name("Active-Caseload").description("Current Caseload for request, to be used when making calls to a specific report").schema(StringSchema()).example("MDI").required(false))
+      path.addParametersItem(
+        Parameter().`in`(ParameterIn.HEADER.toString()).name("Active-Caseload")
+          .description("Current Caseload for request, to be used when making calls to a specific report")
+          .schema(StringSchema()).example("MDI").required(false),
+      )
 
       path.readOperations().forEach { operation ->
         operation.responses.default = createErrorApiResponse("Unexpected error")
         operation.responses.addApiResponse("401", createErrorApiResponse("Unauthorized"))
         operation.responses.addApiResponse("403", createErrorApiResponse("Forbidden"))
-        operation.responses.addApiResponse("406", createErrorApiResponse("Not able to process the request because the header “Accept” does not match with any of the content types this endpoint can handle"))
+        operation.responses.addApiResponse(
+          "406",
+          createErrorApiResponse("Not able to process the request because the header “Accept” does not match with any of the content types this endpoint can handle"),
+        )
         operation.responses.addApiResponse("429", createErrorApiResponse("Too many requests"))
       }
     }
@@ -126,7 +133,10 @@ class OpenApiConfiguration(
     return ApiResponse()
       .description(message)
       .content(
-        Content().addMediaType(MediaType.APPLICATION_JSON_VALUE, io.swagger.v3.oas.models.media.MediaType().schema(errorResponseSchema)),
+        Content().addMediaType(
+          MediaType.APPLICATION_JSON_VALUE,
+          io.swagger.v3.oas.models.media.MediaType().schema(errorResponseSchema),
+        ),
       )
   }
 }

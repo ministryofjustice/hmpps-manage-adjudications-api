@@ -119,13 +119,12 @@ class ReportsController(
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getAllReportedAdjudications(
-      startDate = startDate ?: LocalDate.now().minusDays(3),
-      endDate = endDate ?: LocalDate.now(),
-      statuses = statuses,
-      pageable = pageable,
-    )
+  ): Page<ReportedAdjudicationDto> = reportsService.getAllReportedAdjudications(
+    startDate = startDate ?: LocalDate.now().minusDays(3),
+    endDate = endDate ?: LocalDate.now(),
+    statuses = statuses,
+    pageable = pageable,
+  )
 
   @Operation(summary = "Get transfer reported adjudications for caseload")
   @Parameters(
@@ -158,12 +157,11 @@ class ReportsController(
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @RequestParam(name = "type", required = true) transferType: TransferType,
     @PageableDefault(sort = ["date_time_of_discovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getTransferReportedAdjudications(
-      statuses = statuses,
-      transferType = transferType,
-      pageable = pageable,
-    )
+  ): Page<ReportedAdjudicationDto> = reportsService.getTransferReportedAdjudications(
+    statuses = statuses,
+    transferType = transferType,
+    pageable = pageable,
+  )
 
   @Operation(summary = "Get my reported adjudications for caseload")
   @Parameters(
@@ -207,13 +205,12 @@ class ReportsController(
     endDate: LocalDate?,
     @RequestParam(name = "status", required = true) statuses: List<ReportedAdjudicationStatus>,
     @PageableDefault(sort = ["dateTimeOfDiscovery"], direction = Sort.Direction.DESC, size = 20) pageable: Pageable,
-  ): Page<ReportedAdjudicationDto> =
-    reportsService.getMyReportedAdjudications(
-      startDate = startDate ?: LocalDate.now().minusDays(3),
-      endDate = endDate ?: LocalDate.now(),
-      statuses = statuses,
-      pageable = pageable,
-    )
+  ): Page<ReportedAdjudicationDto> = reportsService.getMyReportedAdjudications(
+    startDate = startDate ?: LocalDate.now().minusDays(3),
+    endDate = endDate ?: LocalDate.now(),
+    statuses = statuses,
+    pageable = pageable,
+  )
 
   @Operation(summary = "Get all reported adjudications for issue")
   @Parameters(
@@ -237,13 +234,12 @@ class ReportsController(
     @RequestParam(name = "endDate")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
-  ): IssuableAdjudicationsResponseV2 =
-    IssuableAdjudicationsResponseV2(
-      reportsService.getAdjudicationsForIssue(
-        startDate = startDate ?: LocalDate.now().minusDays(2),
-        endDate = endDate ?: LocalDate.now(),
-      ),
-    )
+  ): IssuableAdjudicationsResponseV2 = IssuableAdjudicationsResponseV2(
+    reportsService.getAdjudicationsForIssue(
+      startDate = startDate ?: LocalDate.now().minusDays(2),
+      endDate = endDate ?: LocalDate.now(),
+    ),
+  )
 
   @Operation(summary = "Get all reported adjudications for print")
   @Parameters(
@@ -273,14 +269,13 @@ class ReportsController(
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     endDate: LocalDate?,
     @RequestParam(name = "issueStatus") issueStatuses: List<IssuedStatus>,
-  ): PrintableAdjudicationsResponse =
-    PrintableAdjudicationsResponse(
-      reportsService.getAdjudicationsForPrint(
-        startDate = startDate ?: LocalDate.now(),
-        endDate = endDate ?: LocalDate.now().plusDays(2),
-        issueStatuses = issueStatuses,
-      ),
-    )
+  ): PrintableAdjudicationsResponse = PrintableAdjudicationsResponse(
+    reportsService.getAdjudicationsForPrint(
+      startDate = startDate ?: LocalDate.now(),
+      endDate = endDate ?: LocalDate.now().plusDays(2),
+      issueStatuses = issueStatuses,
+    ),
+  )
 
   @Operation(summary = "Get report counts by agency")
   @PreAuthorize("hasRole('VIEW_ADJUDICATIONS')")

@@ -59,9 +59,7 @@ abstract class IntegrationTestBase : TestBase() {
     }
   }
 
-  fun integrationTestData(): IntegrationTestData {
-    return IntegrationTestData(webTestClient, jwtAuthHelper)
-  }
+  fun integrationTestData(): IntegrationTestData = IntegrationTestData(webTestClient, jwtAuthHelper)
 
   protected fun initDataForAccept(
     overrideActiveCaseLoad: String? = null,
@@ -130,11 +128,10 @@ abstract class IntegrationTestBase : TestBase() {
       .acceptReport(activeCaseload = testData.agencyId)
   }
 
-  protected fun getSuspendedPunishments(chargeNumber: String, prisonerNumber: String): WebTestClient.ResponseSpec =
-    webTestClient.get()
-      .uri("/reported-adjudications/punishments/$prisonerNumber/suspended/v2?chargeNumber=$chargeNumber")
-      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-      .exchange()
+  protected fun getSuspendedPunishments(chargeNumber: String, prisonerNumber: String): WebTestClient.ResponseSpec = webTestClient.get()
+    .uri("/reported-adjudications/punishments/$prisonerNumber/suspended/v2?chargeNumber=$chargeNumber")
+    .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+    .exchange()
 
   protected fun createPunishments(
     chargeNumber: String,
