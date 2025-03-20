@@ -1,1 +1,1 @@
-CREATE index sar_idx ON reported_adjudications (prisoner_number, date_time_of_discovery);
+CREATE index sar_idx ON reported_adjudications(prisoner_number, date_time_of_discovery);
