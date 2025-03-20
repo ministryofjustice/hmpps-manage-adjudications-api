@@ -1,1 +1,1 @@
-create index migrated_idx on reported_adjudications (migrated);
+create index migrated_idx on reported_adjudications(migrated);
