@@ -274,8 +274,7 @@ data class ReportedAdjudication(
       hasLinkedAda: Boolean,
       consecutiveReportsAvailable: List<String>? = null,
     ): MutableList<PunishmentDto> = this.filter { punishment ->
-      !hasLinkedAda || (punishment.type == PunishmentType.ADDITIONAL_DAYS || punishment.type == PunishmentType.PROSPECTIVE_DAYS)
-//      !hasLinkedAda || (punishment.type in PunishmentType.additionalDays())
+      !hasLinkedAda || (punishment.type in PunishmentType.additionalDays())
     }.sortedBy { it.type }.map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }.toMutableList()
 
     private fun HearingDto.hearingHasNoAssociatedOutcome() = this.outcome == null || this.outcome.code == HearingOutcomeCode.ADJOURN
