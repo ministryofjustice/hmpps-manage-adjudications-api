@@ -1,2 +1,1 @@
-
-create index transfer_migration_charges_charge_numberx on transfer_migration_charges(charge_number);
+create index transfer_migration_charges_charge_numberx on transfer_migration_charges (charge_number);
