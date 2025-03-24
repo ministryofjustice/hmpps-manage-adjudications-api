@@ -925,9 +925,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
           "1",
-          listOf(type),
+          listOf(type.name),
         ),
       ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
@@ -961,9 +961,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
           "1",
-          listOf(type),
+          listOf(type.name),
         ),
       ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
@@ -1003,9 +1003,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
           "1",
-          listOf(type),
+          listOf(type.name),
         ),
       ).thenReturn(
         listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")),
