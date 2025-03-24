@@ -186,7 +186,7 @@ class OutcomeService(
     reportedAdjudication.calculateStatus()
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
-      if (isLinkedToReportV2(
+      if (isLinkedToReport(
           chargeNumber,
           PunishmentType.additionalDays(),
         )
