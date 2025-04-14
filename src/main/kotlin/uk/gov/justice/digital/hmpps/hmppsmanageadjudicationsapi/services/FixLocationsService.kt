@@ -20,34 +20,33 @@ class FixLocationsService(
 
   fun fixIncidentDetailsLocations() {
     // look up location ids
-    val nomisLocationIds = locationFixRepository.findNomisLocationsIds()
+    val nomisLocationIds = locationFixRepository.findNomisIncidentDetailsLocationsIds()
 
     nomisLocationIds.forEach { nomisLocationId ->
       // get the dps location id
       val dpsId = locationService.getNomisLocationDetail(nomisLocationId.toString())!!.dpsLocationId
-      locationFixRepository.updateLocationDetails(locationId = nomisLocationId, locationUuid = UUID.fromString(dpsId))
+      locationFixRepository.updateIncidentDetailsLocationIdDetails(locationId = nomisLocationId, locationUuid = UUID.fromString(dpsId))
     }
   }
 
   fun fixReportedAdjudicationLocations() {
     // look up location ids for adjudications
+    val reportedAdjudicationsIds = locationFixRepository.findNomisReportedAdjudicationsLocationsIds()
 
     // loop through
-
-    // get the dps location id
-    // val dpsId = locationService.getNomisLocationDetail("1234")?.dpsLocationId
-
-    // update entities
+    reportedAdjudicationsIds.forEach { reportedAdjudicationsId ->
+      val dpsId = locationService.getNomisLocationDetail(reportedAdjudicationsId.toString())!!.dpsLocationId
+      locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(locationId = reportedAdjudicationsId, locationUuid = UUID.fromString(dpsId))
+    }
   }
 
   fun fixHearingLocations() {
     // look up location ids for hearings
-
+    val hearingIds = locationFixRepository.findNomisHearingsLocationsIds()
     // loop through
-
-    // get the dps location id
-    // val dpsId = locationService.getNomisLocationDetail("1234")?.dpsLocationId
-
-    // update entities
+    hearingIds.forEach { hearingId ->
+      val dpsId = locationService.getNomisLocationDetail(hearingId.toString())!!.dpsLocationId
+      locationFixRepository.updateHearingsLocationIdDetails(locationId = hearingId, locationUuid = UUID.fromString(dpsId))
+    }
   }
 }

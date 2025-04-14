@@ -105,17 +105,45 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
       .completeDraft()
       .acceptReport(activeCaseload = testAdjudication2.agencyId).issueReport()
 
+//    third
+
+    val testAdjudication3 = IntegrationTestData.getDefaultAdjudication().copy(locationId = 34567, locationUuid = uuid3)
+    val intTestData3 = integrationTestData()
+    val intTestBuilder3 = IntegrationTestScenarioBuilder(
+      intTestData = intTestData3,
+      intTestBase = this,
+      activeCaseload = testAdjudication3.agencyId,
+    )
+
+    intTestBuilder3
+      .startDraft(testAdjudication3)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addDamages()
+      .addIncidentStatement()
+      .completeDraft()
+      .acceptReport(activeCaseload = testAdjudication3.agencyId).issueReport()
+
     runFixLocationJob()
     Thread.sleep(1000)
 
     val reportAdjudicationDto1: ReportedAdjudicationDto = getReportedAdjudication(testAdjudication1.chargeNumber!!)
     val reportAdjudicationDto2: ReportedAdjudicationDto = getReportedAdjudication(testAdjudication2.chargeNumber!!)
+    val reportAdjudicationDto3: ReportedAdjudicationDto = getReportedAdjudication(testAdjudication3.chargeNumber!!)
 
     assertEquals(12345L, reportAdjudicationDto1.incidentDetails.locationId)
     assertEquals(uuid1, reportAdjudicationDto1.incidentDetails.locationUuid)
 
     assertEquals(23456L, reportAdjudicationDto2.incidentDetails.locationId)
     assertEquals(uuid2, reportAdjudicationDto2.incidentDetails.locationUuid)
+
+    assertEquals(34567L, reportAdjudicationDto3.incidentDetails.locationId)
+    assertEquals(uuid3, reportAdjudicationDto3.incidentDetails.locationUuid)
+
+    verify(locationService, times(1)).getNomisLocationDetail(eq("12345"))
+    verify(locationService, times(1)).getNomisLocationDetail(eq("23456"))
+    verifyNoMoreInteractions(locationService)
   }
 
   @Test
@@ -128,20 +156,25 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     assertTrue(reportAdjudicationDto.hearings.isEmpty())
 
     createHearingWithoutLocationUuid(
-      scenario.getGeneratedChargeNumber(),
-      12345,
-      LocalDateTime.of(2022, 1, 1, 1, 1, 1),
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      locationId = 12345,
+      date = LocalDateTime.of(2022, 1, 1, 1, 1, 1),
     )
     createHearingWithoutLocationUuid(
-      scenario.getGeneratedChargeNumber(),
-      23456,
-      LocalDateTime.of(2022, 1, 1, 2, 1, 1),
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      locationId = 23456,
+      date = LocalDateTime.of(2022, 1, 1, 2, 1, 1),
     )
-
     createHearingWithoutLocationUuid(
-      scenario.getGeneratedChargeNumber(),
-      34567,
-      LocalDateTime.of(2022, 1, 1, 3, 1, 1),
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      locationId = 34567,
+      date = LocalDateTime.of(2022, 1, 1, 3, 1, 1),
+    )
+    createHearingWithoutLocationUuid(
+      chargeNumber = scenario.getGeneratedChargeNumber(),
+      locationId = 34567,
+      locationUuid = uuid3,
+      LocalDateTime.of(2022, 1, 1, 3, 1, 2),
     )
 
     val reportAdjudicationDto1: ReportedAdjudicationDto = getReportedAdjudication(scenario.getGeneratedChargeNumber())
@@ -150,18 +183,23 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
       this.single { it.locationId == 12345L && it.locationUuid == null }
       this.single { it.locationId == 23456L && it.locationUuid == null }
       this.single { it.locationId == 34567L && it.locationUuid == null }
+      this.single { it.locationId == 34567L && it.locationUuid == uuid3 }
     }
 
     runFixLocationJob()
     Thread.sleep(1000)
 
     val reportAdjudicationDto2: ReportedAdjudicationDto = getReportedAdjudication(scenario.getGeneratedChargeNumber())
-
     with(reportAdjudicationDto2.hearings) {
       this.single { it.locationId == 12345L && it.locationUuid == uuid1 }
       this.single { it.locationId == 23456L && it.locationUuid == uuid2 }
-      this.single { it.locationId == 34567L && it.locationUuid == uuid3 }
+      this.count { it.locationId == 34567L && it.locationUuid == uuid3 }.times(2)
     }
+
+    verify(locationService, times(1)).getNomisLocationDetail(eq("12345"))
+    verify(locationService, times(1)).getNomisLocationDetail(eq("23456"))
+    verify(locationService, times(1)).getNomisLocationDetail(eq("34567"))
+    verifyNoMoreInteractions(locationService)
   }
 
   // FIXME test for multiple of the the same location (in existing tests, also ones already set maybe)
@@ -199,7 +237,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     return draftAdjudicationResponse.draftAdjudication.id
   }
 
-  private fun createHearingWithoutLocationUuid(chargeNumber: String, locationId: Long, date: LocalDateTime) {
+  private fun createHearingWithoutLocationUuid(chargeNumber: String, locationId: Long, locationUuid: UUID? = null, date: LocalDateTime) {
     webTestClient.post()
       .uri("/reported-adjudications/$chargeNumber/hearing/v2")
       .headers(setHeaders())
@@ -208,6 +246,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
           "locationId" to locationId,
           "dateTimeOfHearing" to date,
           "oicHearingType" to OicHearingType.GOV.name,
+          "locationUuid" to locationUuid,
         ),
       )
       .exchange()
