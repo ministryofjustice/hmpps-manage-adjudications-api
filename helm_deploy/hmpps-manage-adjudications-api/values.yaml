@@ -71,3 +71,6 @@ generic-prometheus-alerts:
   targetApplication: hmpps-manage-adjudications-api
   sqsAlertsOldestThreshold: 10
   sqsAlertsTotalMessagesThreshold: 1
+
+cron:
+  fixAdjudicationsLocations: "10 10 15 3 *"
