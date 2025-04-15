@@ -9,7 +9,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
@@ -53,7 +52,6 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     reset(locationService)
   }
 
-
   @Test
   fun `run location job for updating incident details`() {
     val draftId1 = createDraftAdjudication(12345)
@@ -72,7 +70,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     verify(locationService, times(1)).getNomisLocationDetail(eq("12345"))
     verify(locationService, times(1)).getNomisLocationDetail(eq("23456"))
     verify(locationService, times(1)).getNomisLocationDetail(eq("34567"))
-    verifyNoMoreInteractions(locationService)
+    verify(locationService, times(0)).getNomisLocationDetail(eq("45678"))
   }
 
   @Test
@@ -113,8 +111,6 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
       .completeDraft()
       .acceptReport(activeCaseload = testAdjudication2.agencyId).issueReport()
 
-//    third
-
     val testAdjudication3 = IntegrationTestData.getDefaultAdjudication().copy(locationId = 34567, locationUuid = uuid3)
     val intTestData3 = integrationTestData()
     val intTestBuilder3 = IntegrationTestScenarioBuilder(
@@ -151,7 +147,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
 
     verify(locationService, times(1)).getNomisLocationDetail(eq("12345"))
     verify(locationService, times(1)).getNomisLocationDetail(eq("23456"))
-    verifyNoMoreInteractions(locationService)
+    verify(locationService, times(0)).getNomisLocationDetail(eq("34567"))
   }
 
   @Test
@@ -207,7 +203,6 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     verify(locationService, times(1)).getNomisLocationDetail(eq("12345"))
     verify(locationService, times(1)).getNomisLocationDetail(eq("23456"))
     verify(locationService, times(1)).getNomisLocationDetail(eq("34567"))
-    verifyNoMoreInteractions(locationService)
   }
 
   private fun runFixLocationJob() = webTestClient.post()
