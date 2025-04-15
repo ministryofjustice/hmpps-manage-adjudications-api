@@ -12,7 +12,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.job.FixLocations
 import java.time.Clock
 
 @RestController
-// @ProtectedByIngress
+@ProtectedByIngress
 @RequestMapping("/job", produces = [MediaType.TEXT_PLAIN_VALUE])
 class JobTriggerController(
   private val fixLocationsJob: FixLocationsJob,

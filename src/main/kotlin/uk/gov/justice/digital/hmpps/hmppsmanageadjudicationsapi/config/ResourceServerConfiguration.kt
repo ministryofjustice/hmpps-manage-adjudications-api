@@ -58,6 +58,7 @@ class ResourceServerConfiguration {
           "/swagger-resources/configuration/security",
           "/scheduled-tasks/*",
           "/queue-admin/retry-all-dlqs",
+          "/job/**"
         ).forEach { authorize(it, permitAll) }
         authorize(anyRequest, authenticated)
       }

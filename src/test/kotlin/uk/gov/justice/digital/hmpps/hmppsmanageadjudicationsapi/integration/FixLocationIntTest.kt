@@ -202,8 +202,6 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     verifyNoMoreInteractions(locationService)
   }
 
-  // FIXME test for multiple of the the same location (in existing tests, also ones already set maybe)
-
   private fun runFixLocationJob() = webTestClient.post()
     .uri("/job/adjudications-fix-locations")
     .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
