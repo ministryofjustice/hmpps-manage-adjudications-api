@@ -2,9 +2,11 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -45,6 +47,12 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     whenever(locationService.getNomisLocationDetail("45678"))
       .thenReturn(LocationResponse("44444444-4444-4444-4444-444444444444", 45678))
   }
+
+  @AfterEach
+  fun tearDown() {
+    reset(locationService)
+  }
+
 
   @Test
   fun `run location job for updating incident details`() {
