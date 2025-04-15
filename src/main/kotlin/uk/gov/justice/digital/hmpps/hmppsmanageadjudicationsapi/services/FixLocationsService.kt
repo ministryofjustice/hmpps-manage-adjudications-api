@@ -33,7 +33,7 @@ class FixLocationsService(
     }.forEach { (nomisLocationId, dpsId) ->
       locationFixRepository.updateIncidentDetailsLocationIdDetails(
         locationId = nomisLocationId,
-        locationUuid = UUID.fromString(dpsId)
+        locationUuid = UUID.fromString(dpsId),
       )
       updateCount++
     }
@@ -51,10 +51,10 @@ class FixLocationsService(
         log.warn("Failed to find DPS location UUID for Reported Adjudication location ID: $reportedAdjudicationsId", e)
         null
       }
-    }.forEach { (reportedAdjudicationsId, dpsId ) ->
+    }.forEach { (reportedAdjudicationsId, dpsId) ->
       locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
         locationId = reportedAdjudicationsId,
-        locationUuid = UUID.fromString(dpsId)
+        locationUuid = UUID.fromString(dpsId),
       )
       updateCount++
     }
