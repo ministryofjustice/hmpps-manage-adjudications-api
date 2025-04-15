@@ -6,12 +6,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.LocationFixRepository
 import java.util.UUID
-
-@Transactional
 @Service
 class FixLocationsService(
   private val locationService: LocationService,
   private val locationFixRepository: LocationFixRepository,
+  private val transactionHandler: TransactionHandler,
 ) {
 
   companion object {
@@ -31,11 +30,13 @@ class FixLocationsService(
         null
       }
     }.forEach { (nomisLocationId, dpsId) ->
-      locationFixRepository.updateIncidentDetailsLocationIdDetails(
-        locationId = nomisLocationId,
-        locationUuid = UUID.fromString(dpsId),
-      )
-      updateCount++
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateIncidentDetailsLocationIdDetails(
+          locationId = nomisLocationId,
+          locationUuid = UUID.fromString(dpsId),
+        )
+        updateCount++
+      }
     }
     log.info("Updated $updateCount of ${nomisLocationIds.size} distinct incident detail location Ids")
   }
@@ -52,11 +53,13 @@ class FixLocationsService(
         null
       }
     }.forEach { (reportedAdjudicationsId, dpsId) ->
-      locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
-        locationId = reportedAdjudicationsId,
-        locationUuid = UUID.fromString(dpsId),
-      )
-      updateCount++
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
+          locationId = reportedAdjudicationsId,
+          locationUuid = UUID.fromString(dpsId),
+        )
+        updateCount++
+      }
     }
     log.info("Updated $updateCount of ${reportedAdjudicationsIds.size} distinct reported adjudication location Ids")
   }
@@ -73,8 +76,13 @@ class FixLocationsService(
         null
       }
     }.forEach { (hearingId, dpsId) ->
-      locationFixRepository.updateHearingsLocationIdDetails(locationId = hearingId, locationUuid = UUID.fromString(dpsId))
-      updateCount++
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateHearingsLocationIdDetails(
+          locationId = hearingId,
+          locationUuid = UUID.fromString(dpsId)
+        )
+        updateCount++
+      }
     }
     log.info("Updated $updateCount of ${hearingIds.size} distinct hearing location Ids")
   }

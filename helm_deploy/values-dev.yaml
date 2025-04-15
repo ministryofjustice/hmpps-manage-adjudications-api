@@ -36,6 +36,6 @@ generic-prometheus-alerts:
     - "dps-core-dev-prisoner-event-dlq"
 
 cron:
-  fixAdjudicationsLocations: "30 16 15 4 *"
+  fixAdjudicationsLocations: "30 14 16 4 *"
 
 environment: dev
