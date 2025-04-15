@@ -39,4 +39,7 @@ generic-prometheus-alerts:
     - "dps-core-prod-prisoner-event-queue"
     - "dps-core-prod-prisoner-event-dlq"
 
+cron:
+  fixAdjudicationsLocations: "00 09 17 4 *"
+
 environment: prod

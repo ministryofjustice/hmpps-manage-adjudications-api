@@ -236,6 +236,7 @@ class IntegrationTestData(
         "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
         "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
         "overrideAgencyId" to overrideAgencyId,
+        "locationUuid" to testDataSet.locationUuid,
       ),
     )
     .exchange()
