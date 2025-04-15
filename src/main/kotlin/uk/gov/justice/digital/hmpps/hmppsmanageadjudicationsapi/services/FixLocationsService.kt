@@ -23,17 +23,19 @@ class FixLocationsService(
     val nomisLocationIds = locationFixRepository.findNomisIncidentDetailsLocationsIds()
     var updateCount: Int = 0
 
-    nomisLocationIds.forEach { nomisLocationId ->
+    nomisLocationIds.mapNotNull { nomisLocationId ->
       try {
-        val dpsId = locationService.getNomisLocationDetail(nomisLocationId.toString())!!.dpsLocationId
-        locationFixRepository.updateIncidentDetailsLocationIdDetails(
-          locationId = nomisLocationId,
-          locationUuid = UUID.fromString(dpsId)
-        )
-        updateCount++
+        nomisLocationId to locationService.getNomisLocationDetail(nomisLocationId.toString())!!.dpsLocationId
       } catch (e: Exception) {
         log.warn("Failed to find DPS location UUID for Incident detail location ID: $nomisLocationId", e)
+        null
       }
+    }.forEach { (nomisLocationId, dpsId) ->
+      locationFixRepository.updateIncidentDetailsLocationIdDetails(
+        locationId = nomisLocationId,
+        locationUuid = UUID.fromString(dpsId)
+      )
+      updateCount++
     }
     log.info("Updated $updateCount of ${nomisLocationIds.size} distinct incident detail location Ids")
   }
@@ -42,17 +44,19 @@ class FixLocationsService(
     // look up location ids for reported adjudications
     val reportedAdjudicationsIds = locationFixRepository.findNomisReportedAdjudicationsLocationsIds()
     var updateCount: Int = 0
-    reportedAdjudicationsIds.forEach { reportedAdjudicationsId ->
+    reportedAdjudicationsIds.mapNotNull { reportedAdjudicationsId ->
       try {
-        val dpsId = locationService.getNomisLocationDetail(reportedAdjudicationsId.toString())!!.dpsLocationId
-        locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
-          locationId = reportedAdjudicationsId,
-          locationUuid = UUID.fromString(dpsId)
-        )
-        updateCount++
+        reportedAdjudicationsId to locationService.getNomisLocationDetail(reportedAdjudicationsId.toString())!!.dpsLocationId
       } catch (e: Exception) {
         log.warn("Failed to find DPS location UUID for Reported Adjudication location ID: $reportedAdjudicationsId", e)
+        null
       }
+    }.forEach { (reportedAdjudicationsId, dpsId ) ->
+      locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
+        locationId = reportedAdjudicationsId,
+        locationUuid = UUID.fromString(dpsId)
+      )
+      updateCount++
     }
     log.info("Updated $updateCount of ${reportedAdjudicationsIds.size} distinct reported adjudication location Ids")
   }
@@ -61,14 +65,16 @@ class FixLocationsService(
     // look up location ids for hearings
     val hearingIds = locationFixRepository.findNomisHearingsLocationsIds()
     var updateCount: Int = 0
-    hearingIds.forEach { hearingId ->
+    hearingIds.mapNotNull { hearingId ->
       try {
-        val dpsId = locationService.getNomisLocationDetail(hearingId.toString())!!.dpsLocationId
-        locationFixRepository.updateHearingsLocationIdDetails(locationId = hearingId, locationUuid = UUID.fromString(dpsId))
-        updateCount++
+        hearingId to locationService.getNomisLocationDetail(hearingId.toString())!!.dpsLocationId
       } catch (e: Exception) {
         log.warn("Failed to find DPS location UUID for hearing location ID: $hearingId", e)
+        null
       }
+    }.forEach { (hearingId, dpsId) ->
+      locationFixRepository.updateHearingsLocationIdDetails(locationId = hearingId, locationUuid = UUID.fromString(dpsId))
+      updateCount++
     }
     log.info("Updated $updateCount of ${hearingIds.size} distinct hearing location Ids")
   }
