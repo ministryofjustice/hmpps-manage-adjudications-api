@@ -24,14 +24,14 @@ class FixLocationsJob(
     }
     log.info("fixIncidentDetailsLocations took ${elapsedId}ms")
 
-    val elapsedRa = measureTimeMillis {
-      fixLocationsService.fixReportedAdjudicationLocations()
-    }
-    log.info("fixReportedAdjudicationLocations took ${elapsedRa}ms")
+//    val elapsedRa = measureTimeMillis {
+//      fixLocationsService.fixReportedAdjudicationLocations()
+//    }
+//    log.info("fixReportedAdjudicationLocations took ${elapsedRa}ms")
 
-    val elapsedH = measureTimeMillis {
-      fixLocationsService.fixHearingLocations()
-    }
-    log.info("fixHearingLocations took ${elapsedH}ms")
+//    val elapsedH = measureTimeMillis {
+//      fixLocationsService.fixHearingLocations()
+//    }
+//    log.info("fixHearingLocations took ${elapsedH}ms")
   }
 }
