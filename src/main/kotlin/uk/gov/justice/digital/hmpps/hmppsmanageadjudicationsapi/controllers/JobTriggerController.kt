@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.job.FixLocationsJob
-import java.time.Clock
 
 @RestController
 @ProtectedByIngress

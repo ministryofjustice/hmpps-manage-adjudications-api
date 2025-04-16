@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.FixLocationsService
+import kotlin.system.measureTimeMillis
 
 @Component
 class FixLocationsJob(
@@ -18,9 +19,19 @@ class FixLocationsJob(
   @Async("asyncExecutor")
   fun execute() {
     log.info("executing fix location job")
-    fixLocationsService.fixIncidentDetailsLocations()
-    fixLocationsService.fixReportedAdjudicationLocations()
-    fixLocationsService.fixHearingLocations()
-    log.info("executing fix location job complete")
+    val elapsedId = measureTimeMillis {
+      fixLocationsService.fixIncidentDetailsLocations()
+    }
+    log.info("fixIncidentDetailsLocations took ${elapsedId}ms")
+
+    val elapsedRa = measureTimeMillis {
+      fixLocationsService.fixReportedAdjudicationLocations()
+    }
+    log.info("fixReportedAdjudicationLocations took ${elapsedRa}ms")
+
+    val elapsedH = measureTimeMillis {
+      fixLocationsService.fixHearingLocations()
+    }
+    log.info("fixHearingLocations took ${elapsedH}ms")
   }
 }
