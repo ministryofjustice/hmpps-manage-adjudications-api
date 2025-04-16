@@ -40,6 +40,6 @@ generic-prometheus-alerts:
     - "dps-core-prod-prisoner-event-dlq"
 
 cron:
-  fixAdjudicationsLocations: "00 09 17 4 *"
+  fixAdjudicationsLocations: "0 5 23 4 *"
 
 environment: prod

@@ -3,15 +3,13 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.LocationFixRepository
 import java.util.UUID
-
-@Transactional
 @Service
 class FixLocationsService(
   private val locationService: LocationService,
   private val locationFixRepository: LocationFixRepository,
+  private val transactionHandler: TransactionHandler,
 ) {
 
   companion object {
@@ -20,62 +18,74 @@ class FixLocationsService(
 
   fun fixIncidentDetailsLocations() {
     // look up location ids
-    val nomisLocationIds = locationFixRepository.findNomisIncidentDetailsLocationsIds()
+    val incidentDetailsLocationIds = locationFixRepository.findNomisIncidentDetailsLocationsIds()
     var updateCount: Int = 0
 
-    nomisLocationIds.mapNotNull { nomisLocationId ->
+    incidentDetailsLocationIds.mapNotNull { incidentDetailsLocationId ->
       try {
-        nomisLocationId to locationService.getNomisLocationDetail(nomisLocationId.toString())!!.dpsLocationId
+        incidentDetailsLocationId to locationService.getNomisLocationDetail(incidentDetailsLocationId.toString())!!.dpsLocationId
       } catch (e: Exception) {
-        log.warn("Failed to find DPS location UUID for Incident detail location ID: $nomisLocationId", e)
+        log.warn("Failed to find DPS location UUID for Incident detail location ID: $incidentDetailsLocationId", e)
         null
       }
-    }.forEach { (nomisLocationId, dpsId) ->
-      locationFixRepository.updateIncidentDetailsLocationIdDetails(
-        locationId = nomisLocationId,
-        locationUuid = UUID.fromString(dpsId),
-      )
-      updateCount++
+    }.forEach { (incidientDetailsLocationId, dpsId) ->
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateIncidentDetailsLocationIdDetails(
+          locationId = incidientDetailsLocationId,
+          locationUuid = UUID.fromString(dpsId),
+        )
+        updateCount++
+      }
+      log.info("Updated location id $incidientDetailsLocationId")
     }
-    log.info("Updated $updateCount of ${nomisLocationIds.size} distinct incident detail location Ids")
+    log.info("Completed updating $updateCount of ${incidentDetailsLocationIds.size} distinct incident detail location Ids")
   }
 
   fun fixReportedAdjudicationLocations() {
     // look up location ids for reported adjudications
-    val reportedAdjudicationsIds = locationFixRepository.findNomisReportedAdjudicationsLocationsIds()
+    val reportedAdjudicationsLocationIds = locationFixRepository.findNomisReportedAdjudicationsLocationsIds()
     var updateCount: Int = 0
-    reportedAdjudicationsIds.mapNotNull { reportedAdjudicationsId ->
+    reportedAdjudicationsLocationIds.mapNotNull { reportedAdjudicationsLocationId ->
       try {
-        reportedAdjudicationsId to locationService.getNomisLocationDetail(reportedAdjudicationsId.toString())!!.dpsLocationId
+        reportedAdjudicationsLocationId to locationService.getNomisLocationDetail(reportedAdjudicationsLocationId.toString())!!.dpsLocationId
       } catch (e: Exception) {
-        log.warn("Failed to find DPS location UUID for Reported Adjudication location ID: $reportedAdjudicationsId", e)
+        log.warn("Failed to find DPS location UUID for Reported Adjudication location ID: $reportedAdjudicationsLocationId", e)
         null
       }
-    }.forEach { (reportedAdjudicationsId, dpsId) ->
-      locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
-        locationId = reportedAdjudicationsId,
-        locationUuid = UUID.fromString(dpsId),
-      )
-      updateCount++
+    }.forEach { (reportedAdjudicationsLocationId, dpsId) ->
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateReportedAdjudicationsLocationsIdDetails(
+          locationId = reportedAdjudicationsLocationId,
+          locationUuid = UUID.fromString(dpsId),
+        )
+        updateCount++
+      }
+      log.info("Updated location id $reportedAdjudicationsLocationId")
     }
-    log.info("Updated $updateCount of ${reportedAdjudicationsIds.size} distinct reported adjudication location Ids")
+    log.info("Completed updating $updateCount of ${reportedAdjudicationsLocationIds.size} distinct reported adjudication location Ids")
   }
 
   fun fixHearingLocations() {
     // look up location ids for hearings
-    val hearingIds = locationFixRepository.findNomisHearingsLocationsIds()
+    val hearingLocationIds = locationFixRepository.findNomisHearingsLocationsIds()
     var updateCount: Int = 0
-    hearingIds.mapNotNull { hearingId ->
+    hearingLocationIds.mapNotNull { hearingLocationId ->
       try {
-        hearingId to locationService.getNomisLocationDetail(hearingId.toString())!!.dpsLocationId
+        hearingLocationId to locationService.getNomisLocationDetail(hearingLocationId.toString())!!.dpsLocationId
       } catch (e: Exception) {
-        log.warn("Failed to find DPS location UUID for hearing location ID: $hearingId", e)
+        log.warn("Failed to find DPS location UUID for hearing location ID: $hearingLocationId", e)
         null
       }
     }.forEach { (hearingId, dpsId) ->
-      locationFixRepository.updateHearingsLocationIdDetails(locationId = hearingId, locationUuid = UUID.fromString(dpsId))
-      updateCount++
+      transactionHandler.newSpringTransaction {
+        locationFixRepository.updateHearingsLocationIdDetails(
+          locationId = hearingId,
+          locationUuid = UUID.fromString(dpsId),
+        )
+        updateCount++
+      }
+      log.info("Updated location id of $hearingId")
     }
-    log.info("Updated $updateCount of ${hearingIds.size} distinct hearing location Ids")
+    log.info("Updated $updateCount of ${hearingLocationIds.size} distinct hearing location Ids")
   }
 }
