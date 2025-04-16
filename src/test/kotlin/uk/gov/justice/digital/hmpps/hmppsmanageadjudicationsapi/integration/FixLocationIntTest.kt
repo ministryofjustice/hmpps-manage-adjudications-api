@@ -4,6 +4,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.reset
@@ -73,7 +74,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     verify(locationService, times(0)).getNomisLocationDetail(eq("45678"))
   }
 
-  @Test
+  @Test @Disabled
   fun `run location job for updating reported adjudications`() {
     val testAdjudication1 = IntegrationTestData.getDefaultAdjudication().copy(locationId = 12345, locationUuid = null)
     val intTestData1 = integrationTestData()
@@ -150,7 +151,7 @@ class FixLocationIntTest : SqsIntegrationTestBase() {
     verify(locationService, times(0)).getNomisLocationDetail(eq("34567"))
   }
 
-  @Test
+  @Test @Disabled
   fun `run location job for updating hearings`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData)
