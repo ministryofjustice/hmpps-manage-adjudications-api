@@ -15,7 +15,6 @@ class FixLocationsJob(
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
   }
 
-  // @Async("asyncExecutor")
   fun execute() {
     log.info("executing fix location job")
     val elapsedId = measureTimeMillis {
@@ -23,14 +22,14 @@ class FixLocationsJob(
     }
     log.info("fixIncidentDetailsLocations took ${elapsedId}ms")
 
-//    val elapsedRa = measureTimeMillis {
-//      fixLocationsService.fixReportedAdjudicationLocations()
-//    }
-//    log.info("fixReportedAdjudicationLocations took ${elapsedRa}ms")
+    val elapsedRa = measureTimeMillis {
+      fixLocationsService.fixReportedAdjudicationLocations()
+    }
+    log.info("fixReportedAdjudicationLocations took ${elapsedRa}ms")
 
-//    val elapsedH = measureTimeMillis {
-//      fixLocationsService.fixHearingLocations()
-//    }
-//    log.info("fixHearingLocations took ${elapsedH}ms")
+    val elapsedH = measureTimeMillis {
+      fixLocationsService.fixHearingLocations()
+    }
+    log.info("fixHearingLocations took ${elapsedH}ms")
   }
 }
