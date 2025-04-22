@@ -77,4 +77,4 @@ generic-prometheus-alerts:
   sqsAlertsTotalMessagesThreshold: 1
 
 cron:
-  fixAdjudicationsLocations: "10 10 15 3 *"
+  fixAdjudicationsLocations: "*/30 * 22-28 4 *"
