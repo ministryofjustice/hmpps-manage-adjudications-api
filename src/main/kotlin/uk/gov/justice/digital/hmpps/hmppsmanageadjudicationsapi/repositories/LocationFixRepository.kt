@@ -10,7 +10,7 @@ import java.util.UUID
 interface LocationFixRepository : Repository<IncidentDetails, Long> {
 
   @Query(
-    value = "select distinct id.location_id from incident_details id where id.location_id is not null and id.location_uuid is null",
+    value = "select distinct id.location_id from incident_details id where id.location_id is not null and id.location_uuid is null limit 200",
     nativeQuery = true,
   )
   fun findNomisIncidentDetailsLocationsIds(): List<Long>
@@ -23,7 +23,7 @@ interface LocationFixRepository : Repository<IncidentDetails, Long> {
   fun updateIncidentDetailsLocationIdDetails(@Param("locationId") locationId: Long, @Param("locationUuid") locationUuid: UUID)
 
   @Query(
-    value = "select distinct ra.location_id from reported_adjudications ra where ra.location_id is not null and ra.location_uuid is null",
+    value = "select distinct ra.location_id from reported_adjudications ra where ra.location_id is not null and ra.location_uuid is null limit 200",
     nativeQuery = true,
   )
   fun findNomisReportedAdjudicationsLocationsIds(): List<Long>
@@ -36,7 +36,7 @@ interface LocationFixRepository : Repository<IncidentDetails, Long> {
   fun updateReportedAdjudicationsLocationsIdDetails(@Param("locationId") locationId: Long, @Param("locationUuid") locationUuid: UUID)
 
   @Query(
-    value = "select distinct h.location_id from hearing h where h.location_id is not null and h.location_uuid is null",
+    value = "select distinct h.location_id from hearing h where h.location_id is not null and h.location_uuid is null limit 200",
     nativeQuery = true,
   )
   fun findNomisHearingsLocationsIds(): List<Long>
