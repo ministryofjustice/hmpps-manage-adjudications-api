@@ -19,10 +19,6 @@ generic-service:
       # Secure the all scheduled task endpoints from outside the Kubernetes ingress
       nginx.ingress.kubernetes.io/server-snippet: |
         server_tokens off; 
-        location /job/ {
-          deny all;
-          return 401;
-        }
         location /scheduled-tasks/ {
           deny all;
           return 401;
@@ -75,6 +71,3 @@ generic-prometheus-alerts:
   targetApplication: hmpps-manage-adjudications-api
   sqsAlertsOldestThreshold: 10
   sqsAlertsTotalMessagesThreshold: 1
-
-cron:
-  fixAdjudicationsLocations: "*/30 * 22-28 4 *"
