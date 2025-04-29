@@ -233,6 +233,7 @@ class IntegrationTestData(
         "gender" to testDataSet.gender.name,
         "agencyId" to testDataSet.agencyId,
         "locationId" to testDataSet.locationId,
+        "locationUuid" to testDataSet.locationUuid,
         "dateTimeOfIncident" to testDataSet.dateTimeOfIncident,
         "dateTimeOfDiscovery" to testDataSet.dateTimeOfDiscovery,
         "overrideAgencyId" to overrideAgencyId,
@@ -403,6 +404,7 @@ class IntegrationTestData(
       .bodyValue(
         mapOf(
           "locationId" to testDataSet.locationId,
+          "locationUuid" to testDataSet.locationUuid,
           "dateTimeOfIncident" to testDataSet.dateTimeOfIncidentISOString,
           "incidentRole" to IncidentRoleRequest("25b"),
         ),
@@ -529,6 +531,7 @@ class IntegrationTestData(
     .bodyValue(
       mapOf(
         "locationId" to testDataSet.locationId,
+        "locationUuid" to testDataSet.locationUuid,
         "dateTimeOfHearing" to (dateTimeOfHearing ?: testDataSet.dateTimeOfHearing!!),
         "oicHearingType" to oicHearingType!!.name,
       ),

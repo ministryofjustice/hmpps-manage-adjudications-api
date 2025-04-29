@@ -42,9 +42,9 @@ data class HearingAndPrisoner(
 @Schema(description = "Request to add a hearing")
 data class HearingRequest(
   @Schema(description = "The id of the location of the hearing", deprecated = true)
-  val locationId: Long,
+  val locationId: Long? = null,
   @Schema(description = "The uuid of the location of the hearing")
-  val locationUuid: UUID? = null,
+  val locationUuid: UUID,
   @Schema(description = "Date and time of the hearing", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfHearing: LocalDateTime,

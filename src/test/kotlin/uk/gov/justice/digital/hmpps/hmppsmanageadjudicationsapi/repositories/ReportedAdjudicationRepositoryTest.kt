@@ -39,6 +39,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuil
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 @DataJpaTest
 @ActiveProfiles("jpa")
@@ -171,6 +172,7 @@ class ReportedAdjudicationRepositoryTest {
           Hearing(
             dateTimeOfHearing = LocalDateTime.now(),
             locationId = 1,
+            locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
             agencyId = "",
             chargeNumber = "",
             oicHearingType = OicHearingType.GOV_ADULT,
@@ -784,6 +786,7 @@ class ReportedAdjudicationRepositoryTest {
           Hearing(
             dateTimeOfHearing = LocalDateTime.now().minusDays(1),
             locationId = 1,
+            locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
             agencyId = "",
             oicHearingType = OicHearingType.GOV_ADULT,
             chargeNumber = "",
@@ -794,6 +797,7 @@ class ReportedAdjudicationRepositoryTest {
           Hearing(
             dateTimeOfHearing = LocalDateTime.now().minusDays(1),
             locationId = 1,
+            locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
             agencyId = "",
             oicHearingType = OicHearingType.GOV_ADULT,
             chargeNumber = "",
@@ -1240,6 +1244,7 @@ class ReportedAdjudicationRepositoryTest {
         it.hearings.add(
           Hearing(
             locationId = 1,
+            locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2d"),
             dateTimeOfHearing = LocalDateTime.now(),
             chargeNumber = "12345-2",
             oicHearingType = OicHearingType.GOV_ADULT,

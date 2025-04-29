@@ -9,10 +9,10 @@ import java.util.UUID
 @Table(name = "incident_details")
 data class IncidentDetails(
   override val id: Long? = null,
-  var locationId: Long,
+  var locationId: Long? = null,
   @Transient
   val locationName: String? = null,
-  var locationUuid: UUID? = null,
+  var locationUuid: UUID,
   var dateTimeOfIncident: LocalDateTime,
   var dateTimeOfDiscovery: LocalDateTime,
   var handoverDeadline: LocalDateTime,

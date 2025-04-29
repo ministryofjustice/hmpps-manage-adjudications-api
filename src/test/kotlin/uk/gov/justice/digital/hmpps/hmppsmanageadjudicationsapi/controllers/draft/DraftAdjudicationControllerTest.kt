@@ -567,6 +567,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               gender = Gender.MALE,
               incidentDetails = IncidentDetailsDto(
                 locationId = 1,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT,
                 dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT,
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -582,6 +583,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
               gender = Gender.MALE,
               incidentDetails = IncidentDetailsDto(
                 locationId = 2,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
                 dateTimeOfIncident = DATE_TIME_OF_INCIDENT.plusMonths(1),
                 dateTimeOfDiscovery = DATE_TIME_OF_INCIDENT.plusMonths(1),
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE.plusMonths(1),

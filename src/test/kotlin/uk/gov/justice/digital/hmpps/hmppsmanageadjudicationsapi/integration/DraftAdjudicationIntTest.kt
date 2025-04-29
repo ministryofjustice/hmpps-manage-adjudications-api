@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_YOUTH_OFFENCE
 import java.time.LocalDateTime
+import java.util.*
 
 @Import(TestOAuth2Config::class)
 class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
@@ -34,6 +35,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
           "prisonerNumber" to "A12345",
           "agencyId" to "MDI",
           "locationId" to 1,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
           "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1),
         ),
@@ -50,6 +52,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-10-13T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-10-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(1)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationUuid").isEqualTo(UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"))
   }
 
   @Test
@@ -62,6 +65,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
           "prisonerNumber" to "A12345",
           "agencyId" to "MDI",
           "locationId" to 1,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT,
           "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusDays(1),
           "overrideAgencyId" to "BXI",
@@ -240,6 +244,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline")
       .isEqualTo(testAdjudication.handoverDeadlineISOString)
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(testAdjudication.locationId)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationUuid").isEqualTo(testAdjudication.locationUuid)
       .jsonPath("$.draftAdjudication.incidentStatement.statement").isEqualTo("test")
   }
 
@@ -288,6 +293,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfIncident" to DATE_TIME_OF_INCIDENT.plusMonths(1),
           "dateTimeOfDiscovery" to DATE_TIME_OF_INCIDENT.plusMonths(1).plusDays(1),
         ),
@@ -301,6 +307,7 @@ class DraftAdjudicationIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfDiscovery").isEqualTo("2010-11-13T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").isEqualTo("2010-11-15T10:00:00")
       .jsonPath("$.draftAdjudication.incidentDetails.locationId").isEqualTo(3)
+      .jsonPath("$.draftAdjudication.incidentDetails.locationUuid").isEqualTo(UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"))
   }
 
   @Test

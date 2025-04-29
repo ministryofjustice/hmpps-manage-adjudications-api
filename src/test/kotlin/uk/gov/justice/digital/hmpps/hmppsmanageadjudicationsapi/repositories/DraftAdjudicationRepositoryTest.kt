@@ -27,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Witness
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
+import java.util.*
 
 @DataJpaTest
 @ActiveProfiles("jpa")
@@ -206,6 +207,7 @@ class DraftAdjudicationRepositoryTest {
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2d"),
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(2),
@@ -225,6 +227,7 @@ class DraftAdjudicationRepositoryTest {
         agencyId = "LEI",
         incidentDetails = IncidentDetails(
           locationId = 2,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2f"),
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident,
           handoverDeadline = dateTimeOfIncident.plusDays(2),
@@ -246,6 +249,7 @@ class DraftAdjudicationRepositoryTest {
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 3,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2f"),
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(3),
@@ -335,8 +339,10 @@ class DraftAdjudicationRepositoryTest {
     }
     val id = draftAdjudicationRepository.save(draft).id
     assertThat(
-      draftAdjudicationRepository.findById(id)
-        .get().offenceDetails.first().protectedCharacteristics.first().characteristic == Characteristic.AGE,
+      id?.let {
+        draftAdjudicationRepository.findById(it)
+          .get().offenceDetails.first().protectedCharacteristics.first().characteristic
+      } == Characteristic.AGE,
     ).isTrue
   }
 
@@ -346,6 +352,7 @@ class DraftAdjudicationRepositoryTest {
     agencyId = "MDI",
     incidentDetails = IncidentDetails(
       locationId = 2,
+      locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
       dateTimeOfIncident = DEFAULT_DATE_TIME,
       dateTimeOfDiscovery = DEFAULT_DATE_TIME,
       handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),
@@ -365,6 +372,7 @@ class DraftAdjudicationRepositoryTest {
     agencyId = "MDI",
     incidentDetails = IncidentDetails(
       locationId = 2,
+      locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
       dateTimeOfIncident = DEFAULT_DATE_TIME,
       dateTimeOfDiscovery = DEFAULT_DATE_TIME.plusDays(1),
       handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),

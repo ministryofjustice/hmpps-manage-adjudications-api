@@ -143,6 +143,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = LocalDateTime.now().minusDays(10),
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               oicHearingType = OicHearingType.GOV,
               oicHearingId = 1,
               agencyId = "",
@@ -171,6 +172,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = LocalDateTime.now().plusDays(10),
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
               oicHearingType = OicHearingType.GOV,
               oicHearingId = 1,
               agencyId = "",
@@ -200,6 +202,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = now,
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
               oicHearingType = OicHearingType.GOV,
               oicHearingId = 1,
               agencyId = "",
@@ -236,6 +239,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(1)
+      assertThat(argumentCaptor.value.hearings.first().locationUuid).isEqualTo(UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"))
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now)
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.originatingAgencyId)
       assertThat(argumentCaptor.value.hearings.first().chargeNumber).isEqualTo(reportedAdjudication.chargeNumber)
@@ -391,6 +395,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = LocalDateTime.now().plusDays(3),
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2d"),
               oicHearingType = OicHearingType.GOV,
               oicHearingId = 1,
               agencyId = "",
@@ -427,6 +432,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(argumentCaptor.value.hearings.size).isEqualTo(1)
       assertThat(argumentCaptor.value.hearings.first().locationId).isEqualTo(2)
+      assertThat(argumentCaptor.value.hearings.first().locationUuid).isEqualTo(UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"))
       assertThat(argumentCaptor.value.hearings.first().dateTimeOfHearing).isEqualTo(now.plusDays(1))
       assertThat(argumentCaptor.value.hearings.first().agencyId).isEqualTo(reportedAdjudication.originatingAgencyId)
       assertThat(argumentCaptor.value.hearings.first().chargeNumber).isEqualTo(reportedAdjudication.chargeNumber)
@@ -509,6 +515,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = dateTimeOfHearing,
               locationId = 1L,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2e"),
               agencyId = reportedAdjudication.originatingAgencyId,
               chargeNumber = "1235",
               oicHearingType = OicHearingType.GOV,
@@ -539,6 +546,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               Hearing(
                 agencyId = "",
                 locationId = 1L,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
                 oicHearingType = OicHearingType.INAD_ADULT,
                 dateTimeOfHearing = LocalDateTime.now().plusDays(5),
                 oicHearingId = 1L,
@@ -585,6 +593,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               Hearing(
                 agencyId = "",
                 locationId = 1L,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
                 oicHearingType = OicHearingType.INAD_ADULT,
                 dateTimeOfHearing = LocalDateTime.now().plusDays(5),
                 oicHearingId = 1L,
@@ -627,6 +636,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               Hearing(
                 agencyId = "",
                 locationId = 1L,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
                 oicHearingType = OicHearingType.INAD_ADULT,
                 dateTimeOfHearing = LocalDateTime.now().plusDays(5),
                 oicHearingId = 1L,
@@ -659,6 +669,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = now.atStartOfDay().plusHours(5),
               locationId = 1L,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               agencyId = it.originatingAgencyId,
               chargeNumber = it.chargeNumber,
               oicHearingType = OicHearingType.GOV,
@@ -668,6 +679,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
               oicHearingId = 2L,
               dateTimeOfHearing = now.atStartOfDay().plusHours(6),
               locationId = 1L,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               agencyId = it.originatingAgencyId,
               chargeNumber = it.chargeNumber,
               oicHearingType = OicHearingType.GOV,
@@ -709,6 +721,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.first().oicHearingType).isEqualTo(reportedAdjudication.hearings[0].oicHearingType)
       assertThat(response.first().status).isEqualTo(reportedAdjudication.status)
       assertThat(response.first().locationId).isEqualTo(reportedAdjudication.hearings[0].locationId)
+      assertThat(response.first().locationUuid).isEqualTo(reportedAdjudication.hearings[0].locationUuid)
 
       assertThat(response[1].id).isEqualTo(2)
       assertThat(response[2].id).isEqualTo(3)
@@ -771,6 +784,7 @@ class HearingServiceTest : ReportedAdjudicationTestBase() {
       assertThat(response.first().prisonerNumber).isEqualTo("AE12345")
       assertThat(response.first().hearing.id).isEqualTo(1)
       assertThat(response.first().hearing.locationId).isEqualTo(2)
+      assertThat(response.first().hearing.locationUuid).isEqualTo(UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"))
       assertThat(response.first().hearing.oicHearingType).isEqualTo(OicHearingType.GOV)
       assertThat(response.first().hearing.agencyId).isEqualTo("MDI")
       assertThat(response.first().hearing.dateTimeOfHearing).isEqualTo(now)

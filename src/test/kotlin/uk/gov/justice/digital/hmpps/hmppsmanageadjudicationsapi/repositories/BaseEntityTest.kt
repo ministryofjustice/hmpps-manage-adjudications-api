@@ -15,6 +15,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Inciden
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.IncidentRole
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.UserDetails
 import java.time.LocalDateTime
+import java.util.*
 
 @DataJpaTest
 @ActiveProfiles("jpa")
@@ -46,6 +47,7 @@ class BaseEntityTest {
     agencyId = "MDI",
     incidentDetails = IncidentDetails(
       locationId = 2,
+      locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
       dateTimeOfIncident = DEFAULT_DATE_TIME,
       dateTimeOfDiscovery = DEFAULT_DATE_TIME,
       handoverDeadline = DEFAULT_DATE_TIME.plusDays(2),

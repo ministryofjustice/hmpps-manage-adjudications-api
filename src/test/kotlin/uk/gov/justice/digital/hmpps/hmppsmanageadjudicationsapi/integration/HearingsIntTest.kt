@@ -7,6 +7,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDateTime
+import java.util.*
 
 @Import(TestOAuth2Config::class)
 class HearingsIntTest : SqsIntegrationTestBase() {
@@ -28,6 +29,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV.name,
         ),
@@ -57,6 +59,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 1,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfHearing" to dateTimeOfHearing,
           "oicHearingType" to OicHearingType.GOV_YOI.name,
         ),
@@ -77,6 +80,7 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .bodyValue(
         mapOf(
           "locationId" to 3,
+          "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           "dateTimeOfHearing" to dateTimeOfHearing.plusDays(1),
           "oicHearingType" to OicHearingType.GOV_ADULT.name,
         ),
@@ -175,5 +179,6 @@ class HearingsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.[0].prisonerNumber").isEqualTo("AE99999")
       .jsonPath("$.[0].hearing.dateTimeOfHearing").isEqualTo("2010-11-19T10:00:00")
       .jsonPath("$.[0].hearing.locationId").isEqualTo(testData.locationId)
+      .jsonPath("$.[0].hearing.locationUuid").isEqualTo("0194ad42-6616-72e9-96e5-e4fe9356e32b")
   }
 }
