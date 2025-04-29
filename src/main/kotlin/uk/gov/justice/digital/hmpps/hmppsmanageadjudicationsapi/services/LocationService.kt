@@ -9,15 +9,10 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.util.UUID
 
-data class LocationResponse(
-  val dpsLocationId: String,
-  val nomisLocationId: Int,
-)
-
 data class LocationDetailResponse(
   val id: String,
   val prisonId: String,
-  val localName: String,
+  val localName: String?,
   val pathHierarchy: String,
   val key: String,
 )
@@ -32,7 +27,6 @@ data class ErrorResponse(
 
 @Service
 class LocationService(
-  @Qualifier("prisonLocationWebClient") private val prisonLocationWebClient: WebClient,
   @Qualifier("prisonLocationDetailWebClient") private val locationDetailWebClient: WebClient,
 ) {
 

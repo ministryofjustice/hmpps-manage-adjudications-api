@@ -17,12 +17,11 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 class LocationServiceTest {
-  // Mock the two WebClients your service expects:
-  private val prisonLocationWebClient: WebClient = mock()
+  // Mock the WebClient(s) your service expects:
   private val locationDetailWebClient: WebClient = mock()
 
   // Inject them into the service
-  private val locationService = LocationService(prisonLocationWebClient, locationDetailWebClient)
+  private val locationService = LocationService(locationDetailWebClient)
 
   @Nested
   inner class GetLocationDetailTests {

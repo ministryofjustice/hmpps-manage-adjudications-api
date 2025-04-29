@@ -207,7 +207,7 @@ class DraftAdjudicationRepositoryTest {
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 2,
-          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2d"),
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2f"),
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(2),
@@ -249,7 +249,7 @@ class DraftAdjudicationRepositoryTest {
         agencyId = "MDI",
         incidentDetails = IncidentDetails(
           locationId = 3,
-          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2f"),
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           dateTimeOfIncident = dateTimeOfIncident,
           dateTimeOfDiscovery = dateTimeOfIncident.plusDays(1),
           handoverDeadline = dateTimeOfIncident.plusDays(3),
