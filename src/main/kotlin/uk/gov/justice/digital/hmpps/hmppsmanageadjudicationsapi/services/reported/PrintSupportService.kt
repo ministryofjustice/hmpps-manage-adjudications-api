@@ -46,7 +46,7 @@ class PrintSupportService(
       chargeNumber = chargeNumber,
     )
     val previousAtCurrentEstablishmentCount = otherChargesOnSentence.count {
-      it.originatingAgencyId == currentEstablishment || it.overrideAgencyId == currentEstablishment
+      it.originatingAgencyId == currentEstablishment
     }
     val punishmentCutOff = LocalDate.now().minusDays(1)
     val chargesWithActiveSuspendedPunishments = otherChargesOnSentence.filter {
