@@ -59,7 +59,6 @@ class SubjectAccessRequestService(
       }
 
       dto.prisonerName = prisonerName
-//      TODO: set up test to test getLocationDetail
 
       val incidentUuid = dto.incidentDetails.locationUuid
       val locationName = locationService.getLocationDetail(incidentUuid)?.localName ?: "Unknown"

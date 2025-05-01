@@ -143,13 +143,13 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
       prisonerNumber: String? = null,
       agencyId: String = "MDI",
       locationId: Long? = null,
-      locationUuid: UUID? = null,
+      locationUuid: UUID = UUID.fromString(LOCATION_1),
       dateTimeOfIncident: LocalDateTime? = null,
       dateTimeOfDiscovery: LocalDateTime? = null,
       incidentRole: IncidentRoleRequest? = null,
     ): ResultActions {
       val jsonBody =
-        if ((locationId == null || locationUuid == null) && dateTimeOfIncident == null && prisonerNumber == null) {
+        if ((locationId == null) && dateTimeOfIncident == null && prisonerNumber == null) {
           ""
         } else {
           objectMapper.writeValueAsString(
@@ -260,6 +260,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.dateTimeOfIncident").value("2010-10-12T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.handoverDeadline").value("2010-10-14T10:00:00"))
         .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationId").value(1))
+        .andExpect(jsonPath("$.draftAdjudication.incidentDetails.locationUuid").value(LOCATION_1))
         .andExpect(
           jsonPath("$.draftAdjudication.incidentRole.roleCode").value(
             INCIDENT_ROLE_WITH_ALL_VALUES_RESPONSE_DTO.roleCode,
@@ -477,8 +478,8 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     private fun editIncidentDetailsRequest(
       id: Long,
-      locationId: Long,
-      locationUuid: UUID? = null,
+      locationId: Long? = null,
+      locationUuid: UUID,
       dateTimeOfIncident: LocalDateTime?,
       dateTimeOfDiscovery: LocalDateTime?,
       incidentRole: IncidentRoleRequest?,
