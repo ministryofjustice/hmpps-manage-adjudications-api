@@ -31,9 +31,12 @@ spring:
     open-in-view: false
     show-sql: false
     generate-ddl: false
-    hibernate:
-      ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: false
+        hbm2ddl:
+          auto: none
 
   main:
     allow-bean-definition-overriding: true
