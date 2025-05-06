@@ -46,7 +46,6 @@ class SubjectAccessRequestService(
     )
     if (reported.isEmpty()) return null
 
-    val locationCache = mutableMapOf<Long, String?>()
     val prisonerCache = mutableMapOf<String, String?>()
 
     val dtos = reported.map { adjudication ->
@@ -58,24 +57,12 @@ class SubjectAccessRequestService(
         val prisonerDet = prisonerSearchService.getPrisonerDetail(prisonerNumber)
         prisonerDet?.firstName + " " + prisonerDet?.lastName
       }
-      // Set the locationName back into incidentDetails
+
       dto.prisonerName = prisonerName
 
-      // Retrieve the locationId from 'incidentDetails'
-      val locationId = dto.incidentDetails.locationId
-      if (locationId != null) {
-        // Use cache or call the service
-        val locationName = locationCache.getOrPut(locationId) {
-          // First, call the getNomisLocationDetail to find the DPS location ID
-          val dpsLocationId = locationService.getNomisLocationDetail(locationId.toString())?.dpsLocationId
-          // If dpsLocationId is non-null, call getLocationDetail and return its localName
-          dpsLocationId?.let { id ->
-            locationService.getLocationDetail(id)?.localName
-          }
-        }
-        // Set the locationName back into incidentDetails
-        dto.incidentDetails.locationName = locationName
-      }
+      val incidentUuid = dto.incidentDetails.locationUuid
+      val locationName = locationService.getLocationDetail(incidentUuid)?.localName ?: "Unknown"
+      dto.incidentDetails.locationName = locationName
 
       val statusDescription = ReportedAdjudicationStatusTransformer.displayName(dto.status)
       dto.statusDescription = statusDescription
@@ -134,16 +121,9 @@ class SubjectAccessRequestService(
         }
         hearingItem.outcome?.pleaDescription = hearingOutcomePleaDescription
 
-        // Use cache or call the service
-        val hearingLocationName = locationCache.getOrPut(hearingItem.locationId) {
-          // First, call the getNomisLocationDetail to find the DPS location ID
-          val dpsHearingLocationId = locationService.getNomisLocationDetail(locationId.toString())?.dpsLocationId
-          // If dpsLocationId is non-null, call getLocationDetail and return its localName
-          dpsHearingLocationId?.let { id ->
-            locationService.getLocationDetail(id)?.localName
-          }
-        }
-        // Set the locationName back into incidentDetails
+        val hearingUuid = hearingItem.locationUuid
+        val hearingLocationName = locationService.getLocationDetail(hearingUuid)?.localName ?: "Unknown"
+
         hearingItem.locationName = hearingLocationName
       }
 

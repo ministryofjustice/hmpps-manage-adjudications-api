@@ -110,11 +110,11 @@ class DraftAdjudicationService(
     gender: Gender,
     agencyId: String,
     overrideAgencyId: String?,
-    locationId: Long,
+    locationId: Long? = null,
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime? = null,
     offenderBookingId: Long? = null,
-    locationUuid: UUID? = null,
+    locationUuid: UUID,
   ): DraftAdjudicationDto {
     dateOfDiscoveryValidation(dateTimeOfDiscovery, dateTimeOfIncident)
 
@@ -158,8 +158,8 @@ class DraftAdjudicationService(
 
   fun editIncidentDetails(
     id: Long,
-    locationId: Long,
-    locationUuid: UUID? = null,
+    locationId: Long? = null,
+    locationUuid: UUID,
     dateTimeOfIncident: LocalDateTime,
     dateTimeOfDiscovery: LocalDateTime?,
   ): DraftAdjudicationDto {

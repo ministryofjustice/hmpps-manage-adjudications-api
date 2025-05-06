@@ -261,8 +261,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         )
 
       assertThat(response.first { it.chargeNumber == "3" }.incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(first.dateTimeOfDiscovery, 2L)
+        .extracting("dateTimeOfDiscovery", "locationId", "locationUuid")
+        .contains(first.dateTimeOfDiscovery, 2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"))
     }
 
     @Test
@@ -282,8 +282,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         )
 
       assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(third.dateTimeOfDiscovery, 2L)
+        .extracting("dateTimeOfDiscovery", "locationId", "locationUuid")
+        .contains(third.dateTimeOfDiscovery, 2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"))
     }
 
     @Test
@@ -303,8 +303,8 @@ class ReportsServiceTest : ReportedAdjudicationTestBase() {
         )
 
       assertThat(response.first().incidentDetails)
-        .extracting("dateTimeOfDiscovery", "locationId")
-        .contains(second.dateTimeOfDiscovery, 3L)
+        .extracting("dateTimeOfDiscovery", "locationId", "locationUuid")
+        .contains(second.dateTimeOfDiscovery, 3L, UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"))
     }
   }
 

@@ -52,8 +52,8 @@ enum class OicHearingType {
 @Table(name = "hearing")
 data class Hearing(
   override val id: Long? = null,
-  var locationId: Long,
-  var locationUuid: UUID? = null,
+  var locationId: Long? = null,
+  var locationUuid: UUID,
   var dateTimeOfHearing: LocalDateTime,
   @field:Length(max = 6)
   var agencyId: String,

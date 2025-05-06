@@ -150,11 +150,12 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         .extracting("prisonerNumber", "id", "chargeNumber", "startedByUserId", "gender")
         .contains("A12345", 1L, "1235", "A_SMITH", Gender.MALE)
       assertThat(createdDraft.incidentDetails)
-        .extracting("dateTimeOfIncident", "handoverDeadline", "locationId")
+        .extracting("dateTimeOfIncident", "handoverDeadline", "locationId", "locationUuid")
         .contains(
           DATE_TIME_OF_INCIDENT,
           DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           2L,
+          UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
         )
       assertThat(createdDraft.incidentRole)
         .extracting(
@@ -278,6 +279,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       assertThat(reportedAdjudicationArgumentCaptor.value)
         .extracting(
           "locationId",
+          "locationUuid",
           "dateTimeOfIncident",
           "handoverDeadline",
           "incidentRoleCode",
@@ -287,6 +289,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         )
         .contains(
           1L,
+          UUID.fromString("0194ac91-b762-7baf-a52e-725d34f05a78"),
           incidentTime,
           DATE_TIME_REPORTED_ADJUDICATION_EXPIRES,
           INCIDENT_ROLE_CODE,
@@ -761,7 +764,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
 
     fun incidentRoleWithNoValuesSet(): IncidentRole = IncidentRole(null, null, null, null)
 
-    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, clock: Clock) = IncidentDetails(
+    fun incidentDetails(locationId: Long? = null, locationUuid: UUID, clock: Clock) = IncidentDetails(
       locationId = locationId,
       locationUuid = locationUuid,
       dateTimeOfIncident = LocalDateTime.now(clock),
@@ -769,7 +772,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
-    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, now: LocalDateTime) = IncidentDetails(
+    fun incidentDetails(locationId: Long? = null, locationUuid: UUID, now: LocalDateTime) = IncidentDetails(
       locationId = locationId,
       locationUuid = locationUuid,
       dateTimeOfIncident = now,

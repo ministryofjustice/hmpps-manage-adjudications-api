@@ -43,9 +43,9 @@ data class NewAdjudicationRequest(
   @Schema(description = "The optional agencyId where the prisoner now resides", example = "MDI")
   val overrideAgencyId: String? = null,
   @Schema(description = "The id of the location the incident took place", deprecated = true)
-  val locationId: Long,
+  val locationId: Long? = null,
   @Schema(description = "The uuid of the location the incident took place")
-  val locationUuid: UUID? = null,
+  val locationUuid: UUID,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,
@@ -98,9 +98,9 @@ data class IncidentStatementRequest(
 @Schema(description = "Request to edit the incident details")
 data class EditIncidentDetailsRequest(
   @Schema(description = "The id of the location the incident took place", deprecated = true)
-  val locationId: Long,
+  val locationId: Long? = null,
   @Schema(description = "The uuid of the location the incident took place")
-  val locationUuid: UUID? = null,
+  val locationUuid: UUID,
   @Schema(description = "Date and time the incident occurred", example = "2010-10-12T10:00:00")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   val dateTimeOfIncident: LocalDateTime,

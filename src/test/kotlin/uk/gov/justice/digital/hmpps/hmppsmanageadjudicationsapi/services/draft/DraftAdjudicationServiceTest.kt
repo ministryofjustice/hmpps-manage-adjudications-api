@@ -101,9 +101,10 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         .contains(1L, "A12345", Gender.MALE)
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
         .contains(
           2L,
+          UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"),
           DATE_TIME_OF_INCIDENT,
           DATE_TIME_OF_INCIDENT.plusDays(1),
           DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -192,8 +193,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         .contains(1L, "A12345", "A_USER")
 
       assertThat(draftAdjudicationDto.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident")
-        .contains(2L, now)
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident")
+        .contains(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now)
 
       assertThat(draftAdjudicationDto.incidentRole)
         .extracting("roleCode", "offenceRule", "associatedPrisonersNumber", "associatedPrisonersName")
@@ -614,9 +615,10 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
         .contains(
           3L,
+          UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
           editedDateTimeOfIncident,
           editedDateTimeOfIncident,
           DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -626,8 +628,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery")
-        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident)
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident", "dateTimeOfDiscovery")
+        .contains(3L, UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"), editedDateTimeOfIncident, editedDateTimeOfIncident)
     }
 
     @Test
@@ -680,9 +682,10 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         .contains(1L, "A12345")
 
       assertThat(draftAdjudication.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident", "dateTimeOfDiscovery", "handoverDeadline")
         .contains(
           3L,
+          UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"),
           editedDateTimeOfIncident,
           editedDateTimeOfIncident.plusDays(1),
           DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -692,8 +695,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       verify(draftAdjudicationRepository).save(argumentCaptor.capture())
 
       assertThat(argumentCaptor.value.incidentDetails)
-        .extracting("locationId", "dateTimeOfIncident", "dateTimeOfDiscovery")
-        .contains(3L, editedDateTimeOfIncident, editedDateTimeOfIncident.plusDays(1))
+        .extracting("locationId", "locationUuid", "dateTimeOfIncident", "dateTimeOfDiscovery")
+        .contains(3L, UUID.fromString("0194ac91-0968-75b1-b304-73e905ab934d"), editedDateTimeOfIncident, editedDateTimeOfIncident.plusDays(1))
     }
 
     @Test
@@ -792,6 +795,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
               incidentDetails = IncidentDetails(
                 id = 2,
                 locationId = 2,
+                locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
                 dateTimeOfIncident = LocalDateTime.now(clock).plusMonths(2),
                 dateTimeOfDiscovery = LocalDateTime.now(clock).plusMonths(2).plusDays(1),
                 handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
@@ -1028,7 +1032,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
     val pageable = Pageable.ofSize(20).withPage(0)
 
-    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, clock: Clock) = IncidentDetails(
+    fun incidentDetails(locationId: Long? = null, locationUuid: UUID, clock: Clock) = IncidentDetails(
       locationId = locationId,
       locationUuid = locationUuid,
       dateTimeOfIncident = LocalDateTime.now(clock),
@@ -1036,7 +1040,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       handoverDeadline = DATE_TIME_DRAFT_ADJUDICATION_HANDOVER_DEADLINE,
     )
 
-    fun incidentDetails(locationId: Long, locationUuid: UUID? = null, now: LocalDateTime) = IncidentDetails(
+    fun incidentDetails(locationId: Long? = null, locationUuid: UUID, now: LocalDateTime) = IncidentDetails(
       locationId = locationId,
       locationUuid = locationUuid,
       dateTimeOfIncident = now,
@@ -1105,8 +1109,8 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       .contains(1L, "A12345", "A_USER")
 
     assertThat(draftAdjudicationDto.incidentDetails)
-      .extracting("locationId", "dateTimeOfIncident")
-      .contains(2L, now)
+      .extracting("locationId", "locationUuid", "dateTimeOfIncident")
+      .contains(2L, UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff"), now)
 
     assertThat(draftAdjudicationDto.incidentRole)
       .extracting("roleCode", "offenceRule", "associatedPrisonersNumber", "associatedPrisonersName")

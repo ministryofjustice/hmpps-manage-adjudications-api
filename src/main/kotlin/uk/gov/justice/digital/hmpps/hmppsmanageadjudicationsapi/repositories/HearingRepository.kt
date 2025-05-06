@@ -19,6 +19,7 @@ interface HearingRepository : CrudRepository<Hearing, Long> {
       SELECT ra.prisoner_number,
              h.date_time_of_hearing,
              h.location_id,
+             h.location_uuid,
              h.oic_hearing_type,
              h.id AS hearing_id
        FROM reported_adjudications ra
@@ -41,7 +42,7 @@ interface HearingsByPrisoner {
   fun getPrisonerNumber(): String
   fun getDateTimeOfHearing(): LocalDateTime
   fun getOicHearingType(): String
-  fun getLocationId(): Long
-  fun getLocationUuid(): UUID?
+  fun getLocationId(): Long?
+  fun getLocationUuid(): UUID
   fun getHearingId(): Long
 }

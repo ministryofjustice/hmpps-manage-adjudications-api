@@ -7,16 +7,12 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
-
-data class LocationResponse(
-  val dpsLocationId: String,
-  val nomisLocationId: Int,
-)
+import java.util.UUID
 
 data class LocationDetailResponse(
   val id: String,
   val prisonId: String,
-  val localName: String,
+  val localName: String?,
   val pathHierarchy: String,
   val key: String,
 )
@@ -31,7 +27,6 @@ data class ErrorResponse(
 
 @Service
 class LocationService(
-  @Qualifier("prisonLocationWebClient") private val prisonLocationWebClient: WebClient,
   @Qualifier("prisonLocationDetailWebClient") private val locationDetailWebClient: WebClient,
 ) {
 
@@ -39,48 +34,25 @@ class LocationService(
   private val objectMapper = jacksonObjectMapper()
 
   /**
-   * Fetches Nomis location details by location ID.
-   * @param locationId The Nomis location ID.
-   * @return The location details or `null` if not found.
-   */
-  fun getNomisLocationDetail(locationId: String): LocationResponse? {
-    logger.info("Fetching Nomis location details for ID: $locationId")
-    return try {
-      prisonLocationWebClient.get()
-        .uri("/api/locations/nomis/{locationId}", locationId)
-        .retrieve()
-        .bodyToMono(LocationResponse::class.java)
-        .block()
-    } catch (ex: WebClientResponseException) {
-      val errorResponse = handleError(ex)
-      logger.error("Error fetching location details for ID: $locationId - $errorResponse")
-      null
-    } catch (ex: Exception) {
-      logger.error("Unexpected error while fetching location details for ID: $locationId", ex)
-      throw RuntimeException("Failed to fetch location details for ID: $locationId", ex)
-    }
-  }
-
-  /**
    * Fetches location details with dps location ID.
-   * @param locationId The DPS location ID.
+   * @param locationUuid The DPS location ID.
    * @return The location details or `null` if not found.
    */
-  fun getLocationDetail(locationId: String): LocationDetailResponse? {
-    logger.info("Fetching location details for ID: $locationId")
+  fun getLocationDetail(locationUuid: UUID): LocationDetailResponse? {
+    logger.info("Fetching location details for ID: $locationUuid")
     return try {
       locationDetailWebClient.get()
-        .uri("/locations/{locationId}?formatLocalName=true", locationId)
+        .uri("/locations/{locationUuid}?formatLocalName=true", locationUuid)
         .retrieve()
         .bodyToMono(LocationDetailResponse::class.java)
         .block()
     } catch (ex: WebClientResponseException) {
       val errorResponse = handleError(ex)
-      logger.error("Error fetching location details for ID: $locationId - $errorResponse")
+      logger.error("Error fetching location details for ID: $locationUuid - $errorResponse")
       null
     } catch (ex: Exception) {
-      logger.error("Unexpected error while fetching location details for ID: $locationId", ex)
-      throw RuntimeException("Failed to fetch location details for ID: $locationId", ex)
+      logger.error("Unexpected error while fetching location details for ID: $locationUuid", ex)
+      throw RuntimeException("Failed to fetch location details for ID: $locationUuid", ex)
     }
   }
 

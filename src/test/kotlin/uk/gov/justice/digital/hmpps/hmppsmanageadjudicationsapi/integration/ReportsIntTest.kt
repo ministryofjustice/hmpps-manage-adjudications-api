@@ -14,11 +14,11 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishm
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_CREATED_USER_ID
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationDetailResponse
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerSearchService
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Import(TestOAuth2Config::class)
 class ReportsIntTest : SqsIntegrationTestBase() {
@@ -485,10 +485,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     whenever(prisonerSearchService.getPrisonerDetail("ANY_PRN"))
       .thenReturn(PrisonerResponse("Jane", "Doe"))
 
-    whenever(locationService.getNomisLocationDetail("12345"))
-      .thenReturn(LocationResponse("A-123", 12345))
-
-    whenever(locationService.getLocationDetail("A-123"))
+    whenever(locationService.getLocationDetail(UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c")))
       .thenReturn(
         LocationDetailResponse(
           "9d306768-26a3-4bce-8b5d-3ec0f8a57b2c",
@@ -518,10 +515,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
     whenever(prisonerSearchService.getPrisonerDetail("ANY_PRN"))
       .thenReturn(PrisonerResponse("Jane", "Doe"))
 
-    whenever(locationService.getNomisLocationDetail("12345"))
-      .thenReturn(LocationResponse("A-123", 12345))
-
-    whenever(locationService.getLocationDetail("A-123"))
+    whenever(locationService.getLocationDetail(UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c")))
       .thenReturn(
         LocationDetailResponse(
           "9d306768-26a3-4bce-8b5d-3ec0f8a57b2c",

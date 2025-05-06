@@ -43,8 +43,8 @@ class HearingService(
 
   fun createHearing(
     chargeNumber: String,
-    locationId: Long,
-    locationUuid: UUID? = null,
+    locationId: Long? = null,
+    locationUuid: UUID,
     dateTimeOfHearing: LocalDateTime,
     oicHearingType: OicHearingType,
   ): ReportedAdjudicationDto {
@@ -83,8 +83,8 @@ class HearingService(
 
   fun amendHearing(
     chargeNumber: String,
-    locationId: Long,
-    locationUuid: UUID? = null,
+    locationId: Long? = null,
+    locationUuid: UUID,
     dateTimeOfHearing: LocalDateTime,
     oicHearingType: OicHearingType,
   ): ReportedAdjudicationDto {

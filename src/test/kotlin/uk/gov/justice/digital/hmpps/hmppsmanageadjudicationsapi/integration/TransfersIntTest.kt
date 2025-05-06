@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.HMPPSDo
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonOffenderEventListener
 import java.time.Instant
 import java.time.LocalDateTime
+import java.util.*
 
 @Import(TestOAuth2Config::class)
 class TransfersIntTest : SqsIntegrationTestBase() {
@@ -87,6 +88,7 @@ class TransfersIntTest : SqsIntegrationTestBase() {
           .bodyValue(
             mapOf(
               "locationId" to 1,
+              "locationUuid" to UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               "dateTimeOfHearing" to dateTimeOfHearing,
               "oicHearingType" to OicHearingType.GOV.name,
             ),

@@ -32,6 +32,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 class OutcomeServiceTest : ReportedAdjudicationTestBase() {
   private val outcomeService = OutcomeService(
@@ -997,6 +998,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           agencyId = "",
           oicHearingType = OicHearingType.GOV,
           locationId = 1L,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
         ),
       )
       it.createdByUserId = ""

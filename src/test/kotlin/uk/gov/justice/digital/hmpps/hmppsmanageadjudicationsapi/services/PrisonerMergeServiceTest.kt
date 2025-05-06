@@ -18,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationTestBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.LocalDateTime
+import java.util.*
 
 class PrisonerMergeServiceTest : ReportedAdjudicationTestBase() {
   private val draftAdjudicationRepository: DraftAdjudicationRepository = mock()
@@ -118,6 +119,7 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
         dateTimeOfIncident = LocalDateTime.now(),
         handoverDeadline = LocalDateTime.now(),
         locationId = 1,
+        locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
       ),
     )
     whenever(draftAdjudicationRepository.findByPrisonerNumber(any())).thenReturn(listOf(fromReport))
@@ -143,6 +145,7 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
         dateTimeOfIncident = LocalDateTime.now(),
         handoverDeadline = LocalDateTime.now(),
         locationId = 1,
+        locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
       ),
       incidentRole = IncidentRole(associatedPrisonersNumber = "FROM", associatedPrisonersName = "", roleCode = ""),
     )
@@ -173,6 +176,7 @@ class PrisonerMergeServiceDraftTest : DraftAdjudicationTestBase() {
         dateTimeOfIncident = LocalDateTime.now(),
         handoverDeadline = LocalDateTime.now(),
         locationId = 1,
+        locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
       ),
       offenceDetails = mutableListOf(
         Offence(

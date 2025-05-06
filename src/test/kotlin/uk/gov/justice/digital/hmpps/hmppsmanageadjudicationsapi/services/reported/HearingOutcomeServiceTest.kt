@@ -436,6 +436,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               agencyId = "1",
               chargeNumber = "2",
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               oicHearingId = 1,
             ).also { h ->
               h.hearingOutcome = HearingOutcome(
@@ -467,6 +468,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
               agencyId = "1",
               chargeNumber = "2",
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
               oicHearingId = 1,
             ).also { h ->
               h.hearingOutcome = HearingOutcome(
@@ -500,6 +502,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
             agencyId = "",
             oicHearingType = OicHearingType.GOV,
             locationId = 1L,
+            locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
           ),
         )
         it.createdByUserId = ""

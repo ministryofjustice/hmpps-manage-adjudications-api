@@ -561,6 +561,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
@@ -618,6 +619,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
@@ -695,6 +697,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
@@ -706,6 +709,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2c"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
@@ -722,6 +726,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2d"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
@@ -757,6 +762,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2e"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV_ADULT,
@@ -785,6 +791,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingId = 1,
           dateTimeOfHearing = LocalDateTime.now(),
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2f"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV,
@@ -836,6 +843,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           oicHearingId = 1,
           dateTimeOfHearing = LocalDateTime.now().plusDays(5),
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.GOV,
@@ -866,6 +874,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       it.hearings.add(
         Hearing(
           locationId = 1,
+          locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
           agencyId = "",
           chargeNumber = "1",
           oicHearingType = OicHearingType.INAD_ADULT,
@@ -1209,6 +1218,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               agencyId = "",
               locationId = 1L,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               oicHearingId = 1L,
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now(),
@@ -1239,6 +1249,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               agencyId = "",
               locationId = 1L,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               oicHearingId = 1L,
               oicHearingType = OicHearingType.GOV,
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
@@ -1290,6 +1301,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = LocalDateTime.now(),
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               agencyId = "",
               oicHearingId = 1,
               oicHearingType = OicHearingType.GOV,
@@ -1328,6 +1340,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
             Hearing(
               dateTimeOfHearing = LocalDateTime.now(),
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               agencyId = "",
               oicHearingId = 1,
               oicHearingType = OicHearingType.GOV,
@@ -1359,6 +1372,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               dateTimeOfHearing = LocalDateTime.now().plusDays(1),
               oicHearingType = OicHearingType.GOV_ADULT,
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               agencyId = "",
               chargeNumber = "",
             ),
@@ -1859,6 +1873,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.INAD_ADULT,
               agencyId = "",
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               chargeNumber = "",
               hearingOutcome = HearingOutcome(code = HearingOutcomeCode.ADJOURN, adjudicator = ""),
             ),
@@ -1897,6 +1912,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.INAD_ADULT,
               agencyId = "",
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2b"),
               chargeNumber = "",
             ),
           )
@@ -1922,6 +1938,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
               oicHearingType = OicHearingType.INAD_ADULT,
               agencyId = "",
               locationId = 1,
+              locationUuid = UUID.fromString("9d306768-26a3-4bce-8b5d-3ec0f8a57b2a"),
               chargeNumber = "",
             ),
           )
