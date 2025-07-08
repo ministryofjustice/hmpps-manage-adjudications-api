@@ -5,7 +5,7 @@ version = "1.0-SNAPSHOT"
 description = "Custom gradle tasks"
 
 plugins {
-  kotlin("jvm") version "2.0.10"
+  kotlin("jvm") version "2.2.0"
 }
 
 repositories {
@@ -14,10 +14,4 @@ repositories {
 
 kotlin {
   jvmToolchain(21)
-}
-
-tasks {
-  withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_21.toString()
-  }
 }
