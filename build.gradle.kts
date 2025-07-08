@@ -65,6 +65,10 @@ java {
   toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
+kotlin {
+  jvmToolchain(21)
+}
+
 tasks {
   register<PortForwardRDSTask>("portForwardRDS") {
     namespacePrefix = "hmpps-manage-adjudications-api"
@@ -79,8 +83,6 @@ tasks {
   }
 
   withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-      jvmTarget = "21"
-    }
+    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
   }
 }

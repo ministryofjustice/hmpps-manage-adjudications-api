@@ -15,9 +15,3 @@ repositories {
 kotlin {
   jvmToolchain(21)
 }
-
-tasks {
-  withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_21.toString()
-  }
-}
