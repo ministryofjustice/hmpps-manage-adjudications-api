@@ -28,7 +28,7 @@ generic-service:
   allowlist: null
 
 generic-prometheus-alerts:
-  alertSeverity: digital-prison-service-dev
+  alertSeverity: maintenance-alerts-non-prod-warning
   rdsAlertsDatabases:
     cloud-platform-1ec554469922ee81: "Manage Adjudications API"
   sqsAlertsQueueNames:
