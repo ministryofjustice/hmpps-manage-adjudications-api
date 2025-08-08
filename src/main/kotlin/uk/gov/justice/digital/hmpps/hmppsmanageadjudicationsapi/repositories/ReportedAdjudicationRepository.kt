@@ -339,6 +339,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
        or 
        (:pada is true and p.type = 'PROSPECTIVE_DAYS')
        )
+       and (p.deleted <> true OR p.deleted IS NULL)
     """
 
     const val BOOKING_ID_REPORTS_WITH_DATE_WHERE_CLAUSE =
