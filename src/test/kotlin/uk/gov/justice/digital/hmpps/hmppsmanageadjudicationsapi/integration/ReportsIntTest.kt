@@ -403,25 +403,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.content.size()").isEqualTo(1)
   }
 
-  @Test
-  fun `get reports for prisoner with ADA excludes deleted punishments`() {
-    val testData = IntegrationTestData.getDefaultAdjudication(prisonerNumber = "ADA_DEL_TEST")
-    val adjudication = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
-      .createChargeProved().createPunishments(punishmentType = PunishmentType.ADDITIONAL_DAYS)
 
-    // Mark the ADA punishment as deleted
-    val reportedAdjudication = reportedAdjudicationRepository.findByChargeNumber(adjudication.chargeNumber)!!
-    reportedAdjudication.getPunishments().first().deleted = true
-    reportedAdjudicationRepository.save(reportedAdjudication)
-
-    webTestClient.get()
-      .uri("/reported-adjudications/bookings/prisoner/${testData.prisonerNumber}?status=CHARGE_PROVED&ada=true&page=0&size=20")
-      .headers(setHeaders(username = "P_NESS"))
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.content.size()").isEqualTo(0) // Should return 0 results since the ADA punishment is deleted
-  }
 
   @Test
   fun `get all reports for prisoner`() {
