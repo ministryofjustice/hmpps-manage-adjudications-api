@@ -231,7 +231,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Page<ReportedAdjudication>
 
   @Query(
-    value = "select ra.* from reported_adjudications ra $BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE",
+    value = "select distinct ra.* from reported_adjudications ra $BOOKING_ID_AND_PUNISHMENTS_REPORTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForBookingWithPunishments(
@@ -259,7 +259,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Page<ReportedAdjudication>
 
   @Query(
-    value = "select ra.* from reported_adjudications ra $PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE",
+    value = "select distinct ra.* from reported_adjudications ra $PRISONER_REPORTS_AND_PUNISHMENTS_WITH_DATE_WHERE_CLAUSE",
     nativeQuery = true,
   )
   fun findAdjudicationsForPrisonerWithPunishments(
