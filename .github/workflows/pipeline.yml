@@ -71,6 +71,7 @@ jobs:
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - helm_lint
