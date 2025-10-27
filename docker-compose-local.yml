@@ -1,6 +1,6 @@
 services:
   localstack:
-    image: localstack/localstack:3.0
+    image: localstack/localstack:3.8
     networks:
       - hmpps
     container_name: localstack
