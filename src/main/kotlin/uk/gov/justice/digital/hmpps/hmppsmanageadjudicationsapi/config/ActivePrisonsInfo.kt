@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component
 class ActivePrisonsInfo(
   private val activePrisonConfig: ActivePrisonConfig,
 ) : InfoContributor {
-  override fun contribute(builder: Info.Builder?) {
-    builder?.withDetail(
+  override fun contribute(builder: Info.Builder) {
+    builder.withDetail(
       "activeAgencies",
       if (activePrisonConfig.activePrisons.trim()
           .isEmpty()

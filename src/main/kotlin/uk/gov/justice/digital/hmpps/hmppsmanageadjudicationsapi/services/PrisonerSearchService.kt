@@ -1,7 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -22,7 +22,7 @@ class PrisonerSearchService(
 ) {
 
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
-  private val objectMapper = jacksonObjectMapper()
+  private val objectMapper = ObjectMapper()
 
   /**
    * Fetches Prisoner details by prisonerNumber.

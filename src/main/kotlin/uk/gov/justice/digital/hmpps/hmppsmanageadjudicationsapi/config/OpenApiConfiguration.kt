@@ -27,7 +27,7 @@ import org.springframework.http.MediaType
 class OpenApiConfiguration(
   buildProperties: BuildProperties,
 ) {
-  private val version: String = buildProperties.version
+  private val version: String = buildProperties.version ?: "unknown"
 
   @Bean
   fun customOpenAPI(): OpenAPI = OpenAPI()

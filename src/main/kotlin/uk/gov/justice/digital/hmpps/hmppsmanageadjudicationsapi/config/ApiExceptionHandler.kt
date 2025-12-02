@@ -60,7 +60,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(java.lang.Exception::class)
-  fun handleException(e: java.lang.Exception): ResponseEntity<ErrorResponse?>? {
+  fun handleException(e: java.lang.Exception): ResponseEntity<ErrorResponse> {
     log.error("Unexpected exception", e)
     return ResponseEntity
       .status(INTERNAL_SERVER_ERROR)
@@ -73,7 +73,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(AccessDeniedException::class)
-  fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse?>? {
+  fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
     log.error("AccessDeniedException", e)
     return ResponseEntity
       .status(FORBIDDEN)
@@ -86,7 +86,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(ForbiddenException::class)
-  fun handleAccessDenied(e: ForbiddenException): ResponseEntity<ErrorResponse?>? {
+  fun handleAccessDenied(e: ForbiddenException): ResponseEntity<ErrorResponse> {
     log.error("ForbiddenException", e)
     return ResponseEntity
       .status(FORBIDDEN)
@@ -99,7 +99,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(HttpMessageNotReadableException::class)
-  fun handleRequestBodyMalformed(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse?>? {
+  fun handleRequestBodyMalformed(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
     log.error("Unexpected exception", e)
     return ResponseEntity
       .status(BAD_REQUEST)
@@ -112,7 +112,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(EntityNotFoundException::class)
-  fun handleEntityNotFound(e: EntityNotFoundException): ResponseEntity<ErrorResponse?>? {
+  fun handleEntityNotFound(e: EntityNotFoundException): ResponseEntity<ErrorResponse> {
     log.error("Unexpected exception", e)
     return ResponseEntity
       .status(NOT_FOUND)
@@ -125,7 +125,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(MethodArgumentNotValidException::class)
-  fun handleArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?>? {
+  fun handleArgumentNotValidException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
 
     val errors = e.bindingResult.allErrors.map { it.defaultMessage }
@@ -142,7 +142,7 @@ class ApiExceptionHandler {
   }
 
   @ExceptionHandler(IllegalStateException::class)
-  fun handleIllegalStateException(e: IllegalStateException): ResponseEntity<ErrorResponse?>? {
+  fun handleIllegalStateException(e: IllegalStateException): ResponseEntity<ErrorResponse> {
     log.info("Validation exception: {}", e.message)
 
     return ResponseEntity
