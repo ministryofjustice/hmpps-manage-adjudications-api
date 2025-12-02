@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.whenever
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatusCode
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -22,10 +22,10 @@ import java.util.*
 
 @Import(TestOAuth2Config::class)
 class ReportsIntTest : SqsIntegrationTestBase() {
-  @MockBean
+  @MockitoBean
   private lateinit var prisonerSearchService: PrisonerSearchService
 
-  @MockBean
+  @MockitoBean
   private lateinit var locationService: LocationService
 
   @BeforeEach
@@ -36,7 +36,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   @CsvSource(
     "2010-11-13, 2010-11-17, AWAITING_REVIEW, 4",
-    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 2",
+    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 1",
   )
   fun `return a page of reported adjudications for agency with filters`(
     startDate: String,
@@ -58,7 +58,7 @@ class ReportsIntTest : SqsIntegrationTestBase() {
   @ParameterizedTest
   @CsvSource(
     "2010-11-15, 2010-11-16, AWAITING_REVIEW, 2",
-    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 2",
+    "2010-11-14, 2010-11-14, AWAITING_REVIEW, 1",
   )
   fun `return a page of reported adjudications completed by the current user with filters`(
     startDate: String,
@@ -402,8 +402,6 @@ class ReportsIntTest : SqsIntegrationTestBase() {
       .expectBody()
       .jsonPath("$.content.size()").isEqualTo(1)
   }
-
-
 
   @Test
   fun `get all reports for prisoner`() {

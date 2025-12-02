@@ -1,10 +1,12 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.BeforeEach
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.data.auditing.AuditingHandler
 import org.springframework.data.auditing.DateTimeProvider
 import org.springframework.http.HttpHeaders
@@ -14,6 +16,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.DraftAdjudicationRepository
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.JwtAuthHelper
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.TestBase
 import java.time.LocalDate
@@ -21,6 +25,7 @@ import java.time.LocalDateTime
 import java.util.Optional
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureWebTestClient
 abstract class IntegrationTestBase : TestBase() {
 
   @Suppress("SpringJavaInjectionPointsAutowiringInspection")
@@ -33,11 +38,23 @@ abstract class IntegrationTestBase : TestBase() {
   @Autowired
   lateinit var objectMapper: ObjectMapper
 
+  @Autowired
+  lateinit var draftAdjudicationRepository: DraftAdjudicationRepository
+
+  @Autowired
+  lateinit var reportedAdjudicationRepository: ReportedAdjudicationRepository
+
   @MockitoBean
   lateinit var dateTimeProvider: DateTimeProvider
 
   @MockitoSpyBean
   lateinit var auditingHandler: AuditingHandler
+
+  @BeforeEach
+  fun cleanupDatabase() {
+    reportedAdjudicationRepository.deleteAll()
+    draftAdjudicationRepository.deleteAll()
+  }
 
   fun setHeaders(
     contentType: MediaType = MediaType.APPLICATION_JSON,
