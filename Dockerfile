@@ -7,7 +7,7 @@ COPY gradle/ gradle/
 RUN ./gradlew build || return 0
 
 ARG BUILD_NUMBER
-ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
+ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
 
 COPY . .
 RUN ./gradlew clean assemble -Dorg.gradle.daemon=false
@@ -20,18 +20,18 @@ FROM eclipse-temurin:21-jre-jammy
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 ARG BUILD_NUMBER
-ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
+ENV BUILD_NUMBER=${BUILD_NUMBER:-1_0_0}
 
 RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV TZ=Europe/London
+ENV TZ="Europe/London"
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
 RUN groupadd --gid 2000 appgroup && \
-    useradd --uid 2000 --gid 2000 --system appuser
+    useradd --uid 2000 --gid 2000 --system --create-home appuser
 
 # Install AWS RDS Root cert into Java truststore
-RUN mkdir /home/appuser/.postgresql
+RUN mkdir -p /home/appuser/.postgresql
 COPY --from=builder --chown=appuser:appgroup /app/root.crt /home/appuser/.postgresql/root.crt
 
 WORKDIR /app
