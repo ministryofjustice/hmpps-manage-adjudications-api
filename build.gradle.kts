@@ -61,11 +61,6 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
 }
 
-configurations.all {
-  exclude(group = "io.netty.incubator", module = "netty-incubator-codec-native-quic")
-  exclude(group = "io.netty.incubator", module = "netty-incubator-codec-quic")
-}
-
 allOpen {
   annotations(
     "jakarta.persistence.Entity",

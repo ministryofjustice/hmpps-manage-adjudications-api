@@ -88,9 +88,9 @@ class ReportsControllerTest : TestControllerBase() {
     fun `returns my reported adjudications`() {
       getMyAdjudications()
         .andExpect(MockMvcResultMatchers.status().isOk)
-        .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalPages").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.size").value(20))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.number").value(0))
         .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].chargeNumber").value("1"))
     }
 
@@ -99,9 +99,9 @@ class ReportsControllerTest : TestControllerBase() {
     fun `returns my reported adjudications with date and status filter`() {
       getMyAdjudicationsWithFilter(LocalDate.now().plusDays(5))
         .andExpect(MockMvcResultMatchers.status().isOk)
-        .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").value(1))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.size").value(20))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.number").value(0))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.totalPages").value(1))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.size").value(20))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.page.number").value(0))
         .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].chargeNumber").value("1"))
 
       verify(reportsService).getMyReportedAdjudications(
