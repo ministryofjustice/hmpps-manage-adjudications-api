@@ -16,19 +16,19 @@ RUN ./gradlew clean assemble -Dorg.gradle.daemon=false
 RUN apt-get update && apt-get install -y curl
 RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem  > root.crt
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-jammy
 LABEL maintainer="HMPPS Digital Studio <info@digital.justice.gov.uk>"
 
 ARG BUILD_NUMBER
 ENV BUILD_NUMBER ${BUILD_NUMBER:-1_0_0}
 
-RUN apk --no-cache upgrade
+RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV TZ=Europe/London
 RUN ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
 
-RUN addgroup --gid 2000 --system appgroup && \
-    adduser --u 2000 --system appuser 2000
+RUN groupadd --gid 2000 appgroup && \
+    useradd --uid 2000 --gid 2000 --system appuser
 
 # Install AWS RDS Root cert into Java truststore
 RUN mkdir /home/appuser/.postgresql
