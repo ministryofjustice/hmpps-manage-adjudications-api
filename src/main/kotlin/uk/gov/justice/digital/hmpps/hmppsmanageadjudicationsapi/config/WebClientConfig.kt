@@ -28,6 +28,9 @@ class WebClientConfig(
   }
 
   @Bean
+  fun webClientBuilder(): WebClient.Builder = WebClient.builder()
+
+  @Bean
   fun authWebClient(): WebClient = WebClient.builder().baseUrl(authBaseUri).build()
 
   @Bean("prisonLocationDetailWebClient")

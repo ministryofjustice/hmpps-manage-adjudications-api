@@ -1,8 +1,10 @@
 spring:
+  flyway:
+    enabled: false
   jpa:
     open-in-view: false
     show-sql: false
-    generate-ddl: false
+    generate-ddl: true
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect

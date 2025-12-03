@@ -1,8 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.health
 
 import org.slf4j.LoggerFactory
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.HealthIndicator
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.time.Duration
@@ -14,7 +14,7 @@ abstract class HealthCheck(private val webClient: WebClient, private val timeout
       .retrieve()
       .toEntity(String::class.java)
       .block(timeout)
-    Health.up().withDetail("HttpStatus", responseEntity?.statusCode).build()
+    Health.up().withDetail("HttpStatus", responseEntity?.statusCode ?: "unknown").build()
   } catch (e: WebClientResponseException) {
     log.info(e.message)
     Health.down(e).withDetail("body", e.responseBodyAsString).build()

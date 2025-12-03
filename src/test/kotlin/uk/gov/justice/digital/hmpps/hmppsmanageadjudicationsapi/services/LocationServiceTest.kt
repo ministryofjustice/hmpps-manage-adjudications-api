@@ -79,7 +79,7 @@ class LocationServiceTest {
       val notFoundException = WebClientResponseException.create(
         HttpStatus.NOT_FOUND.value(),
         "Not Found",
-        null,
+        org.springframework.http.HttpHeaders(),
         errorJson.toByteArray(StandardCharsets.UTF_8),
         null,
       )

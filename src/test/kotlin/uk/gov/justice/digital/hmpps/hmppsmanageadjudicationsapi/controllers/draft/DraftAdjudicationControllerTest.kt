@@ -15,10 +15,10 @@ import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
-import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -320,7 +320,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
   inner class AddIncidentStatement {
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.addIncidentStatement(anyLong(), any(), any()))
+      whenever(draftAdjudicationService.addIncidentStatement(any(), anyOrNull(), anyOrNull()))
         .thenReturn(draftAdjudicationDto())
     }
 
@@ -508,7 +508,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.editIncidentStatement(anyLong(), any(), any()))
+      whenever(draftAdjudicationService.editIncidentStatement(any(), anyOrNull(), anyOrNull()))
         .thenReturn(draftAdjudicationDto("new statement"))
     }
 
@@ -631,7 +631,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
 
     @BeforeEach
     fun beforeEach() {
-      whenever(draftAdjudicationService.setIncidentApplicableRule(anyLong(), anyBoolean(), anyBoolean()))
+      whenever(draftAdjudicationService.setIncidentApplicableRule(any(), any(), any()))
         .thenReturn(draftAdjudicationDto())
     }
 
@@ -655,7 +655,7 @@ class DraftAdjudicationControllerTest : TestControllerBase() {
     }
 
     private fun setApplicableRules(id: Long, isYoungOffender: Boolean): ResultActions {
-      val body = objectMapper.writeValueAsString(mapOf("isYouthOffenderRule" to isYoungOffender))
+      val body = objectMapper.writeValueAsString(mapOf("isYouthOffenderRule" to isYoungOffender, "removeExistingOffences" to false))
       return mockMvc
         .perform(
           put("/draft-adjudications/$id/applicable-rules")

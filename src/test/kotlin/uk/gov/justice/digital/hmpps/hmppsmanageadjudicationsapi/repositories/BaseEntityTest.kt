@@ -3,8 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
@@ -29,16 +29,18 @@ class BaseEntityTest {
   fun `check the correct audit data is used`() {
     val draft = newDraft()
 
-    val savedEntity = entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
+    entityManager.flush()
 
     Thread.sleep(2000)
 
-    savedEntity.incidentRole?.roleCode = "25c"
-    val updatedEntity = entityManager.persistAndFlush(savedEntity)
+    draft.incidentRole?.roleCode = "25c"
+    entityManager.getEntityManager().merge(draft)
+    entityManager.flush()
 
-    assertThat(updatedEntity.incidentRole?.createdByUserId).isEqualTo("ITAG_USER")
-    assertThat(updatedEntity.incidentRole?.modifiedByUserId).isEqualTo("ITAG_USER")
-    assertThat(updatedEntity.incidentRole?.modifiedDateTime).isAfter(updatedEntity.incidentRole?.createDateTime)
+    assertThat(draft.incidentRole?.createdByUserId).isEqualTo("ITAG_USER")
+    assertThat(draft.incidentRole?.modifiedByUserId).isEqualTo("ITAG_USER")
+    assertThat(draft.incidentRole?.modifiedDateTime).isAfter(draft.incidentRole?.createDateTime)
   }
 
   private fun newDraft(): DraftAdjudication = DraftAdjudication(

@@ -4,8 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.Pageable
 import org.springframework.security.test.context.support.WithMockUser
@@ -44,13 +44,14 @@ class DraftAdjudicationRepositoryTest {
   fun `save a new draft adjudication`() {
     val draft = newDraft()
 
-    val savedEntity = entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
+    entityManager.flush()
 
-    assertThat(savedEntity)
+    assertThat(draft)
       .extracting("id", "prisonerNumber", "agencyId", "createdByUserId", "gender")
-      .contains(savedEntity.id, draft.prisonerNumber, draft.agencyId, "ITAG_USER", Gender.MALE)
+      .contains(draft.id, draft.prisonerNumber, draft.agencyId, "ITAG_USER", Gender.MALE)
 
-    assertThat(savedEntity.incidentDetails)
+    assertThat(draft.incidentDetails)
       .extracting("locationId", "dateTimeOfIncident", "handoverDeadline")
       .contains(
         draft.incidentDetails.locationId,
@@ -58,7 +59,7 @@ class DraftAdjudicationRepositoryTest {
         draft.incidentDetails.handoverDeadline,
       )
 
-    assertThat(savedEntity.incidentRole)
+    assertThat(draft.incidentRole)
       .extracting("roleCode", "associatedPrisonersNumber", "associatedPrisonersName")
       .contains(
         draft.incidentRole!!.roleCode,
@@ -200,7 +201,7 @@ class DraftAdjudicationRepositoryTest {
   fun `find draft adjudications`() {
     val dateTimeOfIncident = LocalDateTime.now()
 
-    entityManager.persistAndFlush(
+    entityManager.getEntityManager().persist(
       DraftAdjudication(
         prisonerNumber = "A12345",
         gender = Gender.MALE,
@@ -220,7 +221,7 @@ class DraftAdjudicationRepositoryTest {
         isYouthOffender = true,
       ),
     )
-    entityManager.persistAndFlush(
+    entityManager.getEntityManager().persist(
       DraftAdjudication(
         prisonerNumber = "A12346",
         gender = Gender.MALE,
@@ -240,7 +241,7 @@ class DraftAdjudicationRepositoryTest {
         isYouthOffender = true,
       ),
     )
-    entityManager.persistAndFlush(
+    entityManager.getEntityManager().persist(
       DraftAdjudication(
         prisonerNumber = "A12347",
         gender = Gender.MALE,
@@ -282,7 +283,7 @@ class DraftAdjudicationRepositoryTest {
   fun `delete orphaned adjudications should do nothing if they are not old enough`() {
     val deleteBefore = LocalDateTime.now()
     val draft = draftWithAllData("1")
-    entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
     // We should not delete anything because the time we use was at the very beginning of the test, before we created anything.
     val deleted =
       draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(deleteBefore)
@@ -292,24 +293,24 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `delete orphaned adjudications should completely remove orphaned adjudications if they are old enough`() {
     val draft = draftWithAllData("1")
-    entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
     val deleteBefore = LocalDateTime.now().plusSeconds(1)
     // We should delete the saved adjudication because the time we use is in the future, after the draft was created.
     val allDeleted =
       draftAdjudicationRepository.deleteDraftAdjudicationByCreateDateTimeBeforeAndChargeNumberIsNotNull(deleteBefore)
     assertThat(allDeleted).hasSize(1)
     val deleted = allDeleted[0]
-    assertThat(entityManager.find(IncidentDetails::class.java, deleted.incidentDetails.id)).isNull()
-    assertThat(entityManager.find(IncidentStatement::class.java, deleted.incidentStatement?.id)).isNull()
-    deleted.offenceDetails.forEach {
-      assertThat(entityManager.find(Offence::class.java, it.id)).isNull()
+    deleted.incidentDetails.id?.let { assertThat(entityManager.find(IncidentDetails::class.java, it)).isNull() }
+    deleted.incidentStatement?.id?.let { assertThat(entityManager.find(IncidentStatement::class.java, it)).isNull() }
+    deleted.offenceDetails.forEach { offence ->
+      offence.id?.let { assertThat(entityManager.find(Offence::class.java, it)).isNull() }
     }
   }
 
   @Test
   fun `find by associated prisoner number`() {
     val draft = draftWithAllData("1")
-    entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
 
     assertThat(
       draftAdjudicationRepository.findByIncidentRoleAssociatedPrisonersNumber("B23456").first().prisonerNumber,
@@ -321,7 +322,7 @@ class DraftAdjudicationRepositoryTest {
   @Test
   fun `find by victims prisoner number`() {
     val draft = draftWithAllData("1")
-    entityManager.persistAndFlush(draft)
+    entityManager.getEntityManager().persist(draft)
 
     assertThat(
       draftAdjudicationRepository.findByOffenceDetailsVictimPrisonersNumber("A1234AA").first().prisonerNumber,
