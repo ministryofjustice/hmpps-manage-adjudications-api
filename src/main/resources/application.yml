@@ -8,6 +8,11 @@ spring:
   codec:
     max-in-memory-size: 10MB
 
+  data:
+    web:
+      pageable:
+        serialization-mode: direct
+
   jackson:
     date-format: "yyyy-MM-dd HH:mm:ss"
 
