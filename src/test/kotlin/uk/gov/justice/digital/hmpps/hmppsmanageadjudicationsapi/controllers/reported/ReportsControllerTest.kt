@@ -456,4 +456,36 @@ class ReportsControllerTest : TestControllerBase() {
           .header("Content-Type", "application/json"),
       )
   }
+
+  @Nested
+  inner class FilterAdjudicationsByPrisonerAndConsecutiveChargeNumber {
+
+    @Test
+    fun `responds with an unauthorised status code`() {
+      getFilterAdjudicationsRequest()
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized)
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_VIEW_ADJUDICATIONS"])
+    fun `responds successfully and delegates to service`() {
+      whenever(
+        reportsService.filterAdjudicationsByPrisonerAndConsecutiveChargeNumber(any(), any()),
+      ).thenReturn(listOf(REPORTED_ADJUDICATION_DTO))
+
+      getFilterAdjudicationsRequest()
+        .andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(reportsService, atLeastOnce()).filterAdjudicationsByPrisonerAndConsecutiveChargeNumber(
+        "G5541UN",
+        "MDI-000266",
+      )
+    }
+
+    private fun getFilterAdjudicationsRequest(): ResultActions = mockMvc
+      .perform(
+        MockMvcRequestBuilders.get("/reported-adjudications/filter-adjudication?prisonerNumber=G5541UN&consecutiveChargeNumber=MDI-000266")
+          .header("Content-Type", "application/json"),
+      )
+  }
 }
