@@ -496,29 +496,4 @@ class ReportsController(
   fun getAdjudicationsForBooking(
     @PathVariable(name = "offenderBookingId") offenderBookingId: Long,
   ): List<ReportedAdjudicationDto> = reportsService.getReportsForBooking(offenderBookingId = offenderBookingId)
-
-  @Operation(
-    summary = "Filter adjudications for a prisoner by consecutive charge number",
-  )
-  @Parameters(
-    Parameter(
-      name = "prisonerNumber",
-      required = true,
-      description = "prisoner number",
-    ),
-    Parameter(
-      name = "consecutiveChargeNumber",
-      required = true,
-      description = "charge number that punishments are consecutive to",
-    ),
-  )
-  @PreAuthorize("hasAnyRole('VIEW_ADJUDICATIONS','ALL_ADJUDICATIONS')")
-  @GetMapping("/filter-adjudication")
-  fun filterAdjudications(
-    @RequestParam(name = "prisonerNumber") prisonerNumber: String,
-    @RequestParam(name = "consecutiveChargeNumber") consecutiveChargeNumber: String,
-  ): List<ReportedAdjudicationDto> = reportsService.filterAdjudicationsByPrisonerAndConsecutiveChargeNumber(
-    prisonerNumber = prisonerNumber,
-    consecutiveChargeNumber = consecutiveChargeNumber,
-  )
 }

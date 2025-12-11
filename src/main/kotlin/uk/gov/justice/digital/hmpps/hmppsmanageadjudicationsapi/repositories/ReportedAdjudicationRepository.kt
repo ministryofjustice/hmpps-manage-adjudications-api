@@ -193,25 +193,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("types") types: List<String>,
   ): List<ReportedAdjudication>
 
-  @Query(
-    value = """
-        SELECT DISTINCT ra.*
-        FROM reported_adjudications ra
-        JOIN punishment p 
-            ON p.reported_adjudication_fk_id = ra.id
-        JOIN punishment_schedule ps
-            ON ps.punishment_fk_id = p.id
-        WHERE p.consecutive_to_charge_number = :chargeNumber
-          AND ra.prisoner_number = :prisonerNumber
-          AND (p.deleted <> true OR p.deleted IS NULL)
-    """,
-    nativeQuery = true,
-  )
-  fun findByPrisonerNumberAndPunishmentsConsecutiveToChargeNumber(
-    @Param("prisonerNumber") prisonerNumber: String,
-    @Param("chargeNumber") chargeNumber: String,
-  ): List<ReportedAdjudication>
-
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(
     @Param("sequenceName") sequenceName: String,
