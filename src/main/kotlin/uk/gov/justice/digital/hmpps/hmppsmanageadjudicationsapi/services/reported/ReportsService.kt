@@ -288,6 +288,20 @@ class ReportsService(
 
   fun getReportsForBooking(offenderBookingId: Long): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByOffenderBookingId(offenderBookingId).map { it.toDto(offenceCodeLookupService) }
 
+  fun filterAdjudicationsByPrisonerAndConsecutiveChargeNumber(
+    prisonerNumber: String,
+    consecutiveChargeNumber: String,
+  ): List<ReportedAdjudicationDto> = reportedAdjudicationRepository
+    .findByPrisonerNumberAndPunishmentsConsecutiveToChargeNumber(
+      prisonerNumber = prisonerNumber,
+      chargeNumber = consecutiveChargeNumber,
+    ).map {
+      it.toDto(
+        offenceCodeLookupService = offenceCodeLookupService,
+        activeCaseload = authenticationFacade.activeCaseload,
+      )
+    }
+
   companion object {
     val minDate: LocalDate = LocalDate.EPOCH
     val transferOutAndHearingsToScheduledCutOffDate: LocalDateTime = LocalDate.of(2024, 1, 1).atStartOfDay()
