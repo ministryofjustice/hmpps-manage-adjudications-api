@@ -292,6 +292,46 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `non-ADA punishments are included even when has linked consecutive ADA`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.createDateTime = LocalDateTime.now()
+          it.createdByUserId = ""
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              schedule = mutableListOf(
+                PunishmentSchedule(duration = 2),
+              ),
+            ),
+          )
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.EXTRA_WORK,
+              schedule = mutableListOf(
+                PunishmentSchedule(
+                  duration = 5,
+                  startDate = LocalDate.now(),
+                  endDate = LocalDate.now().plusDays(5),
+                ),
+              ),
+            ),
+          )
+        },
+      )
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+          any(),
+          any(),
+        ),
+      ).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "CONSEC-1")))
+
+      val dto = reportedAdjudicationService.getReportedAdjudicationDetails("1")
+
+      assertThat(dto.punishments.map { it.type }).contains(PunishmentType.ADDITIONAL_DAYS, PunishmentType.EXTRA_WORK)
+    }
+
+    @Test
     fun `contains linked charges and filters out own charge`() {
       val report = entityBuilder.reportedAdjudication().also {
         it.migratedSplitRecord = true
