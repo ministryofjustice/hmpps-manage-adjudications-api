@@ -65,7 +65,7 @@ services:
       - POSTGRES_DB=adjudications
 
   localstack:
-    image: localstack/localstack:3.0
+    image: localstack/localstack:3.8
     networks:
       - hmpps
     container_name: "${LOCALSTACK_DOCKER_NAME-localstack}"
