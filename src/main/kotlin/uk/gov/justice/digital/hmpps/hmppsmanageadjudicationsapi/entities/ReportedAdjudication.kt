@@ -274,9 +274,6 @@ data class ReportedAdjudication(
       hasLinkedAda: Boolean,
       consecutiveReportsAvailable: List<String>? = null,
     ): MutableList<PunishmentDto> = this
-      .filter { punishment ->
-        !hasLinkedAda || (punishment.type in PunishmentType.additionalDays())
-      }
       .sortedBy { it.type }
       .map { it.toDto(hasLinkedAda, consecutiveReportsAvailable) }
       .toMutableList()
