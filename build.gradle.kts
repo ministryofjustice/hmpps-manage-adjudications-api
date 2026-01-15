@@ -49,7 +49,7 @@ dependencies {
   testImplementation("com.github.tomakehurst:wiremock-jre8-standalone:3.0.1")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.5.0")
+  testImplementation("net.javacrumbs.json-unit:json-unit-assertj:5.1.0")
   testImplementation("org.flywaydb:flyway-core")
   testImplementation("org.testcontainers:localstack:1.21.4")
   testImplementation("org.testcontainers:postgresql:1.21.4")
