@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
@@ -292,10 +293,23 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     status: ReportedAdjudicationStatus,
   ): List<ReportedAdjudication>
 
+  @EntityGraph(attributePaths = ["punishments"])
+  @Query(
+    """
+    SELECT DISTINCT ra FROM ReportedAdjudication ra
+    JOIN ra.punishments p
+    JOIN p.schedule ps
+    WHERE ra.status = :status
+    AND ra.offenderBookingId = :offenderBookingId
+    AND p.suspendedUntil IS NULL
+    AND ps.endDate > :cutOff
+    AND (p.deleted <> true OR p.deleted IS NULL)
+    """,
+  )
   fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-    status: ReportedAdjudicationStatus,
-    offenderBookingId: Long,
-    cutOff: LocalDate,
+    @Param("status") status: ReportedAdjudicationStatus,
+    @Param("offenderBookingId") offenderBookingId: Long,
+    @Param("cutOff") cutOff: LocalDate,
   ): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(
