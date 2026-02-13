@@ -200,15 +200,14 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = """
-    SELECT COUNT(1) 
-    FROM (SELECT DISTINCT ra.charge_number FROM reported_adjudications ra
+    SELECT COUNT(DISTINCT ra.charge_number) FROM reported_adjudications ra
     JOIN hearing h ON h.reported_adjudication_fk_id = ra.id
     JOIN hearing_outcome ho ON ho.id = h.outcome_id
     WHERE
      ra.status = 'CHARGE_PROVED' 
      AND ra.offender_booking_id = :bookingId
      AND h.date_time_of_hearing >= :cutOff 
-     AND ho.code = 'COMPLETE') tbl
+     AND ho.code = 'COMPLETE'
   """,
     nativeQuery = true,
   )
