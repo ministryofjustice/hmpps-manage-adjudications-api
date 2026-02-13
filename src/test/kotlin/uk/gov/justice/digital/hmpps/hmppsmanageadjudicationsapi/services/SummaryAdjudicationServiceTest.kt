@@ -73,15 +73,11 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       ).thenReturn(2)
 
       whenever(
-        reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
+        reportedAdjudicationRepository.countActivePunishmentsForBooking(
           any(),
           any(),
         ),
-      ).thenReturn(listOf(1L))
-
-      whenever(
-        reportedAdjudicationRepository.findByIdsWithPunishments(any()),
-      ).thenReturn(listOf(basicData))
+      ).thenReturn(2)
 
       val response =
         summaryAdjudicationService.getAdjudicationSummary(
