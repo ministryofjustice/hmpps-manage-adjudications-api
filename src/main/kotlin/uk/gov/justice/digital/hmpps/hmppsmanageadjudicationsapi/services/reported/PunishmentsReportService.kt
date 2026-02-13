@@ -59,7 +59,6 @@ class PunishmentsReportQueryService(
     val ids = reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
       status = ReportedAdjudicationStatus.CHARGE_PROVED.name,
       offenderBookingId = offenderBookingId,
-      cutOff = LocalDate.now().minusDays(1),
     )
     val idsTime = System.currentTimeMillis()
     log.info("findIdsForActivePunishmentsByBookingId returned {} ids in {}ms for bookingId={}", ids.size, idsTime - startTime, offenderBookingId)
@@ -71,6 +70,7 @@ class PunishmentsReportQueryService(
     log.info("findByIdsWithPunishments returned {} reports in {}ms for bookingId={}", reports.size, fetchTime - idsTime, offenderBookingId)
 
     return reports.map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
+      .filter { it.second.isNotEmpty() }
   }
 }
 
