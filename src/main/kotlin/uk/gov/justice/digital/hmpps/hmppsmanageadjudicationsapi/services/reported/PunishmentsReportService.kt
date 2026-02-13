@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import jakarta.validation.ValidationException
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ActivePunishmentDto
@@ -26,6 +27,9 @@ import java.time.LocalDate
 class PunishmentsReportQueryService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(PunishmentsReportQueryService::class.java)
+  }
   fun getReportsWithSuspendedPunishments(prisonerNumber: String) = reportedAdjudicationRepository.findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
     status = ReportedAdjudicationStatus.CHARGE_PROVED,
     prisonerNumber = prisonerNumber,
@@ -48,11 +52,26 @@ class PunishmentsReportQueryService(
     punishmentType = punishmentType,
   )
 
-  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> = reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-    status = ReportedAdjudicationStatus.CHARGE_PROVED,
-    offenderBookingId = offenderBookingId,
-    cutOff = LocalDate.now().minusDays(1),
-  ).map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
+  fun getReportsWithActivePunishments(offenderBookingId: Long): List<Pair<String, List<Punishment>>> {
+    log.info("getReportsWithActivePunishments called for bookingId={}", offenderBookingId)
+    val startTime = System.currentTimeMillis()
+
+    val ids = reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
+      status = ReportedAdjudicationStatus.CHARGE_PROVED.name,
+      offenderBookingId = offenderBookingId,
+      cutOff = LocalDate.now().minusDays(1),
+    )
+    val idsTime = System.currentTimeMillis()
+    log.info("findIdsForActivePunishmentsByBookingId returned {} ids in {}ms for bookingId={}", ids.size, idsTime - startTime, offenderBookingId)
+
+    if (ids.isEmpty()) return emptyList()
+
+    val reports = reportedAdjudicationRepository.findByIdsWithPunishments(ids)
+    val fetchTime = System.currentTimeMillis()
+    log.info("findByIdsWithPunishments returned {} reports in {}ms for bookingId={}", reports.size, fetchTime - idsTime, offenderBookingId)
+
+    return reports.map { Pair(it.chargeNumber, it.getPunishments().filter { p -> p.isActive() }) }
+  }
 }
 
 @Transactional(readOnly = true)

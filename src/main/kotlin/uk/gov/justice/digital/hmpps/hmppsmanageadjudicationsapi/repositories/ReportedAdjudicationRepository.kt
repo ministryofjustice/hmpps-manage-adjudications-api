@@ -2,7 +2,6 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
@@ -293,23 +292,34 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     status: ReportedAdjudicationStatus,
   ): List<ReportedAdjudication>
 
-  @EntityGraph(attributePaths = ["punishments"])
+  @Query(
+    value = """
+    SELECT DISTINCT ra.id FROM reported_adjudications ra
+    JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+    JOIN punishment_schedule ps ON ps.punishment_fk_id = p.id
+    WHERE ra.status = :status
+    AND ra.offender_booking_id = :offenderBookingId
+    AND p.suspended_until IS NULL
+    AND ps.end_date > :cutOff
+    AND (p.deleted IS NULL OR p.deleted = false)
+    """,
+    nativeQuery = true,
+  )
+  fun findIdsForActivePunishmentsByBookingId(
+    @Param("status") status: String,
+    @Param("offenderBookingId") offenderBookingId: Long,
+    @Param("cutOff") cutOff: LocalDate,
+  ): List<Long>
+
   @Query(
     """
     SELECT DISTINCT ra FROM ReportedAdjudication ra
-    JOIN ra.punishments p
-    JOIN p.schedule ps
-    WHERE ra.status = :status
-    AND ra.offenderBookingId = :offenderBookingId
-    AND p.suspendedUntil IS NULL
-    AND ps.endDate > :cutOff
-    AND (p.deleted <> true OR p.deleted IS NULL)
+    LEFT JOIN FETCH ra.punishments
+    WHERE ra.id IN :ids
     """,
   )
-  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-    @Param("status") status: ReportedAdjudicationStatus,
-    @Param("offenderBookingId") offenderBookingId: Long,
-    @Param("cutOff") cutOff: LocalDate,
+  fun findByIdsWithPunishments(
+    @Param("ids") ids: List<Long>,
   ): List<ReportedAdjudication>
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(
