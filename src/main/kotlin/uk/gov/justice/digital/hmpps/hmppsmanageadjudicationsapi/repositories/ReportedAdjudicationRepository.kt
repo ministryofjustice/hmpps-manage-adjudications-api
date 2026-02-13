@@ -319,6 +319,33 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("ids") ids: List<Long>,
   ): List<ReportedAdjudication>
 
+  @Query(
+    value = """
+    SELECT COUNT(*) FROM (
+      SELECT id FROM reported_adjudications
+      WHERE offender_booking_id = :bookingId AND status = 'CHARGE_PROVED'
+      OFFSET 0
+    ) ra
+    JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+    WHERE (p.deleted IS NULL OR p.deleted = false)
+    AND p.suspended_until IS NULL
+    AND EXISTS (
+      SELECT 1 FROM punishment_schedule ps
+      WHERE ps.punishment_fk_id = p.id
+      AND ps.end_date > :cutOff
+      AND ps.create_datetime = (
+        SELECT MAX(ps2.create_datetime) FROM punishment_schedule ps2
+        WHERE ps2.punishment_fk_id = p.id
+      )
+    )
+    """,
+    nativeQuery = true,
+  )
+  fun countActivePunishmentsForBooking(
+    @Param("bookingId") bookingId: Long,
+    @Param("cutOff") cutOff: LocalDate,
+  ): Long
+
   fun findByPrisonerNumberAndChargeNumberStartsWith(
     prisonerNumber: String,
     chargeNumber: String,
