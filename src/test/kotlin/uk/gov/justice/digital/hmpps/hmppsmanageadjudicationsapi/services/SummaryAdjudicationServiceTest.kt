@@ -76,7 +76,6 @@ class SummaryAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
           any(),
           any(),
-          any(),
         ),
       ).thenReturn(listOf(1L))
 

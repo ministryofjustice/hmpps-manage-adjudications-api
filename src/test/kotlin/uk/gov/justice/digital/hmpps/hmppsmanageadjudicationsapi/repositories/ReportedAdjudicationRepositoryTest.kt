@@ -1051,7 +1051,6 @@ class ReportedAdjudicationRepositoryTest {
     val ids = reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
       ReportedAdjudicationStatus.CHARGE_PROVED.name,
       1L,
-      LocalDate.now().minusDays(1),
     )
     assertThat(ids.size).isEqualTo(1)
     assertThat(

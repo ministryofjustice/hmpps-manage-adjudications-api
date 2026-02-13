@@ -397,7 +397,6 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
         reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
           any(),
           any(),
-          any(),
         ),
       ).thenReturn(listOf(1L))
 
@@ -437,7 +436,6 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
     fun `get with stoppage percentage`() {
       whenever(
         reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
-          any(),
           any(),
           any(),
         ),
