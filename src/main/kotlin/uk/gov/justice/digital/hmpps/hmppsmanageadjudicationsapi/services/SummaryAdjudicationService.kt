@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.HasAdjudicationsResponse
@@ -22,6 +23,9 @@ class SummaryAdjudicationService(
   offenceCodeLookupService,
   authenticationFacade,
 ) {
+  companion object {
+    private val log = LoggerFactory.getLogger(SummaryAdjudicationService::class.java)
+  }
 
   @Transactional(readOnly = true)
   fun getAdjudicationSummary(
@@ -29,12 +33,18 @@ class SummaryAdjudicationService(
     awardCutoffDate: LocalDate?,
     adjudicationCutoffDate: LocalDate?,
   ): AdjudicationSummary {
+    log.info("getAdjudicationSummary called for bookingId={}", bookingId)
+    val startTime = System.currentTimeMillis()
+
     val cutOff = adjudicationCutoffDate ?: LocalDate.now().minusMonths(3)
     val provenByOffenderBookingId =
       getReportCountForProfile(
         offenderBookingId = bookingId,
         cutOff = cutOff.atStartOfDay(),
       )
+    val countTime = System.currentTimeMillis()
+    log.info("getReportCountForProfile completed in {}ms for bookingId={}", countTime - startTime, bookingId)
+
     val awards =
       punishmentsReportQueryService.getReportsWithActivePunishments(offenderBookingId = bookingId).map { it.second }
         .flatten().map {
@@ -42,6 +52,8 @@ class SummaryAdjudicationService(
             bookingId = bookingId,
           )
         }
+    val totalTime = System.currentTimeMillis()
+    log.info("getAdjudicationSummary completed in {}ms for bookingId={}, adjudicationCount={}, awards={}", totalTime - startTime, bookingId, provenByOffenderBookingId, awards.size)
 
     return AdjudicationSummary(
       bookingId = bookingId,
