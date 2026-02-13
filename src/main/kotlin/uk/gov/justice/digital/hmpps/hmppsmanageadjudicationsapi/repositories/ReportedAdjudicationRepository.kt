@@ -200,16 +200,18 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = """
-    SELECT COUNT(*) FROM reported_adjudications ra
-    WHERE ra.offender_booking_id = :bookingId
-     AND ra.status = 'CHARGE_PROVED'
-     AND EXISTS (
-       SELECT 1 FROM hearing h
-       JOIN hearing_outcome ho ON ho.id = h.outcome_id
-       WHERE h.reported_adjudication_fk_id = ra.id
-       AND h.date_time_of_hearing >= :cutOff
-       AND ho.code = 'COMPLETE'
-     )
+    SELECT COUNT(*) FROM (
+      SELECT id FROM reported_adjudications
+      WHERE offender_booking_id = :bookingId AND status = 'CHARGE_PROVED'
+      OFFSET 0
+    ) ra
+    WHERE EXISTS (
+      SELECT 1 FROM hearing h
+      JOIN hearing_outcome ho ON ho.id = h.outcome_id
+      WHERE h.reported_adjudication_fk_id = ra.id
+      AND h.date_time_of_hearing >= :cutOff
+      AND ho.code = 'COMPLETE'
+    )
   """,
     nativeQuery = true,
   )
