@@ -49,7 +49,6 @@ class SummaryAdjudicationService(
       offenderBookingId = bookingId,
       cutOff = LocalDate.now().minusDays(1),
     )
-    
     val awards = (1..activePunishmentCount).map { Award(bookingId = bookingId) }
     val totalTime = System.currentTimeMillis()
     log.info("getAdjudicationSummary completed in {}ms for bookingId={}, adjudicationCount={}, awards={}", totalTime - startTime, bookingId, provenByOffenderBookingId, awards.size)
