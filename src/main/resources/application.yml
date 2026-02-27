@@ -147,5 +147,3 @@ prison:
       endpoint:
         url: ${PRISONER_SEARCH_BASE_DOMAIN:https://prisoner-search-dev.prison.service.justice.gov.uk}
   timeout: 10s
-
-springdoc.swagger-ui.version: 5.20.0
