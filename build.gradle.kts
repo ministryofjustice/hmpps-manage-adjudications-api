@@ -33,7 +33,7 @@ dependencies {
   implementation("io.swagger:swagger-annotations:1.6.16")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:6.0.0")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.0.1")
   implementation("io.opentelemetry:opentelemetry-api:1.58.0")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.24.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
