@@ -200,15 +200,18 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = """
-    SELECT COUNT(1) 
-    FROM (SELECT DISTINCT ra.charge_number FROM reported_adjudications ra
-    JOIN hearing h ON h.reported_adjudication_fk_id = ra.id
-    JOIN hearing_outcome ho ON ho.id = h.outcome_id
-    WHERE
-     ra.status = 'CHARGE_PROVED' 
-     AND ra.offender_booking_id = :bookingId
-     AND h.date_time_of_hearing >= :cutOff 
-     AND ho.code = 'COMPLETE') tbl
+    SELECT COUNT(*) FROM (
+      SELECT id FROM reported_adjudications
+      WHERE offender_booking_id = :bookingId AND status = 'CHARGE_PROVED'
+      OFFSET 0
+    ) ra
+    WHERE EXISTS (
+      SELECT 1 FROM hearing h
+      JOIN hearing_outcome ho ON ho.id = h.outcome_id
+      WHERE h.reported_adjudication_fk_id = ra.id
+      AND h.date_time_of_hearing >= :cutOff
+      AND ho.code = 'COMPLETE'
+    )
   """,
     nativeQuery = true,
   )
@@ -292,11 +295,56 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     status: ReportedAdjudicationStatus,
   ): List<ReportedAdjudication>
 
-  fun findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-    status: ReportedAdjudicationStatus,
-    offenderBookingId: Long,
-    cutOff: LocalDate,
+  @Query(
+    value = """
+    SELECT ra.id FROM reported_adjudications ra
+    WHERE ra.offender_booking_id = :offenderBookingId
+    AND ra.status = :status
+    """,
+    nativeQuery = true,
+  )
+  fun findIdsForActivePunishmentsByBookingId(
+    @Param("status") status: String,
+    @Param("offenderBookingId") offenderBookingId: Long,
+  ): List<Long>
+
+  @Query(
+    """
+    SELECT DISTINCT ra FROM ReportedAdjudication ra
+    LEFT JOIN FETCH ra.punishments
+    WHERE ra.id IN :ids
+    """,
+  )
+  fun findByIdsWithPunishments(
+    @Param("ids") ids: List<Long>,
   ): List<ReportedAdjudication>
+
+  @Query(
+    value = """
+    SELECT COUNT(*) FROM (
+      SELECT id FROM reported_adjudications
+      WHERE offender_booking_id = :bookingId AND status = 'CHARGE_PROVED'
+      OFFSET 0
+    ) ra
+    JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+    WHERE (p.deleted IS NULL OR p.deleted = false)
+    AND p.suspended_until IS NULL
+    AND EXISTS (
+      SELECT 1 FROM punishment_schedule ps
+      WHERE ps.punishment_fk_id = p.id
+      AND ps.end_date > :cutOff
+      AND ps.create_datetime = (
+        SELECT MAX(ps2.create_datetime) FROM punishment_schedule ps2
+        WHERE ps2.punishment_fk_id = p.id
+      )
+    )
+    """,
+    nativeQuery = true,
+  )
+  fun countActivePunishmentsForBooking(
+    @Param("bookingId") bookingId: Long,
+    @Param("cutOff") cutOff: LocalDate,
+  ): Long
 
   fun findByPrisonerNumberAndChargeNumberStartsWith(
     prisonerNumber: String,
