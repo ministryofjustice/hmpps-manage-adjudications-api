@@ -394,11 +394,14 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get activated from with other privilege`() {
       whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-          any(),
+        reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
           any(),
           any(),
         ),
+      ).thenReturn(listOf(1L))
+
+      whenever(
+        reportedAdjudicationRepository.findByIdsWithPunishments(any()),
       ).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication().also {
@@ -432,11 +435,14 @@ class PunishmentsReportsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `get with stoppage percentage`() {
       whenever(
-        reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-          any(),
+        reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
           any(),
           any(),
         ),
+      ).thenReturn(listOf(1L))
+
+      whenever(
+        reportedAdjudicationRepository.findByIdsWithPunishments(any()),
       ).thenReturn(
         listOf(
           entityBuilder.reportedAdjudication().also {

@@ -1048,12 +1048,13 @@ class ReportedAdjudicationRepositoryTest {
 
   @Test
   fun `get active punishments`() {
+    val ids = reportedAdjudicationRepository.findIdsForActivePunishmentsByBookingId(
+      ReportedAdjudicationStatus.CHARGE_PROVED.name,
+      1L,
+    )
+    assertThat(ids.size).isEqualTo(1)
     assertThat(
-      reportedAdjudicationRepository.findByStatusAndOffenderBookingIdAndPunishmentsSuspendedUntilIsNullAndPunishmentsScheduleEndDateIsAfter(
-        ReportedAdjudicationStatus.CHARGE_PROVED,
-        1L,
-        LocalDate.now().minusDays(1),
-      ).size,
+      reportedAdjudicationRepository.findByIdsWithPunishments(ids).size,
     ).isEqualTo(1)
   }
 
