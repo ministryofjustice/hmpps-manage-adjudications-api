@@ -10,6 +10,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Reporte
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 open class ReportedAdjudicationBaseService(
@@ -87,6 +88,11 @@ open class ReportedAdjudicationBaseService(
   }
 
   protected fun getReportCountForProfile(offenderBookingId: Long, cutOff: LocalDateTime): Long = reportedAdjudicationRepository.activeChargeProvedForBookingId(
+    bookingId = offenderBookingId,
+    cutOff = cutOff,
+  )
+
+  protected fun countActivePunishmentsForBooking(offenderBookingId: Long, cutOff: LocalDate): Long = reportedAdjudicationRepository.countActivePunishmentsForBooking(
     bookingId = offenderBookingId,
     cutOff = cutOff,
   )
