@@ -12,6 +12,14 @@ plugins {
 
 configurations {
   testImplementation { exclude(group = "org.junit.vintage") }
+  all {
+    resolutionStrategy.eachDependency {
+      if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
+        useVersion("2.21.1")
+        because("Fix GHSA-72hv-8253-57qq: jackson-core async parser DoS")
+      }
+    }
+  }
 }
 
 repositories {
