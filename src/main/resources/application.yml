@@ -86,10 +86,6 @@ server:
   error:
     include-message: always
 
-logging:
-  level:
-    org.flywaydb: DEBUG
-
 hmpps:
   sqs:
     queueAdminRole: ROLE_ADJUDICATIONS_API_QUEUE_ADMIN
