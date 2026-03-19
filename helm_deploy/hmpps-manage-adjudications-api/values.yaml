@@ -49,6 +49,7 @@ generic-service:
       MANAGE_ADJUDICATIONS_API_CLIENT_SECRET: "MANAGE_ADJUDICATIONS_API_CLIENT_SECRET"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
+    #     Updating secret to point at 15.15db in preprod
     ma-rds-instance-output:
       DATABASE_ENDPOINT: "rds_instance_endpoint"
       DATABASE_NAME: "database_name"
