@@ -49,7 +49,7 @@ generic-service:
       MANAGE_ADJUDICATIONS_API_CLIENT_SECRET: "MANAGE_ADJUDICATIONS_API_CLIENT_SECRET"
       SYSTEM_CLIENT_ID: "SYSTEM_CLIENT_ID"
       SYSTEM_CLIENT_SECRET: "SYSTEM_CLIENT_SECRET"
-    upgraded-rds-instance-output:
+    ma-rds-instance-output:
       DATABASE_ENDPOINT: "rds_instance_endpoint"
       DATABASE_NAME: "database_name"
       DATABASE_USERNAME: "database_username"
