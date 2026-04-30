@@ -39,7 +39,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.10.2")
   runtimeOnly("com.h2database:h2:2.4.240")
-  runtimeOnly("org.flywaydb:flyway-core")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql")
 
