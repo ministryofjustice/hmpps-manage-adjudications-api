@@ -731,7 +731,7 @@ enum class OffenceCodes(
     fun Int.containsNomisCode(nomisCode: String): Boolean {
       val offenceCode = entries.first { it.uniqueOffenceCodes.contains(this) }
 
-      return offenceCode.nomisCode == nomisCode || offenceCode.getNomisCodeWithOthers().contains(nomisCode)
+        return offenceCode.nomisCode == nomisCode || offenceCode.getNomisCodeWithOthers() == nomisCode
     }
   }
 }
