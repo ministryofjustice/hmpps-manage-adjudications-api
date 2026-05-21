@@ -15,16 +15,16 @@ on:
         required: true
         default: false
         type: boolean
-      deploy_dev:
-        description: Deploy to the dev environment
+      deploy_environment:
+        description: Optional environment to deploy after build
         required: true
-        default: false
-        type: boolean
-      deploy_preprod:
-        description: Deploy to the preprod environment
-        required: true
-        default: false
-        type: boolean
+        default: none
+        type: choice
+        options:
+          - none
+          - dev
+          - preprod
+          - dev-and-preprod
 permissions:
   contents: read
   packages: write
@@ -68,7 +68,7 @@ jobs:
       docker_multiplatform: false
   deploy_dev:
     name: Deploy to the dev environment
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_dev
+    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["dev", "dev-and-preprod"]'), inputs.deploy_environment)
     needs:
       - build
       - helm_lint
@@ -80,7 +80,7 @@ jobs:
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_preprod
+    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["preprod", "dev-and-preprod"]'), inputs.deploy_environment)
     needs:
       - build
       - helm_lint
