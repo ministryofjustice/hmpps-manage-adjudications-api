@@ -132,7 +132,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication.createdByUserId = "A_SMITH"
       reportedAdjudication.createDateTime = REPORTED_DATE_TIME
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(savedDraftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(savedDraftAdjudication)
     }
 
     @Test
@@ -256,7 +256,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         Optional.of(draft),
       )
 
-      whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
         passedInAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -439,7 +439,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           ),
         ),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
         passedInAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -541,7 +541,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
           )
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenAnswer {
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenAnswer {
         val passedInAdjudication = it.arguments[0] as ReportedAdjudication
         passedInAdjudication.createdByUserId = "A_SMITH"
         passedInAdjudication.createDateTime = REPORTED_DATE_TIME
@@ -717,7 +717,7 @@ class AdjudicationWorkflowServiceTest : ReportedAdjudicationTestBase() {
         entityBuilder.reportedAdjudication(),
       )
 
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         entityBuilder.reportedAdjudication(),
       )
 

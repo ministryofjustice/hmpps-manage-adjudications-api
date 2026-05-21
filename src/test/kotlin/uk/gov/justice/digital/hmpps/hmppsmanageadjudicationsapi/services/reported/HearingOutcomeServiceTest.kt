@@ -102,7 +102,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.SCHEDULED
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @Test
@@ -273,7 +273,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
     @BeforeEach
     fun init() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         reportedAdjudication.also {
           it.createdByUserId = "test"
           it.createDateTime = LocalDateTime.now()
@@ -517,7 +517,7 @@ class HearingOutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.status = ReportedAdjudicationStatus.SCHEDULED
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @Test

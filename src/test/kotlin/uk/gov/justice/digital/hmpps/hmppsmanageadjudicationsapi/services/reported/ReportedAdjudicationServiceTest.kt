@@ -407,7 +407,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = REPORTED_DATE_TIME
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
           it.status = to
           it.createdByUserId = "A_SMITH"
@@ -440,7 +440,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       returnedReportedAdjudication.createdByUserId = "A_USER"
       returnedReportedAdjudication.createDateTime = REPORTED_DATE_TIME
       returnedReportedAdjudication.lastModifiedAgencyId = returnedReportedAdjudication.originatingAgencyId
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         returnedReportedAdjudication,
       )
 
@@ -528,7 +528,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudication.status = status
 
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
 
       val response = reportedAdjudicationService.setIssued("1", now)
 
@@ -547,7 +547,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
       reportedAdjudicationDisIssued.status = status
 
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudicationDisIssued)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudicationDisIssued)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudicationDisIssued)
 
       val response = reportedAdjudicationService.setIssued("1", now)
 
@@ -1710,7 +1710,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `sets created on behalf of`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
 
       val response = reportedAdjudicationService.setCreatedOnBehalfOf("1", "officer", "some reason")
 
