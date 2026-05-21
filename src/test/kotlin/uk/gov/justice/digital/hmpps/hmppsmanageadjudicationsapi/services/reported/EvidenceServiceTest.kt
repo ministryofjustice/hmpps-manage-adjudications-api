@@ -38,7 +38,7 @@ class EvidenceServiceTest : ReportedAdjudicationTestBase() {
   @BeforeEach
   fun init() {
     whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(reportedAdjudication)
-    whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+    whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     whenever(authenticationFacade.currentUsername).thenReturn("Fred")
     reportedAdjudication.createdByUserId = "Jane"
     reportedAdjudication.createDateTime = LocalDateTime.now()

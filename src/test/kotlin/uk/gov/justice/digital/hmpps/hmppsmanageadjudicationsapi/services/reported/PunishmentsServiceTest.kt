@@ -99,7 +99,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @Test
@@ -682,7 +682,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         },
       )
 
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
@@ -1484,7 +1484,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("activated"))).thenReturn(
         listOf(reportToActivateFrom),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
 
       val response = punishmentsServiceV2.create(
         chargeNumber = "12345",
@@ -1536,7 +1536,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("activated"))).thenReturn(
         listOf(reportToActivateFrom),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
 
       val response = punishmentsServiceV2.update(
         chargeNumber = "12345",
@@ -1595,7 +1595,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
         listOf(reportToActivateFrom),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
 
       val response = punishmentsServiceV2.update(
         chargeNumber = "12345",
@@ -1638,7 +1638,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun `init`() {
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(entityBuilder.reportedAdjudication())
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(entityBuilder.reportedAdjudication())
     }
 
     @Test

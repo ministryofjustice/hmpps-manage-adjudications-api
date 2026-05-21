@@ -51,7 +51,7 @@ class DraftDamagesServiceTest : DraftAdjudicationTestBase() {
   @BeforeEach
   fun init() {
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+    whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
     whenever(authenticationFacade.currentUsername).thenReturn("Fred")
   }
 

@@ -76,7 +76,7 @@ class PunishmentCommentServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `punishment comment with reason for change`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(entityBuilder.reportedAdjudication())
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         entityBuilder.reportedAdjudication(),
       )
 

@@ -118,7 +118,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.createDateTime = LocalDateTime.now()
         },
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @ParameterizedTest
@@ -426,7 +426,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("3")).thenReturn(
         reportedAdjudicationWithOutcomeAndNoHearings,
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(reportedAdjudication)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(reportedAdjudication)
     }
 
     @CsvSource("REFER_POLICE", "PROSECUTION", "CHARGE_PROVED", "NOT_PROCEED", "DISMISSED")
@@ -788,7 +788,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = "test"
@@ -1007,7 +1007,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
     @BeforeEach
     fun init() {
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(
         reportedAdjudication.also {
           it.createDateTime = LocalDateTime.now()
           it.createdByUserId = "test"
@@ -1215,7 +1215,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
         listOf(reportToTest),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
 
       assertDeactivation(
         outcomeServiceV2.createQuashed(
@@ -1241,7 +1241,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
         listOf(reportToTest),
       )
-      whenever(reportedAdjudicationRepository.save(any())).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
       assertDeactivation(
         outcomeServiceV2.deleteOutcome(chargeNumber = currentCharge.chargeNumber, id = 1),
         reportToTest,

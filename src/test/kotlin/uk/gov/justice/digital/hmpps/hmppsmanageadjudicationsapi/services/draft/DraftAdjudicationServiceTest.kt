@@ -78,7 +78,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
     @Test
     fun `makes a call to the repository to save the draft adjudication`() {
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
 
       val draftAdjudication =
         draftAdjudicationService.startNewAdjudication(
@@ -295,7 +295,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         Optional.of(draftAdjudicationWithRole(roleCode)),
       )
 
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationWithRole(roleCode))
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudicationWithRole(roleCode))
 
       val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(roleCode), false)
 
@@ -315,7 +315,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         Optional.of(draftAdjudicationWithRole(null)),
       )
 
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationWithRole(null))
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudicationWithRole(null))
 
       val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(null), false)
 
@@ -336,7 +336,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         Optional.of(draftAdjudication),
       )
 
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
 
       val response = draftAdjudicationService.editIncidentRole(1, IncidentRoleRequest(null), deleteOffences)
 
@@ -445,7 +445,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
           draftAdjudication,
         ),
       )
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
         draftAdjudication.also {
           it.incidentRole = incidentRoleWithAllValuesSet()
         },
@@ -496,7 +496,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
 
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
 
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
         draftAdjudicationEntity.copy(
           incidentStatement = IncidentStatement(id = 1, statement = "test"),
         ),
@@ -588,7 +588,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(draftAdjudicationEntity),
       )
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
         draftAdjudicationEntity.copy(
           incidentDetails = IncidentDetails(
             id = 1,
@@ -655,7 +655,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(
         Optional.of(draftAdjudicationEntity),
       )
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
         draftAdjudicationEntity.copy(
           incidentDetails = IncidentDetails(
             id = 1,
@@ -748,7 +748,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
         )
 
         whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudicationEntity))
-        whenever(draftAdjudicationRepository.save(any())).thenReturn(
+        whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
           draftAdjudicationEntity.copy(incidentStatement = IncidentStatement(id = 1, statement = "new statement")),
         )
       }
@@ -884,7 +884,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @CsvSource("true", "false")
     fun `saves incident applicable rule`(deleteOffences: Boolean) {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
 
       val response = draftAdjudicationService.setIncidentApplicableRule(1, true, deleteOffences)
 
@@ -928,7 +928,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @Test
     fun `sets gender to female`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
 
       val response = draftAdjudicationService.setGender(1, Gender.FEMALE)
 
@@ -1015,7 +1015,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
     @Test
     fun `sets created on behalf of`() {
       whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(draftAdjudication))
-      whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudication)
+      whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudication)
 
       val response = draftAdjudicationService.setCreatedOnBehalfOf(1, "officer", "some reason")
 
@@ -1098,7 +1098,7 @@ class DraftAdjudicationServiceTest : DraftAdjudicationTestBase() {
       Optional.of(toFind.orElse(draftAdjudication)),
     )
 
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(
+    whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
       draftAdjudication,
     )
 

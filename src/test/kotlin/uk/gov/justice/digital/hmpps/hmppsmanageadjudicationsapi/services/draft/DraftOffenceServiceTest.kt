@@ -104,7 +104,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
       ),
     )
 
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(draftAdjudicationEntity)
+    whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(draftAdjudicationEntity)
 
     val draftAdjudication = incidentOffenceService.setOffenceDetails(1, offenceDetailsToAdd)
 
@@ -141,7 +141,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
 
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(
+    whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(
       existingDraftAdjudicationEntity,
     )
 
@@ -194,7 +194,7 @@ class DraftOffenceServiceTest : DraftAdjudicationTestBase() {
     )
 
     whenever(draftAdjudicationRepository.findById(any())).thenReturn(Optional.of(existingDraftAdjudicationEntity))
-    whenever(draftAdjudicationRepository.save(any())).thenReturn(existingDraftAdjudicationEntity)
+    whenever(draftAdjudicationRepository.save(any<DraftAdjudication>())).thenReturn(existingDraftAdjudicationEntity)
     val argumentCaptor = ArgumentCaptor.forClass(DraftAdjudication::class.java)
 
     incidentOffenceService.setOffenceDetails(

@@ -24,12 +24,12 @@ object LocalStackContainer {
     if (localstackIsRunning()) return null
     val logConsumer = Slf4jLogConsumer(log).withPrefix("localstack")
     return LocalStackContainer(
-      DockerImageName.parse("localstack/localstack").withTag("3"),
+      DockerImageName.parse("localstack/localstack").withTag("4.12"),
     ).apply {
       withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.SNS)
       withEnv("DEFAULT_REGION", "eu-west-2")
       waitingFor(
-        Wait.forLogMessage(".*Running on.*", 1),
+        Wait.forListeningPort(),
       )
       start()
       followOutput(logConsumer)
