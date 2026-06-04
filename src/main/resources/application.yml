@@ -92,7 +92,7 @@ hmpps:
   sar:
     additionalAccessRole: ROLE_ADJUDICATIONS_SAR_VIEWER
     template:
-      path: /resources/template_hmpps-manage-adjudications-api.mustache
+      path: /template_hmpps-manage-adjudications-api.mustache
       enabled: true
   auth:
     url: ${HMPPS_AUTH_BASE_URL:https://sign-in-dev.hmpps.service.justice.gov.uk/auth}
