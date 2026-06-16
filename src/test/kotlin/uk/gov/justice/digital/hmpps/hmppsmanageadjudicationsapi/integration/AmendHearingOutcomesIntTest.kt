@@ -409,8 +409,6 @@ class AmendHearingOutcomesIntTest : SqsIntegrationTestBase() {
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.code")
               .isEqualTo(OutcomeCode.CHARGE_PROVED.name)
               .jsonPath("$.reportedAdjudication.outcomes[0].outcome.outcome.amount").doesNotExist()
-
-          else -> {}
         }
       }
   }
