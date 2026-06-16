@@ -54,9 +54,7 @@ class PrisonerSearchService(
    */
   private fun handleError(ex: WebClientResponseException): ErrorResponse = try {
     logger.warn("Handling error response: ${ex.statusCode}")
-    ex.responseBodyAsString?.let { body ->
-      objectMapper.readValue(body, ErrorResponse::class.java)
-    } ?: throw IllegalArgumentException("Empty error response body")
+    objectMapper.readValue(ex.responseBodyAsString, ErrorResponse::class.java)
   } catch (parseException: Exception) {
     logger.error("Failed to parse error response body for status: ${ex.statusCode}", parseException)
     ErrorResponse(
