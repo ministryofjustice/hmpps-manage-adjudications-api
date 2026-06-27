@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.web.reactive.server.WebTestClient
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
@@ -59,7 +58,43 @@ class SubjectAccessRequestMigrationIntTest :
 
   @BeforeEach
   fun setUp() {
+    // This test asserts absolute, sequence-generated identifiers (charge numbers from the
+    // per-agency *_CHARGE_SEQUENCE sequences, plus hearing/outcome/punishment identity ids),
+    // and its expected snapshots rely on those sequences climbing across the test methods in
+    // this class (MDI-000001, MDI-000002, ...). The base cleanup only deletes rows, leaving
+    // sequences advanced by whatever ran before, so the assertions are only stable when this
+    // class runs first against a fresh container. Test-class ordering is not guaranteed, so
+    // reset to a pristine state once - before the first method - to make the expected ids
+    // deterministic regardless of execution order while preserving the intra-class progression.
+    if (!databaseReset) {
+      resetDatabaseToPristineState()
+      databaseReset = true
+    }
     setAuditTime(DEFAULT_REPORTED_DATE_TIME)
+  }
+
+  private fun resetDatabaseToPristineState() {
+    dataSource.connection.use { connection ->
+      connection.createStatement().use { statement ->
+        val tables = mutableListOf<String>()
+        statement.executeQuery(
+          "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> 'flyway_schema_history'",
+        ).use { rs -> while (rs.next()) tables.add(rs.getString(1)) }
+
+        if (tables.isNotEmpty()) {
+          statement.execute(
+            tables.joinToString(prefix = "TRUNCATE TABLE ", postfix = " RESTART IDENTITY CASCADE") { "public.\"$it\"" },
+          )
+        }
+
+        val sequences = mutableListOf<String>()
+        statement.executeQuery(
+          "SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public'",
+        ).use { rs -> while (rs.next()) sequences.add(rs.getString(1)) }
+
+        sequences.forEach { statement.execute("ALTER SEQUENCE public.\"$it\" RESTART WITH 1") }
+      }
+    }
   }
 
   @Test
@@ -446,6 +481,10 @@ class SubjectAccessRequestMigrationIntTest :
 
   companion object {
     private const val PRISONER_NUMBER = "SAR1234"
+
+    // A new test instance is created per method, so this static guard ensures the pristine
+    // reset runs only once - before the first method of this class.
+    private var databaseReset = false
   }
 
   @TestConfiguration
