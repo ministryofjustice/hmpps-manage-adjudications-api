@@ -77,7 +77,7 @@ jobs:
       sign_image: true
   deploy_dev:
     name: Deploy to the dev environment
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'IR-')
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - helm_lint
@@ -89,7 +89,7 @@ jobs:
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'IR-')
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - helm_lint
