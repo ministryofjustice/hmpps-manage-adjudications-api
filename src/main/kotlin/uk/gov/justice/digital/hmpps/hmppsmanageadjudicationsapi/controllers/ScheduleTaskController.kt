@@ -3,13 +3,9 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.draft.DraftAdjudicationService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ConsecutivePunishmentCorrectionService
 
 @RestController
 @Hidden
@@ -17,17 +13,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reporte
 @RequestMapping("/scheduled-tasks")
 class ScheduleTaskController(
   private val draftAdjudicationService: DraftAdjudicationService,
-  private val consecutivePunishmentCorrectionService: ConsecutivePunishmentCorrectionService,
-  private val eventPublishService: EventPublishService,
 ) {
 
   @DeleteMapping(value = ["/delete-orphaned-draft-adjudications"])
   fun deleteOrphanedDraftAdjudications(): Unit = draftAdjudicationService.deleteOrphanedDraftAdjudications()
-
-  @PostMapping(value = ["/fix-consecutive-punishment-loops"])
-  fun fixConsecutivePunishmentLoops() {
-    consecutivePunishmentCorrectionService.clearLoopedConsecutivePunishments().forEach {
-      eventPublishService.publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, it)
-    }
-  }
 }
