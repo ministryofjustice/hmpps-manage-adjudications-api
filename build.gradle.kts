@@ -3,7 +3,7 @@ import uk.gov.justice.digital.hmpps.gradle.PortForwardRedisTask
 import uk.gov.justice.digital.hmpps.gradle.RevealSecretsTask
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.2"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "10.5.3"
   id("jacoco")
   kotlin("plugin.spring") version "2.4.0"
   kotlin("plugin.jpa") version "2.4.0"
@@ -35,7 +35,7 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.0")
   implementation("io.opentelemetry:opentelemetry-api:1.63.0")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.28.1")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.29.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.11.0")
   runtimeOnly("com.h2database:h2:2.4.240")
