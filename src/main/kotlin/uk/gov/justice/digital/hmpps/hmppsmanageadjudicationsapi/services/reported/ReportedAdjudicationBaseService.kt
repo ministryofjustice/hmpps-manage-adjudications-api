@@ -68,6 +68,11 @@ open class ReportedAdjudicationBaseService(
     ).isNotEmpty()
   }
 
+  protected fun chargesConsecutiveTo(consecutiveChargeNumber: String, types: List<PunishmentType>): List<String> = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+    consecutiveChargeNumber,
+    types.map { it.name },
+  ).map { it.chargeNumber }
+
   protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> = reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
     prisonerNumber = prisonerNumber,
     chargeNumber = "${chargeNumber.substringBefore("-")}-",

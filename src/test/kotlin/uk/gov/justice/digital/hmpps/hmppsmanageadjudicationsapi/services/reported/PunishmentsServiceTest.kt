@@ -125,6 +125,39 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
     @ParameterizedTest
+    fun `throws validation exception when creating a consecutive loop`(punishmentType: PunishmentType) {
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+          "1",
+          listOf("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS"),
+        ),
+      ).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(type = punishmentType, consecutiveChargeNumber = "2", duration = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("charge 1 cannot be consecutive to 2 because 2 is already consecutive to this charge")
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when consecutive to its own charge`(punishmentType: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(type = punishmentType, consecutiveChargeNumber = "1", duration = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("a punishment cannot be consecutive to its own charge 1")
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
     fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         reportedAdjudication.also {
@@ -1020,6 +1053,33 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when updating to create a consecutive loop`(type: PunishmentType) {
+      whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
+        entityBuilder.reportedAdjudication().also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        },
+      )
+
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+          "1",
+          listOf("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS"),
+        ),
+      ).thenReturn(
+        listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          chargeNumber = "1",
+          punishments = listOf(PunishmentRequest(type = type, consecutiveChargeNumber = "2", duration = 1)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("charge 1 cannot be consecutive to 2 because 2 is already consecutive to this charge")
     }
 
     @Test

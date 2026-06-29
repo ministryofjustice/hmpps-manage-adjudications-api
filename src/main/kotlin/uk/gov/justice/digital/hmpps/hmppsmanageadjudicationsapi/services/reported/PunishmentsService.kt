@@ -40,6 +40,8 @@ class PunishmentsService(
     chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
+    validateNoConsecutiveLoop(chargeNumber, punishments)
+
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (it.getPunishments()
           .isNotEmpty()
@@ -82,6 +84,8 @@ class PunishmentsService(
     chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
+    validateNoConsecutiveLoop(chargeNumber, punishments)
+
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishments()
     }
@@ -258,6 +262,23 @@ class PunishmentsService(
     }
 
     return suspendedPunishmentEvents
+  }
+
+  private fun validateNoConsecutiveLoop(chargeNumber: String, punishments: List<PunishmentRequest>) {
+    val requestedConsecutiveTargets = punishments
+      .filter { PunishmentType.additionalDays().contains(it.type) }
+      .mapNotNull { it.consecutiveChargeNumber }
+      .toSet()
+    if (requestedConsecutiveTargets.isEmpty()) return
+
+    if (requestedConsecutiveTargets.contains(chargeNumber)) {
+      throw ValidationException("a punishment cannot be consecutive to its own charge $chargeNumber")
+    }
+
+    val chargesConsecutiveToThis = chargesConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).toSet()
+    requestedConsecutiveTargets.firstOrNull { chargesConsecutiveToThis.contains(it) }?.let {
+      throw ValidationException("charge $chargeNumber cannot be consecutive to $it because $it is already consecutive to this charge")
+    }
   }
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
