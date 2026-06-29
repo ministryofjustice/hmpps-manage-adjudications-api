@@ -37,33 +37,47 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ matrix.environments }}
-  kotlin_validate:
+  app_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.app_version.outputs.version }}
+    steps:
+      - id: app_version
+        name: Application version creators
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/build-test-and-deploy/create_app_version@cd5eb88ee6b73a22548a64b8c7358a3bedc9516f # v1.0.13
+  gradle_verify:
     name: Validate the kotlin
-    uses: ./.github/workflows/kotlin_localstack_postgres_validate.yml # LOCAL_VERSION
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/gradle_verify.yml@v2 # WORKFLOW_VERSION
     secrets: inherit
+    needs:
+      - app_version
     with:
-      services: sns,sqs
-      localstack_tag: "3.0"
-      postgres_tag: "14"
-      postgres_username: adjudications
-      postgres_password: adjudications
+      gradle-command: 'BUILD_NUMBER=${{ needs.app_version.outputs.version }} ./gradlew assemble check'
+      upload-build-artifacts: true
+      java-version: "25"
+      postgres-tag: "18"
+      postgres-db: adjudications
+      postgres-username: adjudications
+      postgres-password: adjudications
+      localstack-tag: community-archive
   build:
     name: Build docker image from hmpps-github-actions
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
     needs:
-      - kotlin_validate
+      - gradle_verify
     with:
       docker_registry: 'ghcr.io'
       registry_org: 'ministryofjustice'
       additional_docker_tag: ${{ inputs.additional_docker_tag }}
       push: ${{ inputs.push || true }}
       docker_multiplatform: false
+      download_build_artifacts: true
       generate_sbom: true
       attach_sbom_to_registry: true
       sign_image: true
   deploy_dev:
     name: Deploy to the dev environment
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'IR-')
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - helm_lint
@@ -75,7 +89,7 @@ jobs:
       helm_timeout: '5m'
   deploy_preprod:
     name: Deploy to the preprod environment
-    if: github.ref_name == 'main' || startsWith(github.ref_name, 'IR-')
+    if: github.ref == 'refs/heads/main'
     needs:
       - build
       - helm_lint
