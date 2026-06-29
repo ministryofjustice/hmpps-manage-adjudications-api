@@ -193,6 +193,41 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("types") types: List<String>,
   ): List<ReportedAdjudication>
 
+  @Query(
+    value = """
+      WITH looped_charges AS (
+        SELECT DISTINCT
+          CASE
+            WHEN ra1.create_datetime < ra2.create_datetime THEN p1.id
+            WHEN ra2.create_datetime < ra1.create_datetime THEN p2.id
+            ELSE least(p1.id, p2.id)
+          END AS punishment_id_to_clear
+        FROM reported_adjudications ra1
+        JOIN punishment p1 ON p1.reported_adjudication_fk_id = ra1.id AND coalesce(p1.deleted, false) = false
+        JOIN reported_adjudications ra2 ON ra2.charge_number = p1.consecutive_to_charge_number
+                                       AND ra2.prisoner_number = ra1.prisoner_number
+        JOIN punishment p2 ON p2.reported_adjudication_fk_id = ra2.id AND coalesce(p2.deleted, false) = false
+        WHERE p2.consecutive_to_charge_number = ra1.charge_number
+          AND ra1.id < ra2.id
+      )
+      SELECT punishment_id_to_clear FROM looped_charges
+    """,
+    nativeQuery = true,
+  )
+  fun findLoopedConsecutivePunishmentIdsToClear(): List<Long>
+
+  @Query(
+    value = """
+      SELECT DISTINCT ra.* FROM reported_adjudications ra
+      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+      WHERE p.id IN :punishmentIds
+    """,
+    nativeQuery = true,
+  )
+  fun findByPunishmentIdIn(
+    @Param("punishmentIds") punishmentIds: List<Long>,
+  ): List<ReportedAdjudication>
+
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(
     @Param("sequenceName") sequenceName: String,
