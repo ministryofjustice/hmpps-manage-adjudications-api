@@ -48,6 +48,35 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `rejects creating a consecutive loop with a 400`() {
+    val chargeX = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val chargeY = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+
+    // charge Y is already consecutive to charge X
+    createPunishments(
+      chargeNumber = chargeY,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = chargeX,
+      isSuspended = false,
+    ).expectStatus().isCreated
+
+    // making charge X consecutive to charge Y would close the loop - reject it
+    createPunishments(
+      chargeNumber = chargeX,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = chargeY,
+      isSuspended = false,
+    )
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo(
+        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because $chargeY is already consecutive to this charge",
+      )
+  }
+
   @CsvSource("true", "false")
   @ParameterizedTest
   fun `create a payback punishment`(hasDetails: Boolean) {
