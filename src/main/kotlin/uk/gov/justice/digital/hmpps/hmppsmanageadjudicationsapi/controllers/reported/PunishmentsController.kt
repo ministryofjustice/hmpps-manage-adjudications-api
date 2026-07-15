@@ -30,6 +30,8 @@ data class PunishmentRequest(
   val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
+  @Schema(description = "whether the prisoner has a child under 18; required for social visits punishments")
+  val hasChildUnder18: Boolean? = null,
   @Schema(description = "privilege type - only use if punishment type is PRIVILEGE")
   val privilegeType: PrivilegeType? = null,
   @Schema(description = "other privilege type - only use if privilege type is OTHER")

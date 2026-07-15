@@ -13,7 +13,13 @@ class EventPublishService(
   private val clock: Clock,
 ) {
 
-  fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
+  fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) = publishEvent(event, adjudication, publishSuspendedPunishmentEvents = true)
+
+  fun publishEvent(
+    event: AdjudicationDomainEventType,
+    adjudication: ReportedAdjudicationDto,
+    publishSuspendedPunishmentEvents: Boolean,
+  ) {
     publish(
       event = event,
       chargeNumber = adjudication.chargeNumber,
@@ -22,6 +28,8 @@ class EventPublishService(
       status = adjudication.status,
       hearingId = if (event.incHearingId) adjudication.hearingIdActioned else null,
     )
+
+    if (!publishSuspendedPunishmentEvents) return
 
     adjudication.suspendedPunishmentEvents?.let {
       it.forEach { event ->

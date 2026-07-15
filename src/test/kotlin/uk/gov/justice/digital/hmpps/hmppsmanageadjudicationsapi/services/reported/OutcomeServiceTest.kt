@@ -295,6 +295,13 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.add(entityBuilder.createHearing())
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "test")
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.addPunishment(
+            Punishment(
+              type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+              hasChildUnder18 = true,
+              schedule = mutableListOf(PunishmentSchedule(duration = 10)),
+            ),
+          )
         },
       )
 
@@ -313,7 +320,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.QUASHED)
       assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("details")
-      assertThat(response).isNotNull
+      assertThat(response.lossOfVisitsChanged).isTrue()
     }
 
     @CsvSource(

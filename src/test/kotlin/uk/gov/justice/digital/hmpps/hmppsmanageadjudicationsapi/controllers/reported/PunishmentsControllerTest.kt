@@ -86,6 +86,17 @@ class PunishmentsControllerTest : TestControllerBase() {
       )
     }
 
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `publishes loss of visits event when a visits punishment is awarded`() {
+      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChanged = true)
+      whenever(punishmentsService.create(ArgumentMatchers.anyString(), any())).thenReturn(response)
+
+      createPunishmentsRequest(1, PUNISHMENT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
+    }
+
     private fun createPunishmentsRequest(
       id: Long,
       punishmentRequest: PunishmentRequest,
@@ -156,6 +167,17 @@ class PunishmentsControllerTest : TestControllerBase() {
         AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
         REPORTED_ADJUDICATION_DTO,
       )
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `publishes loss of visits event when a visits punishment is changed`() {
+      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChanged = true)
+      whenever(punishmentsService.update(ArgumentMatchers.anyString(), any())).thenReturn(response)
+
+      updatePunishmentsRequest(1, PUNISHMENT_REQUEST).andExpect(MockMvcResultMatchers.status().isOk)
+
+      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
     }
 
     private fun updatePunishmentsRequest(

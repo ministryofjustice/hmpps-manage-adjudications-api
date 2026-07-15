@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
@@ -106,6 +107,9 @@ data class ReportedAdjudicationDto(
   @Schema(description = "array of additional events to send for suspended punishments")
   @JsonIgnore
   var suspendedPunishmentEvents: Set<SuspendedPunishmentEvent>? = null,
+  @Schema(description = "flag to emit the loss of visits domain event")
+  @JsonIgnore
+  var lossOfVisitsChanged: Boolean = false,
 )
 
 @Schema(description = "suspended punishment event")
@@ -310,6 +314,9 @@ data class PunishmentDto(
   val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
+  @Schema(description = "whether the prisoner has a child under 18; required for social visits punishments")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val hasChildUnder18: Boolean? = null,
   @Schema(description = "punishment type description")
   var typeDescription: String? = null,
   @Schema(description = "optional privilege type")

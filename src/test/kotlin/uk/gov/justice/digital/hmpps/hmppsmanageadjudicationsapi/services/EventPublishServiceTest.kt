@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -42,6 +43,34 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         status = REPORTED_ADJUDICATION_DTO.status.name,
       ),
     )
+  }
+
+  @Test
+  fun `loss of visits event uses the standard envelope without repeating suspended punishment events`() {
+    val adjudication = REPORTED_ADJUDICATION_DTO.copy(
+      suspendedPunishmentEvents = setOf(
+        SuspendedPunishmentEvent(
+          agencyId = "LEI",
+          chargeNumber = "suspended",
+          status = ReportedAdjudicationStatus.CHARGE_PROVED,
+        ),
+      ),
+    )
+
+    eventPublishService.publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, adjudication, false)
+
+    verify(snsService).publishDomainEvent(
+      AdjudicationDomainEventType.LOSS_OF_VISITS,
+      "${AdjudicationDomainEventType.LOSS_OF_VISITS.description} ${adjudication.chargeNumber}",
+      LocalDateTime.now(clock),
+      AdditionalInformation(
+        chargeNumber = adjudication.chargeNumber,
+        prisonId = adjudication.originatingAgencyId,
+        prisonerNumber = adjudication.prisonerNumber,
+        status = adjudication.status.name,
+      ),
+    )
+    verifyNoMoreInteractions(snsService)
   }
 
   @CsvSource(

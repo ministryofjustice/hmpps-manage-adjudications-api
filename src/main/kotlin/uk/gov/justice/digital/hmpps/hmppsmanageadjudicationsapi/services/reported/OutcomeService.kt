@@ -182,6 +182,8 @@ class OutcomeService(
     }.also {
       it.deleted = true
     }
+    val lossOfVisitsChanged = outcomeToDelete.code in listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED) &&
+      reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
 
     reportedAdjudication.calculateStatus()
 
@@ -198,6 +200,7 @@ class OutcomeService(
 
     return saveToDto(reportedAdjudication).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
+      it.lossOfVisitsChanged = lossOfVisitsChanged
     }
   }
 
@@ -242,6 +245,8 @@ class OutcomeService(
     )
 
     reportedAdjudication.addOutcome(outcomeToCreate)
+    val lossOfVisitsChanged = code == OutcomeCode.QUASHED &&
+      reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
 
     if (code == OutcomeCode.QUASHED) {
       suspendedPunishmentEvents.addAll(
@@ -254,6 +259,7 @@ class OutcomeService(
 
     return saveToDto(reportedAdjudication).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
+      it.lossOfVisitsChanged = lossOfVisitsChanged
     }
   }
 

@@ -237,6 +237,46 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("stoppage percentage missing for type EARNINGS")
     }
 
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @ParameterizedTest
+    fun `validation error - social visits punishment missing child under 18 answer`(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(type = type, duration = 1, suspendedUntil = LocalDate.now())),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("hasChildUnder18 missing for social visits punishment")
+    }
+
+    @CsvSource(
+      "RESTRICTION_OF_SOCIAL_VISITS, 0, 84",
+      "RESTRICTION_OF_SOCIAL_VISITS, 85, 84",
+      "FORFEITURE_OF_SOCIAL_VISITS, 0, 27",
+      "FORFEITURE_OF_SOCIAL_VISITS, 28, 27",
+    )
+    @ParameterizedTest
+    fun `validation error - social visits duration outside policy limit`(
+      type: PunishmentType,
+      duration: Int,
+      maximumDuration: Int,
+    ) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = type,
+              hasChildUnder18 = false,
+              duration = duration,
+              suspendedUntil = LocalDate.now(),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("duration for $type must be between 1 and $maximumDuration days")
+    }
+
     @CsvSource(
       "PRIVILEGE",
       "EARNINGS",
@@ -401,6 +441,33 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().duration).isEqualTo(1)
 
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `creates both social visits punishments and marks the visits event for publication`() {
+      val response = punishmentsService.create(
+        chargeNumber = "1",
+        listOf(
+          PunishmentRequest(
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            duration = 84,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(83),
+          ),
+          PunishmentRequest(
+            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            hasChildUnder18 = false,
+            duration = 27,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(26),
+          ),
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChanged).isTrue()
+      assertThat(response.punishments).allSatisfy { assertThat(it.hasChildUnder18).isNotNull() }
+      assertThat(reportedAdjudication.getPunishments().map { it.hasChildUnder18 }).containsExactly(true, false)
     }
 
     @Test
@@ -1258,6 +1325,79 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `reducing a social visits punishment marks the visits event for publication`() {
+      val startDate = LocalDate.now()
+      reportedAdjudication.addPunishment(
+        socialVisitsPunishment(
+          duration = 84,
+          startDate = startDate,
+          endDate = startDate.plusDays(83),
+        ),
+      )
+
+      val response = punishmentsService.update(
+        chargeNumber = "1",
+        punishments = listOf(
+          PunishmentRequest(
+            id = 1,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            duration = 28,
+            startDate = startDate,
+            endDate = startDate.plusDays(27),
+          ),
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChanged).isTrue()
+      assertThat(response.punishments.single().schedule.duration).isEqualTo(28)
+    }
+
+    @Test
+    fun `unchanged social visits punishment does not mark the visits event for publication`() {
+      val startDate = LocalDate.now()
+      reportedAdjudication.addPunishment(
+        socialVisitsPunishment(
+          duration = 28,
+          startDate = startDate,
+          endDate = startDate.plusDays(27),
+        ),
+      )
+
+      val response = punishmentsService.update(
+        chargeNumber = "1",
+        punishments = listOf(
+          PunishmentRequest(
+            id = 1,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            duration = 28,
+            startDate = startDate,
+            endDate = startDate.plusDays(27),
+          ),
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChanged).isFalse()
+    }
+
+    @Test
+    fun `removing a social visits punishment marks the visits event for publication`() {
+      reportedAdjudication.addPunishment(
+        socialVisitsPunishment(
+          duration = 28,
+          startDate = LocalDate.now(),
+          endDate = LocalDate.now().plusDays(27),
+        ),
+      )
+
+      val response = punishmentsService.update(chargeNumber = "1", punishments = emptyList())
+
+      assertThat(response.lossOfVisitsChanged).isTrue()
+      assertThat(response.punishments).isEmpty()
+    }
+
+    @Test
     fun `activated from charge is not found `() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication.also {
@@ -2051,6 +2191,21 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   }
 
   companion object {
+
+    fun socialVisitsPunishment(
+      duration: Int,
+      startDate: LocalDate,
+      endDate: LocalDate,
+    ) = Punishment(
+      id = 1,
+      type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+      hasChildUnder18 = true,
+      schedule = mutableListOf(
+        PunishmentSchedule(id = 1, duration = duration, startDate = startDate, endDate = endDate).also {
+          it.createDateTime = LocalDateTime.now()
+        },
+      ),
+    )
 
     fun getRequest(
       id: Long? = null,

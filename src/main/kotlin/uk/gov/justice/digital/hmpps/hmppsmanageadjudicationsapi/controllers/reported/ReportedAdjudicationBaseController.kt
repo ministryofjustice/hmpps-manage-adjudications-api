@@ -40,6 +40,13 @@ class ReportedAdjudicationBaseController {
         )
       }
     }
+    if (it.lossOfVisitsChanged) {
+      eventPublishService.publishEvent(
+        event = AdjudicationDomainEventType.LOSS_OF_VISITS,
+        adjudication = it,
+        publishSuspendedPunishmentEvents = false,
+      )
+    }
   }.toResponse()
 
   companion object {

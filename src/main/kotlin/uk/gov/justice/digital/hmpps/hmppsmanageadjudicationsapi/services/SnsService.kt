@@ -166,6 +166,11 @@ enum class AdjudicationDomainEventType(
     "Adjudication punishments deleted: ",
     AuditType.PUNISHMENTS_DELETED,
   ),
+  LOSS_OF_VISITS(
+    "adjudication.punishments.lossOfVisits",
+    "Adjudication loss of visits changed: ",
+    AuditType.LOSS_OF_VISITS,
+  ),
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),
   PROSECUTION_REFERRAL_OUTCOME(

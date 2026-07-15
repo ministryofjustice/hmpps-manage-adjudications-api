@@ -468,6 +468,20 @@ class OutcomeControllerTest : TestControllerBase() {
       )
     }
 
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `publishes loss of visits event when a visits punishment is quashed`() {
+      val response = REPORTED_ADJUDICATION_DTO.copy(
+        status = ReportedAdjudicationStatus.QUASHED,
+        lossOfVisitsChanged = true,
+      )
+      whenever(outcomeService.createQuashed(anyString(), any(), any())).thenReturn(response)
+
+      createQuashedRequest(1, QUASHED_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
+    }
+
     private fun createQuashedRequest(
       id: Long,
       request: QuashedRequest,

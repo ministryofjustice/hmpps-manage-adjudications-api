@@ -116,6 +116,7 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
     fun `remove a completed hearing outcome removes outcome and hearing outcome `(outcomeCode: OutcomeCode) {
       whenever(hearingOutcomeService.deleteHearingOutcome(any(), any())).thenReturn(REPORTED_ADJUDICATION_DTO)
       whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = outcomeCode))
+      whenever(outcomeService.deleteOutcome(chargeNumber = "1", id = 1L)).thenReturn(REPORTED_ADJUDICATION_DTO)
       val response = completedHearingService.removeOutcome(chargeNumber = "1")
 
       verify(outcomeService, atLeastOnce()).deleteOutcome(chargeNumber = "1", id = 1L)

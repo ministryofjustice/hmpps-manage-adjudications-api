@@ -88,7 +88,7 @@ class CompletedHearingService(
   ): ReportedAdjudicationDto {
     val outcomeToRemove = outcomeService.getLatestOutcome(chargeNumber = chargeNumber).validateCanRemove()
 
-    outcomeService.deleteOutcome(
+    val outcomeResult = outcomeService.deleteOutcome(
       chargeNumber = chargeNumber,
       id = outcomeToRemove.id!!,
     )
@@ -98,6 +98,7 @@ class CompletedHearingService(
     ).also {
       it.hearingIdActioned = it.hearings.getLatestHearingId()
       it.punishmentsRemoved = outcomeToRemove.code == OutcomeCode.CHARGE_PROVED
+      it.lossOfVisitsChanged = outcomeResult.lossOfVisitsChanged
     }
   }
 
