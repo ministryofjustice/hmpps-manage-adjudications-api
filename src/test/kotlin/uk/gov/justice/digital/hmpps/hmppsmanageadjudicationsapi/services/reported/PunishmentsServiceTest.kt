@@ -17,7 +17,9 @@ import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.RehabilitativeActivityRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
@@ -249,6 +251,27 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("hasChildUnder18 missing for social visits punishment")
     }
 
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @ParameterizedTest
+    fun `validation error - social visits punishments are not valid for youth adjudications`(type: PunishmentType) {
+      reportedAdjudication.isYouthOffender = true
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = type,
+              hasChildUnder18 = false,
+              duration = 1,
+              startDate = LocalDate.now(),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("social visits punishments are only valid for adult adjudications")
+    }
+
     @CsvSource(
       "RESTRICTION_OF_SOCIAL_VISITS, 0, 84",
       "RESTRICTION_OF_SOCIAL_VISITS, 85, 84",
@@ -275,6 +298,65 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("duration for $type must be between 1 and $maximumDuration days")
+    }
+
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @ParameterizedTest
+    fun `validation error - active social visits dates do not match duration`(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = type,
+              hasChildUnder18 = false,
+              duration = 2,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now().plusDays(2),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("social visits punishment dates must match its duration")
+    }
+
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @ParameterizedTest
+    fun `validation error - active social visits punishment is missing its start date`(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = type,
+              hasChildUnder18 = false,
+              duration = 2,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing start date for social visits punishment")
+    }
+
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @ParameterizedTest
+    fun `validation error - suspended social visits punishment also has active dates`(type: PunishmentType) {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(
+            PunishmentRequest(
+              type = type,
+              hasChildUnder18 = false,
+              duration = 2,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now().plusDays(1),
+              suspendedUntil = LocalDate.now().plusMonths(1),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("a suspended social visits punishment must not have start or end dates")
     }
 
     @CsvSource(
@@ -441,10 +523,13 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getPunishments().first().getSchedule().first().duration).isEqualTo(1)
 
       assertThat(response).isNotNull
+      assertThat(response.lossOfVisitsChangeType).isNull()
+      assertThat(response.supplementalLossOfVisitsEvents).isEmpty()
     }
 
     @Test
     fun `creates both social visits punishments and marks the visits event for publication`() {
+      val startDate = LocalDate.now()
       val response = punishmentsService.create(
         chargeNumber = "1",
         listOf(
@@ -452,22 +537,24 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
             hasChildUnder18 = true,
             duration = 84,
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(83),
+            startDate = startDate,
           ),
           PunishmentRequest(
             type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
             hasChildUnder18 = false,
             duration = 27,
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(26),
+            startDate = startDate,
           ),
         ),
       )
 
-      assertThat(response.lossOfVisitsChanged).isTrue()
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.AWARDED)
       assertThat(response.punishments).allSatisfy { assertThat(it.hasChildUnder18).isNotNull() }
       assertThat(reportedAdjudication.getPunishments().map { it.hasChildUnder18 }).containsExactly(true, false)
+      assertThat(reportedAdjudication.getPunishments().map { it.latestSchedule().endDate })
+        .containsExactly(startDate.plusDays(83), startDate.plusDays(26))
+      assertThat(response.punishments.map { it.schedule.endDate })
+        .containsExactly(startDate.plusDays(83), startDate.plusDays(26))
     }
 
     @Test
@@ -1322,6 +1409,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(privilege.getSchedule().first().endDate).isEqualTo(LocalDate.now().plusDays(1))
       assertThat(privilege.otherPrivilege).isEqualTo("other")
       assertThat(privilege.privilegeType).isEqualTo(PrivilegeType.OTHER)
+      assertThat(response.lossOfVisitsChangeType).isNull()
+      assertThat(response.supplementalLossOfVisitsEvents).isEmpty()
     }
 
     @Test
@@ -1344,13 +1433,47 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             hasChildUnder18 = true,
             duration = 28,
             startDate = startDate,
+          ),
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
+      assertThat(response.punishments.single().schedule.duration).isEqualTo(28)
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().also {
+        assertThat(it.duration).isEqualTo(28)
+        assertThat(it.startDate).isEqualTo(startDate)
+        assertThat(it.endDate).isEqualTo(startDate.plusDays(27))
+        assertThat(it.hasChildUnder18).isTrue()
+      }
+    }
+
+    @Test
+    fun `changing the child exemption answer marks the visits snapshot as updated`() {
+      val startDate = LocalDate.now()
+      reportedAdjudication.addPunishment(
+        socialVisitsPunishment(
+          duration = 28,
+          startDate = startDate,
+          endDate = startDate.plusDays(27),
+        ),
+      )
+
+      val response = punishmentsService.update(
+        chargeNumber = "1",
+        punishments = listOf(
+          PunishmentRequest(
+            id = 1,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = false,
+            duration = 28,
+            startDate = startDate,
             endDate = startDate.plusDays(27),
           ),
         ),
       )
 
-      assertThat(response.lossOfVisitsChanged).isTrue()
-      assertThat(response.punishments.single().schedule.duration).isEqualTo(28)
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().hasChildUnder18).isFalse()
     }
 
     @Test
@@ -1373,12 +1496,11 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             hasChildUnder18 = true,
             duration = 28,
             startDate = startDate,
-            endDate = startDate.plusDays(27),
           ),
         ),
       )
 
-      assertThat(response.lossOfVisitsChanged).isFalse()
+      assertThat(response.lossOfVisitsChangeType).isNull()
     }
 
     @Test
@@ -1393,8 +1515,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       val response = punishmentsService.update(chargeNumber = "1", punishments = emptyList())
 
-      assertThat(response.lossOfVisitsChanged).isTrue()
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.REMOVED)
       assertThat(response.punishments).isEmpty()
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.punishments).isEmpty()
     }
 
     @Test
@@ -1831,6 +1954,163 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         ),
       )
     }
+
+    @Test
+    fun `activating a suspended visits punishment emits the updated snapshot for its original charge`() {
+      val startDate = LocalDate.now()
+      val visitsReport = entityBuilder.reportedAdjudication(chargeNumber = "visits-charge").also { report ->
+        report.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        report.clearPunishments()
+        report.addPunishment(
+          Punishment(
+            id = 3,
+            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            hasChildUnder18 = false,
+            suspendedUntil = startDate.plusDays(30),
+            schedule = mutableListOf(
+              PunishmentSchedule(
+                id = 3,
+                duration = 10,
+                suspendedUntil = startDate.plusDays(30),
+              ).also { it.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("visits-charge"))).thenReturn(listOf(visitsReport))
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
+
+      val response = punishmentsServiceV2.create(
+        chargeNumber = "12345",
+        punishments = listOf(
+          PunishmentRequest(
+            id = 3,
+            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            hasChildUnder18 = false,
+            duration = 10,
+            startDate = startDate,
+            endDate = startDate.plusDays(9),
+            activatedFrom = "visits-charge",
+          ),
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChangeType).isNull()
+      response.supplementalLossOfVisitsEvents.single().also { event ->
+        assertThat(event.chargeNumber).isEqualTo("visits-charge")
+        assertThat(event.details.changeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
+        event.details.punishments.single().also {
+          assertThat(it.startDate).isEqualTo(startDate)
+          assertThat(it.endDate).isEqualTo(startDate.plusDays(9))
+          assertThat(it.suspendedUntil).isNull()
+          assertThat(it.activatedByChargeNumber).isEqualTo("12345")
+        }
+      }
+    }
+
+    @CsvSource(
+      "FORFEITURE_OF_SOCIAL_VISITS, true, 10, 'punishment type does not match suspended punishment 3'",
+      "RESTRICTION_OF_SOCIAL_VISITS, true, 9, 'duration does not match suspended social visits punishment 3'",
+      "RESTRICTION_OF_SOCIAL_VISITS, false, 10, 'hasChildUnder18 does not match suspended social visits punishment 3'",
+    )
+    @ParameterizedTest
+    fun `rejects activation when requested details differ from the suspended visits punishment`(
+      requestedType: PunishmentType,
+      hasChildUnder18: Boolean,
+      duration: Int,
+      expectedMessage: String,
+    ) {
+      val startDate = LocalDate.now()
+      val visitsReport = entityBuilder.reportedAdjudication(chargeNumber = "visits-charge").also { report ->
+        report.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        report.clearPunishments()
+        report.addPunishment(
+          Punishment(
+            id = 3,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            suspendedUntil = startDate.plusDays(30),
+            schedule = mutableListOf(
+              PunishmentSchedule(
+                id = 3,
+                duration = 10,
+                suspendedUntil = startDate.plusDays(30),
+              ).also { it.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByChargeNumberIn(listOf("visits-charge"))).thenReturn(listOf(visitsReport))
+
+      assertThatThrownBy {
+        punishmentsServiceV2.create(
+          chargeNumber = "12345",
+          punishments = listOf(
+            PunishmentRequest(
+              id = 3,
+              type = requestedType,
+              hasChildUnder18 = hasChildUnder18,
+              duration = duration,
+              startDate = startDate,
+              activatedFrom = "visits-charge",
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining(expectedMessage)
+    }
+
+    @Test
+    fun `deactivating a visits punishment emits its restored suspended snapshot for the original charge`() {
+      val today = LocalDate.now()
+      val visitsReport = entityBuilder.reportedAdjudication(chargeNumber = "visits-charge").also { report ->
+        report.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        report.clearPunishments()
+        report.addPunishment(
+          Punishment(
+            id = 3,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            activatedByChargeNumber = "12345",
+            schedule = mutableListOf(
+              PunishmentSchedule(id = 3, duration = 28, suspendedUntil = today.plusDays(30)).also {
+                it.createDateTime = LocalDateTime.now()
+              },
+              PunishmentSchedule(id = 4, duration = 28, startDate = today, endDate = today.plusDays(27)).also {
+                it.createDateTime = LocalDateTime.now().plusSeconds(1)
+              },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(listOf(visitsReport))
+      whenever(reportedAdjudicationRepository.save(any<ReportedAdjudication>())).thenReturn(currentCharge)
+
+      val response = punishmentsServiceV2.update(
+        chargeNumber = "12345",
+        punishments = listOf(
+          PunishmentRequest(
+            type = PunishmentType.EXCLUSION_WORK,
+            duration = 1,
+            startDate = today,
+            endDate = today,
+          ),
+        ),
+      )
+
+      response.supplementalLossOfVisitsEvents.single().details.also { details ->
+        assertThat(details.changeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
+        details.punishments.single().also {
+          assertThat(it.startDate).isNull()
+          assertThat(it.endDate).isNull()
+          assertThat(it.suspendedUntil).isEqualTo(today.plusDays(30))
+          assertThat(it.activatedByChargeNumber).isNull()
+        }
+      }
+    }
   }
 
   @Nested
@@ -2063,6 +2343,85 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       assertThat(punishment.getSchedule().first { it.id == null }.duration).isEqualTo(5)
       assertThat(punishment.getSchedule().first { it.id == null }.startDate).isEqualTo(LocalDate.now())
       assertThat(punishment.getSchedule().first { it.id == null }.endDate).isEqualTo(LocalDate.now().plusDays(5))
+    }
+
+    @Test
+    fun `partially activating a rehabilitative visits punishment emits its updated schedule`() {
+      val today = LocalDate.now()
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+        hasChildUnder18 = true,
+        suspendedUntil = today.plusDays(30),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(
+          PunishmentSchedule(id = 1, suspendedUntil = today.plusDays(30), duration = 28).also {
+            it.createDateTime = LocalDateTime.now()
+          },
+        ),
+      )
+      val report = entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.clearPunishments()
+        it.addPunishment(punishment)
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(report)
+      whenever(reportedAdjudicationRepository.save(report)).thenReturn(report)
+
+      val response = punishmentsService.completeRehabilitativeActivity(
+        chargeNumber = "1",
+        punishmentId = 1,
+        completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+          completed = false,
+          outcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+          daysToActivate = 5,
+        ),
+      )
+
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().also {
+        assertThat(it.duration).isEqualTo(5)
+        assertThat(it.startDate).isEqualTo(today)
+        assertThat(it.endDate).isEqualTo(today.plusDays(4))
+        assertThat(it.suspendedUntil).isNull()
+      }
+    }
+
+    @CsvSource("0", "29")
+    @ParameterizedTest
+    fun `rejects partial activation outside the visits punishment duration`(daysToActivate: Int) {
+      val today = LocalDate.now()
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+        hasChildUnder18 = true,
+        suspendedUntil = today.plusDays(30),
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(
+          PunishmentSchedule(id = 1, suspendedUntil = today.plusDays(30), duration = 28).also {
+            it.createDateTime = LocalDateTime.now()
+          },
+        ),
+      )
+      val report = entityBuilder.reportedAdjudication(chargeNumber = "1").also {
+        it.clearPunishments()
+        it.addPunishment(punishment)
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(report)
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+            completed = false,
+            outcome = NotCompletedOutcome.PARTIAL_ACTIVATE,
+            daysToActivate = daysToActivate,
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("daysToActivate for RESTRICTION_OF_SOCIAL_VISITS must be between 1 and 28 days")
+
+      assertThat(punishment.getSchedule()).hasSize(1)
     }
 
     @Test

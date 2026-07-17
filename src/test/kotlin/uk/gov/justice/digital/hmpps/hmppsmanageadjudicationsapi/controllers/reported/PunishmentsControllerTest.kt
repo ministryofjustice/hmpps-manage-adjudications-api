@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
@@ -18,9 +19,18 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsPunishmentDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.PunishmentsService
+import java.time.LocalDate
 
 @WebMvcTest(
   PunishmentsController::class,
@@ -84,17 +94,74 @@ class PunishmentsControllerTest : TestControllerBase() {
         AdjudicationDomainEventType.PUNISHMENTS_CREATED,
         REPORTED_ADJUDICATION_DTO,
       )
+      verify(eventPublishService, never()).publishLossOfVisitsEvent(any())
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `publishes loss of visits event when a visits punishment is awarded`() {
-      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChanged = true)
+      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChangeType = LossOfVisitsChangeType.AWARDED)
       whenever(punishmentsService.create(ArgumentMatchers.anyString(), any())).thenReturn(response)
 
       createPunishmentsRequest(1, PUNISHMENT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
+      verify(eventPublishService).publishLossOfVisitsEvent(response.toLossOfVisitsEvent(LossOfVisitsChangeType.AWARDED))
+    }
+
+    @Test
+    @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
+    fun `publishes the final visits snapshot for an original charge when its suspended punishment changes twice`() {
+      val lossOfVisitsEvent = LossOfVisitsEventDto(
+        chargeNumber = "original-charge",
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        status = ReportedAdjudicationStatus.CHARGE_PROVED,
+        details = LossOfVisitsDetailsDto(
+          changeType = LossOfVisitsChangeType.UPDATED,
+          punishments = listOf(
+            LossOfVisitsPunishmentDto(
+              punishmentId = 1,
+              type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+              duration = 28,
+              measurement = Measurement.DAYS,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now().plusDays(27),
+              activatedByChargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
+              hasChildUnder18 = true,
+            ),
+          ),
+        ),
+      )
+      val response = REPORTED_ADJUDICATION_DTO.copy(
+        supplementalLossOfVisitsEvents = listOf(
+          lossOfVisitsEvent.copy(
+            details = lossOfVisitsEvent.details.copy(
+              punishments = lossOfVisitsEvent.details.punishments.map {
+                it.copy(
+                  startDate = null,
+                  endDate = null,
+                  suspendedUntil = LocalDate.now().plusDays(30),
+                  activatedByChargeNumber = null,
+                )
+              },
+            ),
+          ),
+          lossOfVisitsEvent,
+        ),
+        suspendedPunishmentEvents = setOf(
+          SuspendedPunishmentEvent(
+            agencyId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+            chargeNumber = "original-charge",
+            status = ReportedAdjudicationStatus.CHARGE_PROVED,
+          ),
+        ),
+      )
+      whenever(punishmentsService.create(ArgumentMatchers.anyString(), any())).thenReturn(response)
+
+      createPunishmentsRequest(1, PUNISHMENT_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated)
+
+      verify(eventPublishService).publishLossOfVisitsEvent(lossOfVisitsEvent)
+      verify(eventPublishService, never()).publishLossOfVisitsEvent(response.supplementalLossOfVisitsEvents.first())
     }
 
     private fun createPunishmentsRequest(
@@ -167,17 +234,18 @@ class PunishmentsControllerTest : TestControllerBase() {
         AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
         REPORTED_ADJUDICATION_DTO,
       )
+      verify(eventPublishService, never()).publishLossOfVisitsEvent(any())
     }
 
     @Test
     @WithMockUser(username = "ITAG_USER", authorities = ["ROLE_ADJUDICATIONS_REVIEWER", "SCOPE_write"])
     fun `publishes loss of visits event when a visits punishment is changed`() {
-      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChanged = true)
+      val response = REPORTED_ADJUDICATION_DTO.copy(lossOfVisitsChangeType = LossOfVisitsChangeType.UPDATED)
       whenever(punishmentsService.update(ArgumentMatchers.anyString(), any())).thenReturn(response)
 
       updatePunishmentsRequest(1, PUNISHMENT_REQUEST).andExpect(MockMvcResultMatchers.status().isOk)
 
-      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
+      verify(eventPublishService).publishLossOfVisitsEvent(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED))
     }
 
     private fun updatePunishmentsRequest(
@@ -244,6 +312,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         AdjudicationDomainEventType.PUNISHMENTS_UPDATED,
         REPORTED_ADJUDICATION_DTO,
       )
+      verify(eventPublishService, never()).publishLossOfVisitsEvent(any())
     }
 
     private fun completeRehabilitativeActivityRequest(

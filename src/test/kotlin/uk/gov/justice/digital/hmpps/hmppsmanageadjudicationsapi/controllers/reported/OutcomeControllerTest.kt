@@ -22,8 +22,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.OutcomeHistoryDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
@@ -473,13 +475,13 @@ class OutcomeControllerTest : TestControllerBase() {
     fun `publishes loss of visits event when a visits punishment is quashed`() {
       val response = REPORTED_ADJUDICATION_DTO.copy(
         status = ReportedAdjudicationStatus.QUASHED,
-        lossOfVisitsChanged = true,
+        lossOfVisitsChangeType = LossOfVisitsChangeType.QUASHED,
       )
       whenever(outcomeService.createQuashed(anyString(), any(), any())).thenReturn(response)
 
       createQuashedRequest(1, QUASHED_REQUEST).andExpect(MockMvcResultMatchers.status().isCreated)
 
-      verify(eventPublishService).publishEvent(AdjudicationDomainEventType.LOSS_OF_VISITS, response, false)
+      verify(eventPublishService).publishLossOfVisitsEvent(response.toLossOfVisitsEvent(LossOfVisitsChangeType.QUASHED))
     }
 
     private fun createQuashedRequest(

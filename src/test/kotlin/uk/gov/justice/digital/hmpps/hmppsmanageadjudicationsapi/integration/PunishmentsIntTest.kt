@@ -74,7 +74,6 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
               hasChildUnder18 = hasChildUnder18,
               duration = duration,
               startDate = LocalDate.now(),
-              endDate = LocalDate.now().plusDays(duration.toLong() - 1),
             ),
           ),
         ),
@@ -85,7 +84,37 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(type.name)
       .jsonPath("$.reportedAdjudication.punishments[0].hasChildUnder18").isEqualTo(hasChildUnder18)
       .jsonPath("$.reportedAdjudication.punishments[0].schedule.duration").isEqualTo(duration)
-      .jsonPath("$.reportedAdjudication.lossOfVisitsChanged").doesNotExist()
+      .jsonPath("$.reportedAdjudication.punishments[0].schedule.endDate")
+      .isEqualTo(LocalDate.now().plusDays(duration.toLong() - 1).format(DateTimeFormatter.ISO_DATE))
+      .jsonPath("$.reportedAdjudication.lossOfVisitsChangeType").doesNotExist()
+  }
+
+  @Test
+  fun `reject a social visits punishment for a youth adjudication`() {
+    val chargeNumber = initDataForUnScheduled(
+      testData = IntegrationTestData.getDefaultAdjudication().copy(isYouthOffender = true),
+    )
+      .createHearing(oicHearingType = OicHearingType.GOV_YOI)
+      .createChargeProved()
+      .getGeneratedChargeNumber()
+
+    webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to listOf(
+            PunishmentRequest(
+              type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+              hasChildUnder18 = false,
+              duration = 28,
+              startDate = LocalDate.now(),
+            ),
+          ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isBadRequest
   }
 
   @Test

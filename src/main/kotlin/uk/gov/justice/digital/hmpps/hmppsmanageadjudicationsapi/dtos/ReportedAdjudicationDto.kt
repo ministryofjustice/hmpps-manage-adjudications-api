@@ -107,9 +107,12 @@ data class ReportedAdjudicationDto(
   @Schema(description = "array of additional events to send for suspended punishments")
   @JsonIgnore
   var suspendedPunishmentEvents: Set<SuspendedPunishmentEvent>? = null,
-  @Schema(description = "flag to emit the loss of visits domain event")
+  @Schema(description = "loss of visits events for punishments held against other charges")
   @JsonIgnore
-  var lossOfVisitsChanged: Boolean = false,
+  var supplementalLossOfVisitsEvents: List<LossOfVisitsEventDto> = emptyList(),
+  @Schema(description = "reason for emitting the loss of visits domain event")
+  @JsonIgnore
+  var lossOfVisitsChangeType: LossOfVisitsChangeType? = null,
 )
 
 @Schema(description = "suspended punishment event")

@@ -13,6 +13,9 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
@@ -127,6 +130,33 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
       } else {
         Assertions.assertThat(response.punishmentsRemoved).isFalse
       }
+    }
+
+    @Test
+    fun `remove a charge proved hearing carries visits changes from outcome removal to the controller response`() {
+      val supplementalEvent = LossOfVisitsEventDto(
+        chargeNumber = "activated-punishment-charge",
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        status = REPORTED_ADJUDICATION_DTO.status,
+        details = LossOfVisitsDetailsDto(
+          changeType = LossOfVisitsChangeType.UPDATED,
+          punishments = emptyList(),
+        ),
+      )
+      val outcomeResult = REPORTED_ADJUDICATION_DTO.copy(
+        lossOfVisitsChangeType = LossOfVisitsChangeType.REMOVED,
+        supplementalLossOfVisitsEvents = listOf(supplementalEvent),
+      )
+      val hearingResult = REPORTED_ADJUDICATION_DTO.copy()
+      whenever(hearingOutcomeService.deleteHearingOutcome(any(), any())).thenReturn(hearingResult)
+      whenever(outcomeService.getLatestOutcome("1")).thenReturn(Outcome(id = 1L, code = OutcomeCode.CHARGE_PROVED))
+      whenever(outcomeService.deleteOutcome(chargeNumber = "1", id = 1L)).thenReturn(outcomeResult)
+
+      val response = completedHearingService.removeOutcome(chargeNumber = "1")
+
+      Assertions.assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.REMOVED)
+      Assertions.assertThat(response.supplementalLossOfVisitsEvents).containsExactly(supplementalEvent)
     }
 
     @Test

@@ -98,7 +98,8 @@ class CompletedHearingService(
     ).also {
       it.hearingIdActioned = it.hearings.getLatestHearingId()
       it.punishmentsRemoved = outcomeToRemove.code == OutcomeCode.CHARGE_PROVED
-      it.lossOfVisitsChanged = outcomeResult.lossOfVisitsChanged
+      it.supplementalLossOfVisitsEvents = outcomeResult.supplementalLossOfVisitsEvents
+      it.lossOfVisitsChangeType = outcomeResult.lossOfVisitsChangeType
     }
   }
 

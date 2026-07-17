@@ -1,6 +1,8 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services
 
 import org.springframework.stereotype.Service
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import java.time.Clock
@@ -13,13 +15,7 @@ class EventPublishService(
   private val clock: Clock,
 ) {
 
-  fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) = publishEvent(event, adjudication, publishSuspendedPunishmentEvents = true)
-
-  fun publishEvent(
-    event: AdjudicationDomainEventType,
-    adjudication: ReportedAdjudicationDto,
-    publishSuspendedPunishmentEvents: Boolean,
-  ) {
+  fun publishEvent(event: AdjudicationDomainEventType, adjudication: ReportedAdjudicationDto) {
     publish(
       event = event,
       chargeNumber = adjudication.chargeNumber,
@@ -28,8 +24,6 @@ class EventPublishService(
       status = adjudication.status,
       hearingId = if (event.incHearingId) adjudication.hearingIdActioned else null,
     )
-
-    if (!publishSuspendedPunishmentEvents) return
 
     adjudication.suspendedPunishmentEvents?.let {
       it.forEach { event ->
@@ -44,6 +38,15 @@ class EventPublishService(
     }
   }
 
+  fun publishLossOfVisitsEvent(event: LossOfVisitsEventDto) = publish(
+    event = AdjudicationDomainEventType.LOSS_OF_VISITS,
+    chargeNumber = event.chargeNumber,
+    agencyId = event.prisonId,
+    prisonerNumber = event.prisonerNumber,
+    status = event.status,
+    lossOfVisits = event.details,
+  )
+
   private fun publish(
     event: AdjudicationDomainEventType,
     chargeNumber: String,
@@ -51,6 +54,7 @@ class EventPublishService(
     prisonerNumber: String,
     status: ReportedAdjudicationStatus,
     hearingId: Long? = null,
+    lossOfVisits: LossOfVisitsDetailsDto? = null,
   ) {
     val additionalInformation = AdditionalInformation(
       chargeNumber = chargeNumber,
@@ -58,6 +62,7 @@ class EventPublishService(
       prisonerNumber = prisonerNumber,
       hearingId = hearingId,
       status = status.name,
+      lossOfVisits = lossOfVisits,
     )
     snsService.publishDomainEvent(
       event,

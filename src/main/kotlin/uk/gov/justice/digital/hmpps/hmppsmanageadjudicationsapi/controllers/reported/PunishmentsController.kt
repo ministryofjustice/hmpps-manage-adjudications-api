@@ -42,7 +42,9 @@ data class PunishmentRequest(
   val duration: Int? = null,
   @Schema(description = "punishment start date, required if punishment is not suspended")
   val startDate: LocalDate? = null,
-  @Schema(description = "punishment end date, required if punishment is not suspended")
+  @Schema(
+    description = "punishment end date, required if punishment is not suspended; for social visits punishments the API calculates this from startDate and duration, so it may be omitted, and any supplied value must match",
+  )
   val endDate: LocalDate? = null,
   @Schema(description = "punishment suspended until date, required if punishment is suspended")
   val suspendedUntil: LocalDate? = null,

@@ -5,6 +5,8 @@ import jakarta.transaction.Transactional
 import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.CombinedOutcomeDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
@@ -168,6 +170,7 @@ class OutcomeService(
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber)
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
 
     val outcomeToDelete = when (id) {
       null -> {
@@ -182,8 +185,13 @@ class OutcomeService(
     }.also {
       it.deleted = true
     }
-    val lossOfVisitsChanged = outcomeToDelete.code in listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED) &&
-      reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
+    val hasVisitsPunishment = reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
+    val lossOfVisitsChangeType = when {
+      !hasVisitsPunishment -> null
+      outcomeToDelete.code == OutcomeCode.CHARGE_PROVED -> LossOfVisitsChangeType.REMOVED
+      outcomeToDelete.code == OutcomeCode.QUASHED -> LossOfVisitsChangeType.UNQUASHED
+      else -> null
+    }
 
     reportedAdjudication.calculateStatus()
 
@@ -195,12 +203,16 @@ class OutcomeService(
       ) {
         throw ValidationException("Unable to remove: $chargeNumber is linked to another report")
       }
-      suspendedPunishmentEvents.addAll(reportedAdjudication.removePunishments())
+      reportedAdjudication.removePunishments().also { updates ->
+        suspendedPunishmentEvents.addAll(updates.events)
+        supplementalLossOfVisitsEvents.addAll(updates.lossOfVisitsEvents)
+      }
     }
 
     return saveToDto(reportedAdjudication).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
-      it.lossOfVisitsChanged = lossOfVisitsChanged
+      it.supplementalLossOfVisitsEvents = supplementalLossOfVisitsEvents
+      it.lossOfVisitsChangeType = lossOfVisitsChangeType
     }
   }
 
@@ -211,7 +223,7 @@ class OutcomeService(
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
-  private fun ReportedAdjudication.removePunishments(): Set<SuspendedPunishmentEvent> {
+  private fun ReportedAdjudication.removePunishments(): SuspendedPunishmentUpdates {
     this.clearPunishments()
     this.punishmentComments.clear()
     return deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList())
@@ -227,6 +239,7 @@ class OutcomeService(
     validate: Boolean = true,
   ): ReportedAdjudicationDto {
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (validate) it.status.validateTransition(code.status)
       it.status = code.status
@@ -245,21 +258,24 @@ class OutcomeService(
     )
 
     reportedAdjudication.addOutcome(outcomeToCreate)
-    val lossOfVisitsChanged = code == OutcomeCode.QUASHED &&
-      reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
+    val lossOfVisitsChangeType = LossOfVisitsChangeType.QUASHED.takeIf {
+      code == OutcomeCode.QUASHED && reportedAdjudication.getPunishments().any { punishment -> punishment.type.isVisitsPunishment() }
+    }
 
     if (code == OutcomeCode.QUASHED) {
-      suspendedPunishmentEvents.addAll(
-        deactivateActivatedPunishments(
-          chargeNumber = chargeNumber,
-          idsToIgnore = emptyList(),
-        ),
-      )
+      deactivateActivatedPunishments(
+        chargeNumber = chargeNumber,
+        idsToIgnore = emptyList(),
+      ).also { updates ->
+        suspendedPunishmentEvents.addAll(updates.events)
+        supplementalLossOfVisitsEvents.addAll(updates.lossOfVisitsEvents)
+      }
     }
 
     return saveToDto(reportedAdjudication).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
-      it.lossOfVisitsChanged = lossOfVisitsChanged
+      it.supplementalLossOfVisitsEvents = supplementalLossOfVisitsEvents
+      it.lossOfVisitsChangeType = lossOfVisitsChangeType
     }
   }
 
