@@ -147,13 +147,13 @@ enum class PunishmentType(
   DAMAGES_OWED(rehabilitativeActivitiesAllowed = false),
   PAYBACK(measurement = Measurement.HOURS, rehabilitativeActivitiesAllowed = false),
   RESTRICTION_OF_SOCIAL_VISITS(maximumDuration = 84),
-  FORFEITURE_OF_SOCIAL_VISITS(maximumDuration = 27),
+  LOSS_OF_SOCIAL_VISITS(maximumDuration = 27),
   ;
 
   companion object {
     fun additionalDays() = listOf(ADDITIONAL_DAYS, PROSPECTIVE_DAYS)
     fun damagesAndCaution() = listOf(CAUTION, DAMAGES_OWED)
-    fun visits() = listOf(RESTRICTION_OF_SOCIAL_VISITS, FORFEITURE_OF_SOCIAL_VISITS)
+    fun visits() = listOf(RESTRICTION_OF_SOCIAL_VISITS, LOSS_OF_SOCIAL_VISITS)
   }
 
   fun isVisitsPunishment() = visits().contains(this)

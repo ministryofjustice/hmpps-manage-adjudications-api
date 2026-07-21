@@ -300,7 +300,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.addPunishment(
             Punishment(
               id = 1,
-              type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+              type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
               hasChildUnder18 = true,
               schedule = mutableListOf(
                 PunishmentSchedule(
@@ -331,7 +331,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.QUASHED)
       assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("details")
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.QUASHED)
-      response.toLossOfVisitsEvent(LossOfVisitsChangeType.QUASHED).details.punishments.single().also {
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.QUASHED).details.visitsPunishments.single().also {
         assertThat(it.startDate).isEqualTo(LocalDate.now())
         assertThat(it.endDate).isEqualTo(LocalDate.now().plusDays(9))
       }
@@ -647,7 +647,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         it.addPunishment(
           Punishment(
             id = 1,
-            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
             hasChildUnder18 = false,
             schedule = mutableListOf(
               PunishmentSchedule(
@@ -666,7 +666,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       val response = outcomeService.deleteOutcome("visits", 1)
 
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.REMOVED)
-      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.punishments).isEmpty()
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.visitsPunishments).isEmpty()
     }
 
     @Test
@@ -706,7 +706,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UNQUASHED)
-      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UNQUASHED).details.punishments.single().duration).isEqualTo(28)
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UNQUASHED).details.visitsPunishments.single().duration).isEqualTo(28)
     }
 
     @Test

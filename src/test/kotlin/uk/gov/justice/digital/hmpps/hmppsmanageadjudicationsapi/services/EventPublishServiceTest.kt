@@ -78,7 +78,7 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
   fun `loss of visits event includes the complete post-change visits state`() {
     val details = LossOfVisitsDetailsDto(
       changeType = LossOfVisitsChangeType.UPDATED,
-      punishments = listOf(
+      visitsPunishments = listOf(
         LossOfVisitsPunishmentDto(
           punishmentId = 10,
           type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
@@ -97,6 +97,12 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
       status = REPORTED_ADJUDICATION_DTO.status,
       details = details,
     )
+    val json = requireNotNull(ObjectMapperConfig().objectMapper(Jackson2ObjectMapperBuilder.json()))
+      .writeValueAsString(details)
+
+    org.assertj.core.api.Assertions.assertThat(json)
+      .contains("\"visitsPunishments\":")
+      .doesNotContain("\"punishments\":")
 
     eventPublishService.publishLossOfVisitsEvent(event)
 

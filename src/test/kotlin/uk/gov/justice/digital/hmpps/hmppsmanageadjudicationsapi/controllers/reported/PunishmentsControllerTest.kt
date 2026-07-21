@@ -118,7 +118,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         status = ReportedAdjudicationStatus.CHARGE_PROVED,
         details = LossOfVisitsDetailsDto(
           changeType = LossOfVisitsChangeType.UPDATED,
-          punishments = listOf(
+          visitsPunishments = listOf(
             LossOfVisitsPunishmentDto(
               punishmentId = 1,
               type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
@@ -136,7 +136,7 @@ class PunishmentsControllerTest : TestControllerBase() {
         supplementalLossOfVisitsEvents = listOf(
           lossOfVisitsEvent.copy(
             details = lossOfVisitsEvent.details.copy(
-              punishments = lossOfVisitsEvent.details.punishments.map {
+              visitsPunishments = lossOfVisitsEvent.details.visitsPunishments.map {
                 it.copy(
                   startDate = null,
                   endDate = null,

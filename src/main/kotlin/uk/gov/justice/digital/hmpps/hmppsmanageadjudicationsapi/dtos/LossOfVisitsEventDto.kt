@@ -31,7 +31,7 @@ data class LossOfVisitsPunishmentDto(
 
 data class LossOfVisitsDetailsDto(
   val changeType: LossOfVisitsChangeType,
-  val punishments: List<LossOfVisitsPunishmentDto>,
+  val visitsPunishments: List<LossOfVisitsPunishmentDto>,
 )
 
 data class LossOfVisitsEventDto(
@@ -49,7 +49,7 @@ fun ReportedAdjudicationDto.toLossOfVisitsEvent(changeType: LossOfVisitsChangeTy
   status = status,
   details = LossOfVisitsDetailsDto(
     changeType = changeType,
-    punishments = punishments
+    visitsPunishments = punishments
       .filter { it.type.isVisitsPunishment() }
       .map { it.toLossOfVisitsPunishment() }
       .sortedBy { it.punishmentId },
@@ -63,7 +63,7 @@ fun ReportedAdjudication.toLossOfVisitsEvent(changeType: LossOfVisitsChangeType)
   status = status,
   details = LossOfVisitsDetailsDto(
     changeType = changeType,
-    punishments = getPunishments()
+    visitsPunishments = getPunishments()
       .filter { it.type.isVisitsPunishment() }
       .map { it.toLossOfVisitsPunishment() }
       .sortedBy { it.punishmentId },

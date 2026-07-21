@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-The Visits service needs to react when an adjudication awards, changes, removes, quashes, or restores a social-visits punishment. The sanctions are available only for Adult Rule 51 adjudications and are modelled as two distinct punishment values: restriction and forfeiture. The standard adjudication event envelope contains the prisoner, charge, prison, and adjudication status, but status alone cannot distinguish these transitions. It also does not contain the punishment period, which would force Visits to call the reviewer-facing adjudications API and understand the wider punishment model.
+The Visits service needs to react when an adjudication awards, changes, removes, quashes, or restores a social-visits punishment. The sanctions are available only for Adult Rule 51 adjudications and are modelled as two distinct punishment values: restriction of social visits and loss of social visits. The standard adjudication event envelope contains the prisoner, charge, prison, and adjudication status, but status alone cannot distinguish these transitions. It also does not contain the punishment period, which would force Visits to call the reviewer-facing adjudications API and understand the wider punishment model.
 
 The existing `GET /reported-adjudications/{chargeNumber}/v2` endpoint is not an integration contract for Visits: it requires reviewer access and an active prison caseload. A callback would therefore add runtime coupling and require a new service-facing read API.
 
@@ -34,7 +34,7 @@ The standard envelope remains at version `1.0`. Its `additionalInformation` cont
     "status": "CHARGE_PROVED",
     "lossOfVisits": {
       "changeType": "UPDATED",
-      "punishments": [
+      "visitsPunishments": [
         {
           "punishmentId": 42,
           "type": "RESTRICTION_OF_SOCIAL_VISITS",
@@ -50,11 +50,11 @@ The standard envelope remains at version `1.0`. Its `additionalInformation` cont
 }
 ```
 
-`punishments` is the complete post-change social-visits punishment snapshot for the charge, not a delta. Optional schedule fields are omitted when they do not apply. A suspended punishment has `suspendedUntil` and no active start or end date. An activated punishment has its active dates and `activatedByChargeNumber`.
+`visitsPunishments` is the complete post-change social-visits punishment snapshot for the charge, not a delta. Optional schedule fields are omitted when they do not apply. A suspended punishment has `suspendedUntil` and no active start or end date. An activated punishment has its active dates and `activatedByChargeNumber`.
 
 Active `startDate` and `endDate` values are inclusive. The API owns the Last Day calculation: it persists and publishes `endDate` as `startDate + duration - 1`. Clients may omit `endDate`; if they supply one for backwards compatibility, the API rejects it unless it matches the calculated value. This keeps stored and published periods authoritative and prevents the UI and API from calculating different dates.
 
-The API rejects restriction or forfeiture on youth adjudications, requires an explicit `hasChildUnder18` value (including `false`), and applies the type-specific limits of 84 and 27 days respectively.
+The API rejects restriction or loss of social visits on youth adjudications, requires an explicit `hasChildUnder18` value (including `false`), and applies the type-specific limits of 84 and 27 days respectively.
 
 `changeType` has these meanings:
 

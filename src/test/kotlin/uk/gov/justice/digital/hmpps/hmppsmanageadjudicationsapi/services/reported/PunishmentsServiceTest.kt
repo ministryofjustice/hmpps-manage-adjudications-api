@@ -239,7 +239,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("stoppage percentage missing for type EARNINGS")
     }
 
-    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "LOSS_OF_SOCIAL_VISITS")
     @ParameterizedTest
     fun `validation error - social visits punishment missing child under 18 answer`(type: PunishmentType) {
       assertThatThrownBy {
@@ -251,7 +251,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("hasChildUnder18 missing for social visits punishment")
     }
 
-    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "LOSS_OF_SOCIAL_VISITS")
     @ParameterizedTest
     fun `validation error - social visits punishments are not valid for youth adjudications`(type: PunishmentType) {
       reportedAdjudication.isYouthOffender = true
@@ -275,8 +275,8 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource(
       "RESTRICTION_OF_SOCIAL_VISITS, 0, 84",
       "RESTRICTION_OF_SOCIAL_VISITS, 85, 84",
-      "FORFEITURE_OF_SOCIAL_VISITS, 0, 27",
-      "FORFEITURE_OF_SOCIAL_VISITS, 28, 27",
+      "LOSS_OF_SOCIAL_VISITS, 0, 27",
+      "LOSS_OF_SOCIAL_VISITS, 28, 27",
     )
     @ParameterizedTest
     fun `validation error - social visits duration outside policy limit`(
@@ -300,7 +300,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("duration for $type must be between 1 and $maximumDuration days")
     }
 
-    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "LOSS_OF_SOCIAL_VISITS")
     @ParameterizedTest
     fun `validation error - active social visits dates do not match duration`(type: PunishmentType) {
       assertThatThrownBy {
@@ -320,7 +320,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("social visits punishment dates must match its duration")
     }
 
-    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "LOSS_OF_SOCIAL_VISITS")
     @ParameterizedTest
     fun `validation error - active social visits punishment is missing its start date`(type: PunishmentType) {
       assertThatThrownBy {
@@ -338,7 +338,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("missing start date for social visits punishment")
     }
 
-    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "FORFEITURE_OF_SOCIAL_VISITS")
+    @CsvSource("RESTRICTION_OF_SOCIAL_VISITS", "LOSS_OF_SOCIAL_VISITS")
     @ParameterizedTest
     fun `validation error - suspended social visits punishment also has active dates`(type: PunishmentType) {
       assertThatThrownBy {
@@ -540,7 +540,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
             startDate = startDate,
           ),
           PunishmentRequest(
-            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
             hasChildUnder18 = false,
             duration = 27,
             startDate = startDate,
@@ -1439,7 +1439,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
       assertThat(response.punishments.single().schedule.duration).isEqualTo(28)
-      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().also {
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.visitsPunishments.single().also {
         assertThat(it.duration).isEqualTo(28)
         assertThat(it.startDate).isEqualTo(startDate)
         assertThat(it.endDate).isEqualTo(startDate.plusDays(27))
@@ -1473,7 +1473,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
-      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().hasChildUnder18).isFalse()
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.visitsPunishments.single().hasChildUnder18).isFalse()
     }
 
     @Test
@@ -1517,7 +1517,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.REMOVED)
       assertThat(response.punishments).isEmpty()
-      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.punishments).isEmpty()
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.visitsPunishments).isEmpty()
     }
 
     @Test
@@ -1964,7 +1964,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         report.addPunishment(
           Punishment(
             id = 3,
-            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
             hasChildUnder18 = false,
             suspendedUntil = startDate.plusDays(30),
             schedule = mutableListOf(
@@ -1986,7 +1986,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         punishments = listOf(
           PunishmentRequest(
             id = 3,
-            type = PunishmentType.FORFEITURE_OF_SOCIAL_VISITS,
+            type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
             hasChildUnder18 = false,
             duration = 10,
             startDate = startDate,
@@ -2000,7 +2000,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       response.supplementalLossOfVisitsEvents.single().also { event ->
         assertThat(event.chargeNumber).isEqualTo("visits-charge")
         assertThat(event.details.changeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
-        event.details.punishments.single().also {
+        event.details.visitsPunishments.single().also {
           assertThat(it.startDate).isEqualTo(startDate)
           assertThat(it.endDate).isEqualTo(startDate.plusDays(9))
           assertThat(it.suspendedUntil).isNull()
@@ -2010,7 +2010,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @CsvSource(
-      "FORFEITURE_OF_SOCIAL_VISITS, true, 10, 'punishment type does not match suspended punishment 3'",
+      "LOSS_OF_SOCIAL_VISITS, true, 10, 'punishment type does not match suspended punishment 3'",
       "RESTRICTION_OF_SOCIAL_VISITS, true, 9, 'duration does not match suspended social visits punishment 3'",
       "RESTRICTION_OF_SOCIAL_VISITS, false, 10, 'hasChildUnder18 does not match suspended social visits punishment 3'",
     )
@@ -2103,7 +2103,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
 
       response.supplementalLossOfVisitsEvents.single().details.also { details ->
         assertThat(details.changeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
-        details.punishments.single().also {
+        details.visitsPunishments.single().also {
           assertThat(it.startDate).isNull()
           assertThat(it.endDate).isNull()
           assertThat(it.suspendedUntil).isEqualTo(today.plusDays(30))
@@ -2378,7 +2378,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UPDATED)
-      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.punishments.single().also {
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED).details.visitsPunishments.single().also {
         assertThat(it.duration).isEqualTo(5)
         assertThat(it.startDate).isEqualTo(today)
         assertThat(it.endDate).isEqualTo(today.plusDays(4))

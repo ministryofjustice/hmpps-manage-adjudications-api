@@ -141,7 +141,7 @@ class CompletedHearingServiceTest : ReportedAdjudicationTestBase() {
         status = REPORTED_ADJUDICATION_DTO.status,
         details = LossOfVisitsDetailsDto(
           changeType = LossOfVisitsChangeType.UPDATED,
-          punishments = emptyList(),
+          visitsPunishments = emptyList(),
         ),
       )
       val outcomeResult = REPORTED_ADJUDICATION_DTO.copy(

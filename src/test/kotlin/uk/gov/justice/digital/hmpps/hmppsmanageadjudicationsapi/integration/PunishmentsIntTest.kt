@@ -50,7 +50,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
 
   @CsvSource(
     "RESTRICTION_OF_SOCIAL_VISITS, 84, true",
-    "FORFEITURE_OF_SOCIAL_VISITS, 27, false",
+    "LOSS_OF_SOCIAL_VISITS, 27, false",
   )
   @ParameterizedTest
   fun `create and persist a social visits punishment`(
