@@ -60,6 +60,13 @@ jobs:
       postgres-username: adjudications
       postgres-password: adjudications
       localstack-tag: community-archive
+  schema-spy:
+    name: Publish the data dictionary
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - gradle_verify
+    uses: ./.github/workflows/schema-spy.yml
+    secrets: inherit
   build:
     name: Build docker image from hmpps-github-actions
     uses: ministryofjustice/hmpps-github-actions/.github/workflows/docker_build.yml@v2 # WORKFLOW_VERSION
