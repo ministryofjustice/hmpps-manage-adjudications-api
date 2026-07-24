@@ -100,6 +100,33 @@ The integration tests use containers and no longer require docker compose files.
 ### Running locally
 `./gradlew bootRun --args='--spring.profiles.active=dev-local'`
 
+## Data dictionary
+
+A browsable schema report is published from `main` to
+[ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report](https://ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report/),
+along with two CSV exports for the MOJ Data Catalogue:
+
+| File | Contents |
+|------|----------|
+| `data-dictionary.csv` | Every table and column, with its description, type, nullability, PK and FK |
+| `reference-data.csv`  | The enum and offence code lookups. These have no reference tables in the database - `reported_offence.offence_code` and every `@Enumerated` column resolve in Kotlin only |
+
+Table and column descriptions live in `src/main/resources/db/migration/V130__schema_comments.sql` as
+`COMMENT ON` statements, so the database is the single source of truth and SchemaSpy, the CSV export
+and any Glue crawl all agree. **Add a `COMMENT ON` for any new table or column** - a later migration
+can add to or replace comments at any time.
+
+To regenerate locally:
+
+```bash
+docker compose -f docker-compose-schema-spy.yml up -d
+./gradlew -Pinit-db=true test --tests '*InitialiseDatabase' --tests '*ExportReferenceData'
+docker run --rm --network host -v /tmp/schemaspy:/output schemaspy/schemaspy:6.2.4 \
+  -t pgsql -host localhost -port 5432 -db adjudications -s public \
+  -u adjudications -p adjudications -vizjs
+scripts/generate-data-dictionary.sh
+```
+
 ## Architecture
 High Level architecture show below ![Architecture](doc/architecture/decisions/arch-overview-adjudications.svg)
 
