@@ -65,6 +65,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs:
       - gradle_verify
+    # top-level permissions grant contents: read; the reusable workflow needs write to publish to gh-pages
+    permissions:
+      contents: write
     uses: ./.github/workflows/schema-spy.yml
     secrets: inherit
   build:
