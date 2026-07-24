@@ -16,6 +16,8 @@ object PunishmentTypeTransformer {
     PunishmentType.EXCLUSION_WORK -> "Exclusion from associated work"
     PunishmentType.PROSPECTIVE_DAYS -> "Prospective additional days"
     PunishmentType.REMOVAL_ACTIVITY -> "Removal from activity"
+    PunishmentType.RESTRICTION_OF_SOCIAL_VISITS -> "Restriction of social visits"
+    PunishmentType.LOSS_OF_SOCIAL_VISITS -> "Loss of social visits"
   }
 
   /**

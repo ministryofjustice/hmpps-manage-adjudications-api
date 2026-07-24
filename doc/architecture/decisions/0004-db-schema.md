@@ -1,5 +1,5 @@
 # 4. Database Schema
-[Next >>](9999-end.md)
+[Next >>](0005-loss-of-visits-domain-event.md)
 
 
 Date: 2024-04-16
@@ -358,4 +358,4 @@ reported_witness  -->  reported_adjudications : reported_adjudication_fk_id
 witness  -->  draft_adjudications : draft_adjudication_fk_id
 ```
 
-[Next >>](9999-end.md)
+[Next >>](0005-loss-of-visits-domain-event.md)

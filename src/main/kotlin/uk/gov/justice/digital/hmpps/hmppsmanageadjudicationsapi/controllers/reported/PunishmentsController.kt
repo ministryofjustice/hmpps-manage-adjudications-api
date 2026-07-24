@@ -30,6 +30,8 @@ data class PunishmentRequest(
   val id: Long? = null,
   @Schema(description = "punishment type")
   val type: PunishmentType,
+  @Schema(description = "whether the prisoner has a child under 18; required for social visits punishments")
+  val hasChildUnder18: Boolean? = null,
   @Schema(description = "privilege type - only use if punishment type is PRIVILEGE")
   val privilegeType: PrivilegeType? = null,
   @Schema(description = "other privilege type - only use if privilege type is OTHER")
@@ -40,7 +42,9 @@ data class PunishmentRequest(
   val duration: Int? = null,
   @Schema(description = "punishment start date, required if punishment is not suspended")
   val startDate: LocalDate? = null,
-  @Schema(description = "punishment end date, required if punishment is not suspended")
+  @Schema(
+    description = "punishment end date, required if punishment is not suspended; for social visits punishments the API calculates this from startDate and duration, so it may be omitted, and any supplied value must match",
+  )
   val endDate: LocalDate? = null,
   @Schema(description = "punishment suspended until date, required if punishment is suspended")
   val suspendedUntil: LocalDate? = null,

@@ -6,8 +6,12 @@ import jakarta.validation.ValidationException
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
@@ -23,6 +27,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.Rep
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.security.AuthenticationFacade
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Transactional
 @Service
@@ -41,6 +46,7 @@ class PunishmentsService(
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
     validateNoConsecutiveLoop(chargeNumber, punishments)
+    val lossOfVisitsAwarded = punishments.any { it.activatedFrom == null && it.type.isVisitsPunishment() }
 
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       if (it.getPunishments()
@@ -53,20 +59,25 @@ class PunishmentsService(
 
     punishments.validateCaution()
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
 
     punishments.filter { it.activatedFrom != null }.let {
       if (it.isNotEmpty()) {
-        suspendedPunishmentEvents.addAll(
-          activateSuspendedPunishments(
-            reportedAdjudication = reportedAdjudication,
-            toActivate = it,
-          ),
-        )
+        activateSuspendedPunishments(
+          reportedAdjudication = reportedAdjudication,
+          toActivate = it,
+        ).also { updates ->
+          suspendedPunishmentEvents.addAll(updates.events)
+          supplementalLossOfVisitsEvents.addAll(updates.lossOfVisitsEvents)
+        }
       }
     }
 
     punishments.filter { it.activatedFrom == null }.forEach {
-      it.validateRequest(reportedAdjudication.getLatestHearing())
+      it.validateRequest(
+        latestHearing = reportedAdjudication.getLatestHearing(),
+        isYouthOffender = reportedAdjudication.isYouthOffender,
+      )
       reportedAdjudication.addPunishment(
         createNewPunishment(
           punishmentRequest = it,
@@ -77,6 +88,8 @@ class PunishmentsService(
 
     return saveToDto(reportedAdjudication).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
+      it.supplementalLossOfVisitsEvents = supplementalLossOfVisitsEvents
+      it.lossOfVisitsChangeType = LossOfVisitsChangeType.AWARDED.takeIf { lossOfVisitsAwarded }
     }
   }
 
@@ -89,34 +102,41 @@ class PunishmentsService(
     val reportedAdjudication = findByChargeNumber(chargeNumber).also {
       it.validateCanAddPunishments()
     }
+    val visitsPunishmentsBefore = reportedAdjudication.getPunishments().toVisitsPunishmentStates()
 
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+    val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
 
     punishments.validateCaution()
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
-    suspendedPunishmentEvents.addAll(
-      deactivateActivatedPunishments(
-        chargeNumber = chargeNumber,
-        idsToIgnore = idsToUpdate,
-      ),
-    )
+    deactivateActivatedPunishments(
+      chargeNumber = chargeNumber,
+      idsToIgnore = idsToUpdate,
+    ).also { updates ->
+      suspendedPunishmentEvents.addAll(updates.events)
+      supplementalLossOfVisitsEvents.addAll(updates.lossOfVisitsEvents)
+    }
     reportedAdjudication.deletePunishments(idsToIgnore = idsToUpdate)
 
     punishments.filter { it.activatedFrom != null }.let {
       if (it.isNotEmpty()) {
-        suspendedPunishmentEvents.addAll(
-          activateSuspendedPunishments(
-            reportedAdjudication = reportedAdjudication,
-            toActivate = it,
-          ),
-        )
+        activateSuspendedPunishments(
+          reportedAdjudication = reportedAdjudication,
+          toActivate = it,
+        ).also { updates ->
+          suspendedPunishmentEvents.addAll(updates.events)
+          supplementalLossOfVisitsEvents.addAll(updates.lossOfVisitsEvents)
+        }
       }
     }
 
     punishments.filter { it.activatedFrom == null }.forEach { punishmentRequest ->
 
       if (punishmentRequest.id == null) {
-        punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing())
+        punishmentRequest.validateRequest(
+          latestHearing = reportedAdjudication.getLatestHearing(),
+          isYouthOffender = reportedAdjudication.isYouthOffender,
+        )
         reportedAdjudication.addPunishment(
           createNewPunishment(
             punishmentRequest = punishmentRequest,
@@ -125,7 +145,11 @@ class PunishmentsService(
         )
       } else {
         val punishmentToAmend = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentRequest.id)
-        punishmentRequest.validateRequest(reportedAdjudication.getLatestHearing(), punishmentToAmend)
+        punishmentRequest.validateRequest(
+          latestHearing = reportedAdjudication.getLatestHearing(),
+          isYouthOffender = reportedAdjudication.isYouthOffender,
+          punishmentToAmend = punishmentToAmend,
+        )
         when (punishmentToAmend.type) {
           punishmentRequest.type -> {
             punishmentRequest.suspendedUntil?.let {
@@ -155,6 +179,11 @@ class PunishmentsService(
       },
     ).also {
       it.suspendedPunishmentEvents = suspendedPunishmentEvents
+      it.supplementalLossOfVisitsEvents = supplementalLossOfVisitsEvents
+      it.lossOfVisitsChangeType = lossOfVisitsChangeType(
+        before = visitsPunishmentsBefore,
+        after = it.punishments.toVisitsPunishmentDtoStates(),
+      )
     }
   }
 
@@ -164,6 +193,7 @@ class PunishmentsService(
     completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
   ): ReportedAdjudicationDto {
     val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    val visitsPunishmentsBefore = reportedAdjudication.getPunishments().toVisitsPunishmentStates()
     val punishment = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentId)
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
     if (!completeRehabilitativeActivityRequest.completed && completeRehabilitativeActivityRequest.outcome == null) {
@@ -176,23 +206,34 @@ class PunishmentsService(
 
     when (completeRehabilitativeActivityRequest.outcome) {
       NotCompletedOutcome.FULL_ACTIVATE -> {
+        val startDate = LocalDate.now()
         punishment.addSchedule(
           PunishmentSchedule(
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(latestSchedule.duration!!.toLong()),
+            startDate = startDate,
+            endDate = punishment.type.activationEndDate(startDate, requireNotNull(latestSchedule.duration)),
             duration = latestSchedule.duration,
           ),
         )
       }
 
       NotCompletedOutcome.PARTIAL_ACTIVATE -> {
-        completeRehabilitativeActivityRequest.daysToActivate
+        val daysToActivate = completeRehabilitativeActivityRequest.daysToActivate
           ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
+        if (punishment.type.isVisitsPunishment()) {
+          val maximumDuration = minOf(
+            requireNotNull(latestSchedule.duration),
+            requireNotNull(punishment.type.maximumDuration),
+          )
+          if (daysToActivate !in 1..maximumDuration) {
+            throw ValidationException("daysToActivate for ${punishment.type} must be between 1 and $maximumDuration days")
+          }
+        }
+        val startDate = LocalDate.now()
         punishment.addSchedule(
           PunishmentSchedule(
-            startDate = LocalDate.now(),
-            endDate = LocalDate.now().plusDays(completeRehabilitativeActivityRequest.daysToActivate.toLong()),
-            duration = completeRehabilitativeActivityRequest.daysToActivate,
+            startDate = startDate,
+            endDate = punishment.type.activationEndDate(startDate, daysToActivate),
+            duration = daysToActivate,
           ),
         )
       }
@@ -225,43 +266,73 @@ class PunishmentsService(
     punishment.rehabCompleted = completeRehabilitativeActivityRequest.completed
     punishment.rehabNotCompletedOutcome = completeRehabilitativeActivityRequest.outcome
 
-    return saveToDto(reportedAdjudication)
+    return saveToDto(reportedAdjudication).also {
+      it.lossOfVisitsChangeType = lossOfVisitsChangeType(
+        before = visitsPunishmentsBefore,
+        after = it.punishments.toVisitsPunishmentDtoStates(),
+      )
+    }
   }
 
   private fun activateSuspendedPunishments(
     reportedAdjudication: ReportedAdjudication,
     toActivate: List<PunishmentRequest>,
-  ): Set<SuspendedPunishmentEvent> {
-    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+  ): SuspendedPunishmentUpdates {
+    val updatedReports = linkedMapOf<String, ReportedAdjudication>()
+    val reportsWithVisitsChanges = mutableSetOf<String>()
     val reportsActivatedFrom = findByChargeNumberIn(toActivate.map { it.activatedFrom!! }.distinct())
 
     toActivate.forEach { punishment ->
       punishment.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
-      punishment.validateRequest(reportedAdjudication.getLatestHearing())
       val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! }
         ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
 
-      reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let {
-        it.activatedByChargeNumber = reportedAdjudication.chargeNumber
-        it.addSchedule(
+      reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let { punishmentToActivate ->
+        if (
+          punishment.type != punishmentToActivate.type &&
+          (punishment.type.isVisitsPunishment() || punishmentToActivate.type.isVisitsPunishment())
+        ) {
+          throw ValidationException("punishment type does not match suspended punishment ${punishment.id}")
+        }
+        punishment.validateRequest(
+          latestHearing = reportedAdjudication.getLatestHearing(),
+          isYouthOffender = reportToUpdate.isYouthOffender,
+        )
+        if (punishment.type.isVisitsPunishment() && punishment.duration != punishmentToActivate.latestSchedule().duration) {
+          throw ValidationException("duration does not match suspended social visits punishment ${punishment.id}")
+        }
+        if (punishment.type.isVisitsPunishment() && punishment.hasChildUnder18 != punishmentToActivate.hasChildUnder18) {
+          throw ValidationException("hasChildUnder18 does not match suspended social visits punishment ${punishment.id}")
+        }
+
+        punishmentToActivate.activatedByChargeNumber = reportedAdjudication.chargeNumber
+        punishmentToActivate.addSchedule(
           PunishmentSchedule(
-            duration = it.latestSchedule().duration,
+            duration = punishmentToActivate.latestSchedule().duration,
             startDate = punishment.startDate,
-            endDate = punishment.endDate,
+            endDate = punishment.endDateForPersistence(),
             measurement = punishment.type.measurement,
           ),
         )
-        suspendedPunishmentEvents.add(
-          SuspendedPunishmentEvent(
-            agencyId = reportToUpdate.originatingAgencyId,
-            chargeNumber = reportToUpdate.chargeNumber,
-            status = reportToUpdate.status,
-          ),
-        )
+        updatedReports[reportToUpdate.chargeNumber] = reportToUpdate
+        if (punishmentToActivate.type.isVisitsPunishment()) reportsWithVisitsChanges.add(reportToUpdate.chargeNumber)
       }
     }
 
-    return suspendedPunishmentEvents
+    val events = updatedReports.values.map { report ->
+      SuspendedPunishmentEvent(
+        agencyId = report.originatingAgencyId,
+        chargeNumber = report.chargeNumber,
+        status = report.status,
+      )
+    }.toSet()
+
+    return SuspendedPunishmentUpdates(
+      events = events,
+      lossOfVisitsEvents = updatedReports.values
+        .filter { reportsWithVisitsChanges.contains(it.chargeNumber) }
+        .map { it.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED) },
+    )
   }
 
   private fun validateNoConsecutiveLoop(chargeNumber: String, punishments: List<PunishmentRequest>) {
@@ -300,6 +371,7 @@ class PunishmentsService(
 
   private fun createNewPunishment(punishmentRequest: PunishmentRequest, hearingDate: LocalDate? = null): Punishment = Punishment(
     type = punishmentRequest.type,
+    hasChildUnder18 = punishmentRequest.hasChildUnder18,
     privilegeType = punishmentRequest.privilegeType,
     otherPrivilege = punishmentRequest.otherPrivilege,
     stoppagePercentage = punishmentRequest.stoppagePercentage,
@@ -344,7 +416,7 @@ class PunishmentsService(
         PunishmentSchedule(
           duration = punishmentRequest.duration!!,
           startDate = punishmentRequest.startDate,
-          endDate = punishmentRequest.endDate,
+          endDate = punishmentRequest.endDateForPersistence(),
           suspendedUntil = punishmentRequest.suspendedUntil,
           measurement = punishmentRequest.type.measurement,
         ),
@@ -353,6 +425,7 @@ class PunishmentsService(
   )
 
   private fun updatePunishment(punishment: Punishment, punishmentRequest: PunishmentRequest) = punishment.let {
+    it.hasChildUnder18 = punishmentRequest.hasChildUnder18
     it.privilegeType = punishmentRequest.privilegeType
     it.otherPrivilege = punishmentRequest.otherPrivilege
     it.stoppagePercentage = punishmentRequest.stoppagePercentage
@@ -380,7 +453,7 @@ class PunishmentsService(
         PunishmentSchedule(
           duration = punishmentRequest.duration,
           startDate = if (it.type == PunishmentType.PAYBACK) latestSchedule.startDate else punishmentRequest.startDate,
-          endDate = punishmentRequest.endDate,
+          endDate = punishmentRequest.endDateForPersistence(),
           suspendedUntil = punishmentRequest.suspendedUntil,
           measurement = punishmentRequest.type.measurement,
         ),
@@ -388,7 +461,38 @@ class PunishmentsService(
     }
   }
 
-  private fun PunishmentRequest.validateRequest(latestHearing: Hearing?, punishmentToAmend: Punishment? = null) {
+  private fun PunishmentRequest.validateRequest(
+    latestHearing: Hearing?,
+    isYouthOffender: Boolean,
+    punishmentToAmend: Punishment? = null,
+  ) {
+    if (this.type.isVisitsPunishment()) {
+      if (isYouthOffender) {
+        throw ValidationException("social visits punishments are only valid for adult adjudications")
+      }
+
+      if (this.hasChildUnder18 == null) {
+        throw ValidationException("hasChildUnder18 missing for social visits punishment")
+      }
+
+      val maximumDuration = this.type.maximumDuration!!
+      if (this.duration == null || this.duration !in 1..maximumDuration) {
+        throw ValidationException("duration for ${this.type} must be between 1 and $maximumDuration days")
+      }
+
+      if (this.suspendedUntil != null && (this.startDate != null || this.endDate != null)) {
+        throw ValidationException("a suspended social visits punishment must not have start or end dates")
+      }
+
+      if (this.suspendedUntil == null) {
+        this.startDate ?: throw ValidationException("missing start date for social visits punishment")
+        val calculatedEndDate = requireNotNull(this.endDateForPersistence())
+        if (this.endDate != null && this.endDate != calculatedEndDate) {
+          throw ValidationException("social visits punishment dates must match its duration")
+        }
+      }
+    }
+
     when (this.type) {
       PunishmentType.DAMAGES_OWED ->
         this.damagesOwedAmount
@@ -418,7 +522,9 @@ class PunishmentsService(
       else -> {
         this.suspendedUntil ?: this.startDate ?: this.endDate ?: throw ValidationException("missing all schedule data")
         this.suspendedUntil ?: this.startDate ?: throw ValidationException("missing start date for schedule")
-        this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
+        if (!this.type.isVisitsPunishment()) {
+          this.suspendedUntil ?: this.endDate ?: throw ValidationException("missing end date for schedule")
+        }
       }
     }
     if (this.rehabilitativeActivities.isNotEmpty()) {
@@ -443,7 +549,7 @@ class PunishmentsService(
     }
 
     fun PunishmentSchedule.hasScheduleBeenUpdated(punishmentRequest: PunishmentRequest): Boolean = this.duration != punishmentRequest.duration ||
-      this.endDate != punishmentRequest.endDate ||
+      this.endDate != punishmentRequest.endDateForPersistence() ||
       this.startDate != punishmentRequest.startDate ||
       this.suspendedUntil != punishmentRequest.suspendedUntil
 
@@ -471,4 +577,75 @@ class PunishmentsService(
       }
     }
   }
+}
+
+private fun PunishmentRequest.endDateForPersistence(): LocalDate? = if (this.type.isVisitsPunishment() && this.suspendedUntil == null) {
+  this.startDate?.plusDays(requireNotNull(this.duration).toLong() - 1)
+} else {
+  this.endDate
+}
+
+private fun PunishmentType.activationEndDate(startDate: LocalDate, duration: Int): LocalDate = startDate.plusDays(
+  duration.toLong() - if (isVisitsPunishment()) 1 else 0,
+)
+
+private data class VisitsPunishmentState(
+  val id: Long?,
+  val type: PunishmentType,
+  val hasChildUnder18: Boolean?,
+  val duration: Int?,
+  val startDate: LocalDate?,
+  val endDate: LocalDate?,
+  val suspendedUntil: LocalDate?,
+  val activatedByChargeNumber: String?,
+)
+
+private fun List<Punishment>.toVisitsPunishmentStates(): Set<VisitsPunishmentState> = this
+  .filter { it.type.isVisitsPunishment() }
+  .map {
+    val schedule = it.latestScheduleForLossOfVisits()
+    VisitsPunishmentState(
+      id = it.id,
+      type = it.type,
+      hasChildUnder18 = it.hasChildUnder18,
+      duration = schedule.duration,
+      startDate = schedule.startDate,
+      endDate = schedule.endDate,
+      suspendedUntil = schedule.suspendedUntil,
+      activatedByChargeNumber = it.activatedByChargeNumber,
+    )
+  }.toSet()
+
+private fun Punishment.latestScheduleForLossOfVisits() = getSchedule()
+  .withIndex()
+  .maxWith(
+    compareBy<IndexedValue<PunishmentSchedule>>(
+      { it.value.createDateTime ?: LocalDateTime.MAX },
+      { it.index },
+    ),
+  ).value
+
+private fun List<PunishmentDto>.toVisitsPunishmentDtoStates(): Set<VisitsPunishmentState> = this
+  .filter { it.type.isVisitsPunishment() }
+  .map {
+    VisitsPunishmentState(
+      id = it.id,
+      type = it.type,
+      hasChildUnder18 = it.hasChildUnder18,
+      duration = it.schedule.duration,
+      startDate = it.schedule.startDate,
+      endDate = it.schedule.endDate,
+      suspendedUntil = it.schedule.suspendedUntil,
+      activatedByChargeNumber = it.activatedBy,
+    )
+  }.toSet()
+
+private fun lossOfVisitsChangeType(
+  before: Set<VisitsPunishmentState>,
+  after: Set<VisitsPunishmentState>,
+): LossOfVisitsChangeType? = when {
+  before == after -> null
+  before.isEmpty() -> LossOfVisitsChangeType.AWARDED
+  after.isEmpty() -> LossOfVisitsChangeType.REMOVED
+  else -> LossOfVisitsChangeType.UPDATED
 }

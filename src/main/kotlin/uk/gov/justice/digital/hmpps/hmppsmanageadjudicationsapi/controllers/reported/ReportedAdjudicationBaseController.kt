@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.AdjudicationDomainEventType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.EventPublishService
 
@@ -40,6 +41,14 @@ class ReportedAdjudicationBaseController {
         )
       }
     }
+    (
+      it.supplementalLossOfVisitsEvents +
+        listOfNotNull(it.lossOfVisitsChangeType?.let(it::toLossOfVisitsEvent))
+      )
+      .associateBy { event -> event.chargeNumber }
+      .values
+      .sortedBy { event -> event.chargeNumber }
+      .forEach(eventPublishService::publishLossOfVisitsEvent)
   }.toResponse()
 
   companion object {

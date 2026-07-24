@@ -13,8 +13,10 @@ import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
@@ -295,6 +297,21 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
           it.hearings.add(entityBuilder.createHearing())
           it.hearings.first().hearingOutcome = HearingOutcome(code = HearingOutcomeCode.COMPLETE, adjudicator = "test")
           it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
+              hasChildUnder18 = true,
+              schedule = mutableListOf(
+                PunishmentSchedule(
+                  id = 1,
+                  duration = 10,
+                  startDate = LocalDate.now(),
+                  endDate = LocalDate.now().plusDays(9),
+                ).also { schedule -> schedule.createDateTime = LocalDateTime.now() },
+              ),
+            ),
+          )
         },
       )
 
@@ -313,7 +330,11 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.getOutcomes().last().code).isEqualTo(OutcomeCode.QUASHED)
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.QUASHED)
       assertThat(argumentCaptor.value.getOutcomes().last().details).isEqualTo("details")
-      assertThat(response).isNotNull
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.QUASHED)
+      response.toLossOfVisitsEvent(LossOfVisitsChangeType.QUASHED).details.visitsPunishments.single().also {
+        assertThat(it.startDate).isEqualTo(LocalDate.now())
+        assertThat(it.endDate).isEqualTo(LocalDate.now().plusDays(9))
+      }
     }
 
     @CsvSource(
@@ -616,6 +637,76 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       assertThat(argumentCaptor.value.status).isEqualTo(ReportedAdjudicationStatus.SCHEDULED)
 
       assertThat(response).isNotNull
+    }
+
+    @Test
+    fun `deleting a charge proved outcome emits a removed visits snapshot`() {
+      val report = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+        it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        it.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED))
+        it.addPunishment(
+          Punishment(
+            id = 1,
+            type = PunishmentType.LOSS_OF_SOCIAL_VISITS,
+            hasChildUnder18 = false,
+            schedule = mutableListOf(
+              PunishmentSchedule(
+                id = 1,
+                duration = 10,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(9),
+              ).also { schedule -> schedule.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("visits")).thenReturn(report)
+      whenever(reportedAdjudicationRepository.save(report)).thenReturn(report)
+
+      val response = outcomeService.deleteOutcome("visits", 1)
+
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.REMOVED)
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.REMOVED).details.visitsPunishments).isEmpty()
+    }
+
+    @Test
+    fun `deleting a quashed outcome emits an unquashed visits snapshot`() {
+      val report = entityBuilder.reportedAdjudication(dateTime = DATE_TIME_OF_INCIDENT).also {
+        it.status = ReportedAdjudicationStatus.QUASHED
+        it.addOutcome(
+          Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { outcome ->
+            outcome.createDateTime = LocalDateTime.now()
+          },
+        )
+        it.addOutcome(
+          Outcome(id = 2, code = OutcomeCode.QUASHED).also { outcome ->
+            outcome.createDateTime = LocalDateTime.now().plusSeconds(1)
+          },
+        )
+        it.addPunishment(
+          Punishment(
+            id = 1,
+            type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+            hasChildUnder18 = true,
+            schedule = mutableListOf(
+              PunishmentSchedule(
+                id = 1,
+                duration = 28,
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now().plusDays(27),
+              ).also { schedule -> schedule.createDateTime = LocalDateTime.now() },
+            ),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("visits")).thenReturn(report)
+      whenever(reportedAdjudicationRepository.save(report)).thenReturn(report)
+
+      val response = outcomeService.deleteOutcome("visits")
+
+      assertThat(response.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+      assertThat(response.lossOfVisitsChangeType).isEqualTo(LossOfVisitsChangeType.UNQUASHED)
+      assertThat(response.toLossOfVisitsEvent(LossOfVisitsChangeType.UNQUASHED).details.visitsPunishments.single().duration).isEqualTo(28)
     }
 
     @Test

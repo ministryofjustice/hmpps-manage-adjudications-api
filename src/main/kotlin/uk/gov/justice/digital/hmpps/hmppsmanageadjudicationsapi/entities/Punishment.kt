@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities
 
 import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -19,6 +20,8 @@ data class Punishment(
   override val id: Long? = null,
   @Enumerated(EnumType.STRING)
   var type: PunishmentType,
+  @Column(name = "has_child_under_18")
+  var hasChildUnder18: Boolean? = null,
   @Enumerated(EnumType.STRING)
   var privilegeType: PrivilegeType? = null,
   @field:Length(max = 32)
@@ -93,6 +96,7 @@ data class Punishment(
     return PunishmentDto(
       id = this.id,
       type = this.type,
+      hasChildUnder18 = this.hasChildUnder18,
       privilegeType = this.privilegeType,
       otherPrivilege = this.otherPrivilege,
       stoppagePercentage = this.stoppagePercentage,
@@ -128,6 +132,7 @@ data class Punishment(
 enum class PunishmentType(
   val measurement: Measurement = Measurement.DAYS,
   val rehabilitativeActivitiesAllowed: Boolean = true,
+  val maximumDuration: Int? = null,
 ) {
   PRIVILEGE,
   EARNINGS,
@@ -141,12 +146,17 @@ enum class PunishmentType(
   CAUTION(rehabilitativeActivitiesAllowed = false),
   DAMAGES_OWED(rehabilitativeActivitiesAllowed = false),
   PAYBACK(measurement = Measurement.HOURS, rehabilitativeActivitiesAllowed = false),
+  RESTRICTION_OF_SOCIAL_VISITS(maximumDuration = 84),
+  LOSS_OF_SOCIAL_VISITS(maximumDuration = 27),
   ;
 
   companion object {
     fun additionalDays() = listOf(ADDITIONAL_DAYS, PROSPECTIVE_DAYS)
     fun damagesAndCaution() = listOf(CAUTION, DAMAGES_OWED)
+    fun visits() = listOf(RESTRICTION_OF_SOCIAL_VISITS, LOSS_OF_SOCIAL_VISITS)
   }
+
+  fun isVisitsPunishment() = visits().contains(this)
 }
 
 enum class PrivilegeType {

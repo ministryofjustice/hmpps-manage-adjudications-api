@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue
 import software.amazon.awssdk.services.sns.model.PublishRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsDetailsDto
 import uk.gov.justice.hmpps.sqs.HmppsQueueService
 import java.time.Instant
 import java.time.LocalDateTime
@@ -70,6 +71,7 @@ data class AdditionalInformation(
   val prisonId: String? = null,
   val status: String? = null,
   val removedNomsNumber: String? = null,
+  val lossOfVisits: LossOfVisitsDetailsDto? = null,
 )
 
 data class HMPPSDomainEvent(
@@ -165,6 +167,11 @@ enum class AdjudicationDomainEventType(
     "adjudication.punishments.deleted",
     "Adjudication punishments deleted: ",
     AuditType.PUNISHMENTS_DELETED,
+  ),
+  LOSS_OF_VISITS(
+    "adjudication.punishments.lossOfVisits",
+    "Adjudication loss of visits changed: ",
+    AuditType.LOSS_OF_VISITS,
   ),
   QUASHED("adjudication.outcome.quashed", "Adjudication quashed: ", AuditType.QUASHED),
   UNQUASHED("adjudication.outcome.unquashed", "Adjudication unquashed: ", AuditType.UNQUASHED),

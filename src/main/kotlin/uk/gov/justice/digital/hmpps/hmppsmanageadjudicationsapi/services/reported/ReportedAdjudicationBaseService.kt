@@ -1,8 +1,11 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import jakarta.persistence.EntityNotFoundException
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -17,6 +20,11 @@ open class ReportedAdjudicationBaseService(
   protected val offenceCodeLookupService: OffenceCodeLookupService,
   protected val authenticationFacade: AuthenticationFacade,
 ) {
+
+  protected data class SuspendedPunishmentUpdates(
+    val events: Set<SuspendedPunishmentEvent> = emptySet(),
+    val lossOfVisitsEvents: List<LossOfVisitsEventDto> = emptyList(),
+  )
 
   protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication {
     val reportedAdjudication =
@@ -108,28 +116,37 @@ open class ReportedAdjudicationBaseService(
   protected fun deactivateActivatedPunishments(
     chargeNumber: String,
     idsToIgnore: List<Long>,
-  ): Set<SuspendedPunishmentEvent> {
-    val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
+  ): SuspendedPunishmentUpdates {
+    val updatedReports = linkedMapOf<String, ReportedAdjudication>()
+    val reportsWithVisitsChanges = mutableSetOf<String>()
 
-    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach {
-      it.getPunishments()
-        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == it.id } && p.getSchedule().size > 1 }
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach { report ->
+      report.getPunishments()
+        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == p.id } && p.getSchedule().size > 1 }
         .forEach { punishmentToRestore ->
 
           punishmentToRestore.removeSchedule(punishmentToRestore.latestSchedule())
           punishmentToRestore.activatedByChargeNumber = null
 
-          suspendedPunishmentEvents.add(
-            SuspendedPunishmentEvent(
-              agencyId = it.originatingAgencyId,
-              chargeNumber = it.chargeNumber,
-              status = it.status,
-            ),
-          )
+          updatedReports[report.chargeNumber] = report
+          if (punishmentToRestore.type.isVisitsPunishment()) reportsWithVisitsChanges.add(report.chargeNumber)
         }
     }
 
-    return suspendedPunishmentEvents
+    val events = updatedReports.values.map { report ->
+      SuspendedPunishmentEvent(
+        agencyId = report.originatingAgencyId,
+        chargeNumber = report.chargeNumber,
+        status = report.status,
+      )
+    }.toSet()
+
+    return SuspendedPunishmentUpdates(
+      events = events,
+      lossOfVisitsEvents = updatedReports.values
+        .filter { reportsWithVisitsChanges.contains(it.chargeNumber) }
+        .map { it.toLossOfVisitsEvent(LossOfVisitsChangeType.UPDATED) },
+    )
   }
 
   companion object {

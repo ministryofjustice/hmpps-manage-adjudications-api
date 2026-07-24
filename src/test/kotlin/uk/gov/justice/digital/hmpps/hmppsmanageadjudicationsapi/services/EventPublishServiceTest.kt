@@ -6,12 +6,22 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.ObjectMapperConfig
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.TestControllerBase.Companion.REPORTED_ADJUDICATION_DTO
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsDetailsDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsPunishmentDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.ReportedAdjudicationTestBase
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -42,6 +52,73 @@ class EventPublishServiceTest : ReportedAdjudicationTestBase() {
         status = REPORTED_ADJUDICATION_DTO.status.name,
       ),
     )
+  }
+
+  @Test
+  fun `existing event JSON does not gain an empty loss of visits field`() {
+    val objectMapper = requireNotNull(ObjectMapperConfig().objectMapper(Jackson2ObjectMapperBuilder.json()))
+    val event = HMPPSDomainEvent(
+      eventType = AdjudicationDomainEventType.ADJUDICATION_CREATED.value,
+      additionalInformation = AdditionalInformation(
+        chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
+        prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+        prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+        status = REPORTED_ADJUDICATION_DTO.status.name,
+      ),
+      occurredAt = Instant.EPOCH,
+      description = "existing event",
+    )
+
+    val json = objectMapper.writeValueAsString(event)
+
+    org.assertj.core.api.Assertions.assertThat(json).doesNotContain("lossOfVisits")
+  }
+
+  @Test
+  fun `loss of visits event includes the complete post-change visits state`() {
+    val details = LossOfVisitsDetailsDto(
+      changeType = LossOfVisitsChangeType.UPDATED,
+      visitsPunishments = listOf(
+        LossOfVisitsPunishmentDto(
+          punishmentId = 10,
+          type = PunishmentType.RESTRICTION_OF_SOCIAL_VISITS,
+          duration = 28,
+          measurement = Measurement.DAYS,
+          startDate = LocalDate.of(2026, 7, 16),
+          endDate = LocalDate.of(2026, 8, 12),
+          hasChildUnder18 = true,
+        ),
+      ),
+    )
+    val event = LossOfVisitsEventDto(
+      chargeNumber = REPORTED_ADJUDICATION_DTO.chargeNumber,
+      prisonId = REPORTED_ADJUDICATION_DTO.originatingAgencyId,
+      prisonerNumber = REPORTED_ADJUDICATION_DTO.prisonerNumber,
+      status = REPORTED_ADJUDICATION_DTO.status,
+      details = details,
+    )
+    val json = requireNotNull(ObjectMapperConfig().objectMapper(Jackson2ObjectMapperBuilder.json()))
+      .writeValueAsString(details)
+
+    org.assertj.core.api.Assertions.assertThat(json)
+      .contains("\"visitsPunishments\":")
+      .doesNotContain("\"punishments\":")
+
+    eventPublishService.publishLossOfVisitsEvent(event)
+
+    verify(snsService).publishDomainEvent(
+      AdjudicationDomainEventType.LOSS_OF_VISITS,
+      "${AdjudicationDomainEventType.LOSS_OF_VISITS.description} ${event.chargeNumber}",
+      LocalDateTime.now(clock),
+      AdditionalInformation(
+        chargeNumber = event.chargeNumber,
+        prisonId = event.prisonId,
+        prisonerNumber = event.prisonerNumber,
+        status = event.status.name,
+        lossOfVisits = details,
+      ),
+    )
+    verifyNoMoreInteractions(snsService)
   }
 
   @CsvSource(
