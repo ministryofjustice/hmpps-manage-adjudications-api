@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8"?><database name="adjudications" schema="public" type="PostgreSQL - 18.4 (Debian 18.4-1.pgdg13+1)">
+   <sequences>
+      <sequence increment="1" name="aci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="agi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="aki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="ali_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="asi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="awi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="ayi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bai_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bfi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bui_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bxi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="bzi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cfi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="chi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="csi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="cyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dai_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="damages_id_seq" startValue="1"/>
+      <sequence increment="1" name="dgi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dis_issue_history_id_seq" startValue="1"/>
+      <sequence increment="1" name="dmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="draft_adjudications_id_seq" startValue="1"/>
+      <sequence increment="1" name="draft_protected_characteristics_id_seq" startValue="1"/>
+      <sequence increment="1" name="dri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dvi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="dwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="eei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="ehi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="esi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="evi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="evidence_id_seq" startValue="1"/>
+      <sequence increment="1" name="ewi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="exi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="eyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fbi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="fyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="ghi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="gli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="gmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="gni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="gpi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="gti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hbi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hearing_id_seq" startValue="1"/>
+      <sequence increment="1" name="hearing_outcome_id_seq" startValue="1"/>
+      <sequence increment="1" name="hei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hgi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hii_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hoi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hpi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hvi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="hyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="incident_details_id_seq" startValue="1"/>
+      <sequence increment="1" name="incident_role_id_seq" startValue="1"/>
+      <sequence increment="1" name="incident_statement_id_seq" startValue="1"/>
+      <sequence increment="1" name="isi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="iwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="kmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="kti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="kvi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lai_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lfi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lgi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lii_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lpi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="lyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="mdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="mhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="mki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="mri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="msi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="mti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="nwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="offence_id_seq" startValue="1"/>
+      <sequence increment="1" name="oni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="outcome_id_seq" startValue="1"/>
+      <sequence increment="1" name="owi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pbi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pfi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="protected_characteristics_id_seq" startValue="1"/>
+      <sequence increment="1" name="pti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="punishment_comments_id_seq" startValue="1"/>
+      <sequence increment="1" name="punishment_id_seq" startValue="1"/>
+      <sequence increment="1" name="punishment_schedule_id_seq" startValue="1"/>
+      <sequence increment="1" name="pvi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="pyi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="rci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="rdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="rehabilitative_activity_id_seq" startValue="1"/>
+      <sequence increment="1" name="reported_adjudications_id_seq" startValue="1"/>
+      <sequence increment="1" name="reported_damages_id_seq" startValue="1"/>
+      <sequence increment="1" name="reported_evidence_id_seq" startValue="1"/>
+      <sequence increment="1" name="reported_offence_id_seq" startValue="1"/>
+      <sequence increment="1" name="reported_witness_id_seq" startValue="1"/>
+      <sequence increment="1" name="rhi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="rni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="rsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sfi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="shi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="ski_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="smi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="spi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="sui_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="swi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="syi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="tci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="tsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="uki_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="upi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="vei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wai_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wbi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wci_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wdi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wei_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="whi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wii_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="witness_id_seq" startValue="1"/>
+      <sequence increment="1" name="wli_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wmi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wni_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="woi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wri_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wsi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wti_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wwi_charge_sequence" startValue="1"/>
+      <sequence increment="1" name="wyi_charge_sequence" startValue="1"/>
+   </sequences>
+   <tables>
+      <table name="damages" remarks="Damage to prison property recorded on a draft adjudication. Copied to reported_damages on submission." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('damages_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="damages_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="details" nullable="false" remarks="Free text description of the damage." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="damages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="damage_draft_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="draft_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="dis_issue_history" remarks="Full history of issuing the notice of being placed on report (DIS1/2) to the prisoner. The most recent issue is also denormalised onto reported_adjudications." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('dis_issue_history_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="dis_issue_history_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="issuing_officer" nullable="true" remarks="DPS username of the officer who issued the form." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="date_time_of_issue" nullable="true" remarks="When the form was issued to the prisoner." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="dis_issue_history_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="dis_issue_history_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="draft_adjudications" remarks="A report being written by a reporting officer, before it is submitted for review. Rows are deleted once the draft is submitted and copied into reported_adjudications, so this table holds work in progress only and is not a historic record." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('draft_adjudications_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="draft_adjudication_fk_id" foreignKey="damages_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="damages"/>
+            <child column="draft_adjudication_fk_id" foreignKey="evidence_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="evidence"/>
+            <child column="draft_adjudication_fk_id" foreignKey="offence_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="offence"/>
+            <child column="draft_adjudication_fk_id" foreignKey="witness_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="witness"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="prisoner_number" nullable="false" remarks="NOMIS offender number (noms id) of the prisoner the charge is against." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="incident_details_id" nullable="true" remarks="Foreign key to incident_details." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="fk_incident_details" implied="false" onDeleteCascade="false" schema="public" table="incident_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="incident_statement_id" nullable="true" remarks="Foreign key to incident_statement." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="fk_incident_statement" implied="false" onDeleteCascade="false" schema="public" table="incident_statement"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'MDI'::character varying" digits="0" id="8" name="originating_agency_id" nullable="false" remarks="Agency (prison) code where the incident was reported." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="charge_number" nullable="true" remarks="Charge number, populated only once the draft has been submitted and a reported adjudication exists. Format is &lt;agency&gt;&lt;6 digit sequence&gt;, optionally suffixed -&lt;n&gt; for additional charges on the same incident." size="16" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="report_by_user_id" nullable="true" remarks="DPS username of the officer who submitted the report. Null while the draft is unsubmitted." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="incident_role_id" nullable="true" remarks="Foreign key to incident_role." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="fk_incident_role" implied="false" onDeleteCascade="false" schema="public" table="incident_role"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="is_youth_offender" nullable="true" remarks="True when the YOI rule set applies rather than the adult rule set. Determines which offence paragraphs and hearing types are valid." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="damages_saved" nullable="true" remarks="True once the reporter has completed the damages page, including confirming there were none. Distinguishes &quot;no damages&quot; from &quot;not yet asked&quot;." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="evidence_saved" nullable="true" remarks="True once the reporter has completed the evidence page, including confirming there was none." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="witnesses_saved" nullable="true" remarks="True once the reporter has completed the witnesses page, including confirming there were none." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="'MALE'::character varying" digits="0" id="16" name="gender" nullable="false" remarks="Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE." size="12" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="override_agency_id" nullable="true" remarks="Agency code the prisoner has since transferred to. Set when the report needs to be actioned by the receiving prison." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="created_on_behalf_of_officer" nullable="true" remarks="Name of the officer the report was created on behalf of, when someone else entered it for them." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="created_on_behalf_of_reason" nullable="true" remarks="Reason the report was created on behalf of another officer." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="offender_booking_id" nullable="true" remarks="NOMIS OFFENDER_BOOK_ID for the prisoner's booking at the time of the incident." size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="draft_adjudications_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="draft_prisoner_idx" unique="false">
+            <column ascending="true" name="prisoner_number"/>
+         </index>
+         <index name="incident_details_idx" unique="false">
+            <column ascending="true" name="incident_details_id"/>
+         </index>
+         <index name="incident_role_idx" unique="false">
+            <column ascending="true" name="incident_role_id"/>
+         </index>
+         <index name="incident_statement_idx" unique="false">
+            <column ascending="true" name="incident_statement_id"/>
+         </index>
+      </table>
+      <table name="draft_protected_characteristics" remarks="Protected characteristics of the victim recorded as motivating the offence, on a draft adjudication. Copied to protected_characteristics on submission." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('draft_protected_characteristics_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="offence_fk_id" nullable="true" remarks="Foreign key to offence." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="draft_protected_characteristics_offence_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="offence"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="characteristic" nullable="false" remarks="One of AGE, DISABILITY, GENDER_REASSIGN, MARRIAGE_AND_CP, PREGNANCY_AND_MAT, RACE, RELIGION, SEX, SEX_ORIENTATION." size="20" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="draft_protected_characteristics_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="protected_characteristics_offence_fk_idx" unique="false">
+            <column ascending="true" name="offence_fk_id"/>
+         </index>
+      </table>
+      <table name="evidence" remarks="Evidence recorded on a draft adjudication. Copied to reported_evidence on submission." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('evidence_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="evidence_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of evidence. One of PHOTO, BODY_WORN_CAMERA, CCTV, BAGGED_AND_TAGGED, OTHER." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="identifier" nullable="true" remarks="Reference number for the evidence, such as a body worn camera or seal number." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="details" nullable="false" remarks="Free text description of the evidence." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="evidence_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="evidence_draft_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="draft_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="flyway_schema_history" numRows="127" remarks="" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="installed_rank" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="true" remarks="" size="50" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="false" remarks="" size="200" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="type" nullable="false" remarks="" size="20" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="script" nullable="false" remarks="" size="1000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="checksum" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="installed_by" nullable="false" remarks="" size="100" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="now()" digits="6" id="7" name="installed_on" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="execution_time" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="success" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="installed_rank" sequenceNumberInPK="1"/>
+         <index name="flyway_schema_history_pk" unique="true">
+            <column ascending="true" name="installed_rank"/>
+         </index>
+         <index name="flyway_schema_history_s_idx" unique="false">
+            <column ascending="true" name="success"/>
+         </index>
+      </table>
+      <table name="hearing" remarks="A scheduled or held adjudication hearing. A charge can have several hearings, for example where the first is adjourned. The ordered case history shown in the UI is assembled from this table and outcome by ReportedAdjudicationService.createOutcomeHistory()." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('hearing_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="hearing_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="agency_id" nullable="false" remarks="Agency (prison) code where the hearing takes place. May differ from the charge's originating agency after a transfer." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="location_id" nullable="true" remarks="Legacy NOMIS internal location id of the hearing room. Superseded by location_uuid." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="date_time_of_hearing" nullable="false" remarks="When the hearing is scheduled for, or was held." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="charge_number" nullable="false" remarks="Charge number of the parent adjudication, denormalised for lookup." size="16" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="oic_hearing_id" nullable="true" remarks="NOMIS OIC_HEARING_ID. Populated for migrated hearings and for hearings synchronised back to NOMIS." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="'GOV'::character varying" digits="0" id="11" name="oic_hearing_type" nullable="false" remarks="Who hears the case, and under which rule set. One of GOV_ADULT, GOV_YOI, INAD_ADULT, INAD_YOI, GOV. GOV = governor, INAD = independent adjudicator." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="outcome_id" nullable="true" remarks="Foreign key to hearing_outcome. Null while the hearing is scheduled but not yet held." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="fk_hearing_outcome" implied="false" onDeleteCascade="false" schema="public" table="hearing_outcome"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="hearing_pre_migrate_id" nullable="true" remarks="Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="representative" nullable="true" remarks="Name of the prisoner's representative at the hearing, where they had one." size="240" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="location_uuid" nullable="false" remarks="Location identifier in the locations-inside-prison service. This is the current location reference." size="2147483647" type="uuid" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="hearing_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="hearing_adjudication_datetime_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+            <column ascending="true" name="date_time_of_hearing"/>
+            <column ascending="true" name="outcome_id"/>
+         </index>
+         <index name="hearing_agency_idx" unique="false">
+            <column ascending="true" name="agency_id"/>
+            <column ascending="true" name="date_time_of_hearing"/>
+         </index>
+         <index name="hearing_outcome_idx" unique="false">
+            <column ascending="true" name="outcome_id"/>
+         </index>
+         <index name="hearing_pre_migrate_id_idx" unique="false">
+            <column ascending="true" name="hearing_pre_migrate_id"/>
+         </index>
+         <index name="hearings_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+         <index name="transfer_out_hearing_idx" unique="false">
+            <column ascending="true" name="agency_id"/>
+            <column ascending="true" name="charge_number"/>
+         </index>
+      </table>
+      <table name="hearing_outcome" remarks="What happened at a hearing. One row per hearing that has been held." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('hearing_outcome_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="outcome_id" foreignKey="fk_hearing_outcome" implied="false" onDeleteCascade="false" schema="public" table="hearing"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="code" nullable="false" remarks="What the adjudicator did. One of COMPLETE (a finding was reached - see the linked outcome row for what it was), ADJOURN, REFER_POLICE, REFER_INAD, REFER_GOV, NOMIS (outcome was entered in NOMIS rather than DPS)." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="adjudicator" nullable="false" remarks="Name or username of the governor or independent adjudicator who heard the case." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="adjourn_reason" nullable="true" remarks="Why the hearing was adjourned. One of LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER. Null unless code is ADJOURN." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="plea" nullable="true" remarks="The prisoner's plea. One of GUILTY, NOT_GUILTY, ABSTAIN, UNFIT, NOT_ASKED." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="details" nullable="true" remarks="Free text notes recorded against the hearing outcome." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="10" name="nomis_outcome" nullable="false" remarks="True when the outcome was recorded in NOMIS rather than DPS, so DPS holds only a placeholder." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="11" name="migrated" nullable="false" remarks="True when the row was created by the NOMIS migration." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="hearing_outcome_pre_migrate_id" nullable="true" remarks="Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated." size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="hearing_outcome_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="hearing_outcome_pre_migrate_id_idx" unique="false">
+            <column ascending="true" name="hearing_outcome_pre_migrate_id"/>
+         </index>
+      </table>
+      <table name="incident_details" remarks="When and where the incident happened, for a draft adjudication. One row per draft." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('incident_details_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="incident_details_id" foreignKey="fk_incident_details" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="date_time_of_incident" nullable="true" remarks="When the incident occurred." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="location_id" nullable="true" remarks="Legacy NOMIS internal location id (AGENCY_INTERNAL_LOCATIONS.INTERNAL_LOCATION_ID). Superseded by location_uuid." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="handover_deadline" nullable="true" remarks="Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="date_time_of_discovery" nullable="false" remarks="When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="location_uuid" nullable="false" remarks="Location identifier in the locations-inside-prison service. This is the current location reference." size="2147483647" type="uuid" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="incident_details_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="incident_role" remarks="The prisoner's role in the incident for a draft adjudication - whether they committed the offence themselves or attempted, incited or assisted another. One row per draft." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('incident_role_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="incident_role_id" foreignKey="fk_incident_role" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="role_code" nullable="true" remarks="Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit." size="5" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="associated_prisoners_number" nullable="true" remarks="NOMIS offender number of the other prisoner involved, where the role code requires one." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="associated_prisoners_name" nullable="true" remarks="Name of the other prisoner involved, held where they are not in the current establishment and cannot be looked up." size="100" type="varchar" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="incident_role_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="draft_associated_merge_idx" unique="false">
+            <column ascending="true" name="associated_prisoners_number"/>
+         </index>
+      </table>
+      <table name="incident_statement" remarks="The reporting officer's free text account of the incident, for a draft adjudication. One row per draft." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('incident_statement_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="incident_statement_id" foreignKey="fk_incident_statement" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="statement" nullable="true" remarks="Free text description of the incident, up to 4000 characters." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="completed" nullable="true" remarks="True once the reporter has marked the statement as finished." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="incident_statement_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="offence" remarks="The offence selected for a draft adjudication. In practice there is one row per draft; multiple offences are raised as separate charges." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('offence_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="offence_fk_id" foreignKey="draft_protected_characteristics_offence_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_protected_characteristics"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="offence_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code (an integer, not the Prison Rules paragraph). Resolved in application code by OffenceCodeLookupService against the OffenceCodes enum - there is no reference table in this database. See the reference-data export for the full code list." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="victim_prisoners_number" nullable="true" remarks="NOMIS offender number of the prisoner victim, for offences that have one." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="victim_staff_username" nullable="true" remarks="DPS username of the staff victim, for offences that have one." size="30" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="victim_other_persons_name" nullable="true" remarks="Name of a victim who is neither a prisoner nor staff (for example a visitor)." size="100" type="varchar" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="offence_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="draft_victim_idx" unique="false">
+            <column ascending="true" name="victim_prisoners_number"/>
+         </index>
+         <index name="offence_draft_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="draft_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="outcome" remarks="A finding or decision on a charge. Some outcomes follow a hearing, others are recorded without one (for example referring to the police before any hearing). Ordering is by actual_created_date where set, otherwise create_datetime." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('outcome_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="code" nullable="false" remarks="The finding or decision. One of REFER_POLICE, REFER_INAD, REFER_GOV, NOT_PROCEED, DISMISSED, PROSECUTION, SCHEDULE_HEARING, CHARGE_PROVED, QUASHED. CHARGE_PROVED is the outcome that allows punishments to be awarded; QUASHED revokes them." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="not_proceed_reason" nullable="true" remarks="Why the charge was not proceeded with. One of ANOTHER_WAY, RELEASED, WITNESS_NOT_ATTEND, UNFIT, FLAWED, EXPIRED_NOTICE, EXPIRED_HEARING, NOT_FAIR, OTHER. Null unless code is NOT_PROCEED." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="details" nullable="true" remarks="Free text supporting the outcome." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="outcome_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="quashed_reason" nullable="true" remarks="Why the charge was quashed. One of FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD, OTHER. Null unless code is QUASHED." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="oic_hearing_id" nullable="true" remarks="NOMIS OIC_HEARING_ID the outcome relates to, where the outcome came from or was synchronised to NOMIS." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="deleted" nullable="true" remarks="Soft delete flag. Rows where this is true are excluded from the case history and from status calculation; queries must filter on &quot;deleted is not true&quot;." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="actual_created_date" nullable="true" remarks="The real date the outcome was reached, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="13" name="migrated" nullable="false" remarks="True when the row was created by the NOMIS migration." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="refer_gov_reason" nullable="true" remarks="Why the case was referred to the governor. One of REVIEW_FOR_REFER_POLICE, GOV_INQUIRY, OTHER. Null unless code is REFER_GOV." size="32" type="varchar" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="outcome_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="outcomes_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="protected_characteristics" remarks="Protected characteristics of the victim recorded as motivating the offence, on a submitted adjudication." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('protected_characteristics_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_offence_fk_id" nullable="true" remarks="Foreign key to reported_offence." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="protected_characteristics_reported_offence_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_offence"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="characteristic" nullable="false" remarks="One of AGE, DISABILITY, GENDER_REASSIGN, MARRIAGE_AND_CP, PREGNANCY_AND_MAT, RACE, RELIGION, SEX, SEX_ORIENTATION." size="20" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="protected_characteristics_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="protected_characteristics_reported_offence_fk_idx" unique="false">
+            <column ascending="true" name="reported_offence_fk_id"/>
+         </index>
+      </table>
+      <table name="punishment" remarks="A punishment (NOMIS calls these awards or sanctions) given on a charge where the outcome was CHARGE_PROVED. The duration or amount is not held here but on the linked punishment_schedule rows. ADDITIONAL_DAYS and PROSPECTIVE_DAYS punishments are the added days that feed sentence calculation via the adjustments service." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('punishment_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="punishment_fk_id" foreignKey="punishment_schedule_punishment_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="punishment_schedule"/>
+            <child column="punishment_fk_id" foreignKey="rehabilitative_activity_punishment_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="rehabilitative_activity"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="punishment_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="type" nullable="false" remarks="Type of punishment. One of PRIVILEGE (loss of privileges - see privilege_type), EARNINGS (stoppage of earnings - see stoppage_percentage), CONFINEMENT (cellular confinement), REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS (added days awarded, ADA), PROSPECTIVE_DAYS (prospective added days, PADA - awarded where the prisoner is not yet sentenced), CAUTION, DAMAGES_OWED (money owed for damage - see amount), PAYBACK (payback punishment, measured in hours)." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="privilege_type" nullable="true" remarks="Which privilege was lost. One of CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, GYM, OTHER. Null unless type is PRIVILEGE." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="other_privilege" nullable="true" remarks="Free text description of the privilege lost, when privilege_type is OTHER." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="stoppage_percentage" nullable="true" remarks="Percentage of earnings stopped. Null unless type is EARNINGS." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="activated_by_charge_number" nullable="true" remarks="Charge number of the later adjudication that activated this suspended punishment. Null while the punishment remains suspended or was never suspended." size="16" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="suspended_until" nullable="true" remarks="Date the punishment is suspended until. Non-null means the punishment is suspended and not currently in force. Mirrors the suspended_until on the latest punishment_schedule row." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="sanction_seq" nullable="true" remarks="NOMIS OFFENDER_OIC_SANCTIONS.SANCTION_SEQ. With reported_adjudications.offender_booking_id this forms the composite key of the matching NOMIS sanction row." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="2" id="13" name="amount" nullable="true" remarks="Amount of money owed, in pounds. Null unless type is DAMAGES_OWED." size="10" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="deleted" nullable="true" remarks="Soft delete flag. Rows where this is true are excluded everywhere; queries must filter on &quot;deleted is not true&quot;." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="consecutive_to_charge_number" nullable="true" remarks="Charge number this punishment runs consecutively to. Used for added days that follow on from an award on an earlier charge." size="16" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="nomis_status" nullable="true" remarks="NOMIS sanction status (reference domain OIC_SANCT_ST) for records that came from or were synchronised to NOMIS. Values include IMMEDIATE, PROSPECTIVE, SUSPENDED, SUSP_PROSP, QUASHED, AWARD_RED, REDAPP, SUSPEN_RED, SUSPEN_EXT, AS_AWARDED." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="punishment_pre_migrate_id" nullable="true" remarks="Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="18" name="actual_created_date" nullable="true" remarks="The real date the punishment was awarded, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="payback_notes" nullable="true" remarks="Free text description of the payback work required. Null unless type is PAYBACK." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="rehab_not_completed_outcome" nullable="true" remarks="What was decided when rehabilitative activities were not completed. One of FULL_ACTIVATE, PARTIAL_ACTIVATE, EXT_SUSPEND, NO_ACTION." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="rehab_completed" nullable="true" remarks="Whether the attached rehabilitative activities were completed. Null where no rehabilitative activity applies or the outcome has not yet been recorded." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="punishment_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="activated_by_charge_number_idx" unique="false">
+            <column ascending="true" name="activated_by_charge_number"/>
+         </index>
+         <index name="consecutive_report_number_and_type_idx" unique="false">
+            <column ascending="true" name="consecutive_to_charge_number"/>
+            <column ascending="true" name="type"/>
+         </index>
+         <index name="prisoner_suspended_punishment_idx" unique="false">
+            <column ascending="true" name="suspended_until"/>
+         </index>
+         <index name="punishment_fk_suspended_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+            <column ascending="true" name="suspended_until"/>
+         </index>
+         <index name="punishment_pre_migrate_id_idx" unique="false">
+            <column ascending="true" name="punishment_pre_migrate_id"/>
+         </index>
+         <index name="punishment_reported_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="punishment_comments" remarks="Free text notes recorded against the punishments on a charge, including the reason for any change made on appeal or correction." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('punishment_comments_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="punishment_comments_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="comment" nullable="false" remarks="The note text." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="reason_for_change" nullable="true" remarks="Why the punishments were changed. One of APPEAL, CORRECTION, OTHER, GOV_OR_DIRECTOR." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="nomis_created_by" nullable="true" remarks="Username of the NOMIS user who created the comment, for migrated records. Takes precedence over create_user_id when displaying the author." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="actual_created_date" nullable="true" remarks="The real date the comment was made, as opposed to create_datetime which for migrated records is the date of the migration run." size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="punishment_comments_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="punishment_comments_reported_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="punishment_schedule" remarks="The duration and dates of a punishment. A punishment gains a new schedule row each time it is amended, so this table is a history: take the row with the greatest create_datetime for a given punishment_fk_id to get the current position." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('punishment_schedule_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="punishment_fk_id" nullable="true" remarks="Foreign key to punishment." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="punishment_schedule_punishment_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="punishment"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="duration" nullable="true" remarks="Length of the punishment, in the unit given by measurement. This is the added days count for ADDITIONAL_DAYS and PROSPECTIVE_DAYS punishments. Renamed from &quot;days&quot; in V115 when payback punishments introduced hours." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="true" remarks="Date the punishment starts. Not set for added days, which take effect through a sentence adjustment rather than a date range." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="end_date" nullable="true" remarks="Date the punishment ends. Not set for added days." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="suspended_until" nullable="true" remarks="Date the punishment is suspended until. Non-null means the punishment was suspended as at this schedule row." size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'DAYS'::character varying" digits="0" id="10" name="measurement" nullable="false" remarks="Unit of duration. One of DAYS, HOURS. HOURS is used only by PAYBACK punishments." size="16" type="varchar" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="punishment_schedule_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="punishment_schedule_end_date_idx" unique="false">
+            <column ascending="true" name="end_date"/>
+         </index>
+         <index name="punishment_schedule_fk_end_date_idx" unique="false">
+            <column ascending="true" name="punishment_fk_id"/>
+            <column ascending="true" name="end_date"/>
+         </index>
+         <index name="punishment_schedule_fk_idx" unique="false">
+            <column ascending="true" name="punishment_fk_id"/>
+         </index>
+      </table>
+      <table name="rehabilitative_activity" remarks="Rehabilitative activities attached to a suspended punishment as a condition of the suspension. Not available for added days, cautions, damages owed or payback punishments." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('rehabilitative_activity_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="punishment_fk_id" nullable="true" remarks="Foreign key to punishment." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="rehabilitative_activity_punishment_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="punishment"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="details" nullable="true" remarks="Description of the activity the prisoner must complete." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="monitor" nullable="true" remarks="Name of the person responsible for monitoring the activity." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="end_date" nullable="true" remarks="Date the activity must be completed by." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_sessions" nullable="true" remarks="Number of sessions the prisoner must attend." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="completed" nullable="true" remarks="Whether this individual activity was completed. The overall decision is held on punishment.rehab_completed." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="rehabilitative_activity_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="rehabilitative_activity_punishment_fk_idx" unique="false">
+            <column ascending="true" name="punishment_fk_id"/>
+         </index>
+      </table>
+      <table name="reported_adjudications" remarks="A submitted adjudication charge - the root record for everything that follows (hearings, outcomes and punishments). One row per charge, not per incident: an incident involving several prisoners, or several offences, produces several rows. Includes records migrated from NOMIS as well as those raised in DPS." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('reported_adjudications_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="reported_adjudication_fk_id" foreignKey="dis_issue_history_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="dis_issue_history"/>
+            <child column="reported_adjudication_fk_id" foreignKey="hearing_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="hearing"/>
+            <child column="reported_adjudication_fk_id" foreignKey="outcome_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="outcome"/>
+            <child column="reported_adjudication_fk_id" foreignKey="punishment_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="punishment"/>
+            <child column="reported_adjudication_fk_id" foreignKey="punishment_comments_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="punishment_comments"/>
+            <child column="reported_adjudication_fk_id" foreignKey="reported_damages_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_damages"/>
+            <child column="reported_adjudication_fk_id" foreignKey="reported_evidence_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_evidence"/>
+            <child column="reported_adjudication_fk_id" foreignKey="reported_offence_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_offence"/>
+            <child column="reported_adjudication_fk_id" foreignKey="reported_witness_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_witness"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="prisoner_number" nullable="false" remarks="NOMIS offender number (noms id) of the prisoner charged." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="charge_number" nullable="false" remarks="Business key for the charge, unique across the service. Format is &lt;agency&gt;&lt;6 digit sequence&gt; for DPS-raised charges (for example MDI001234); migrated NOMIS charges use the NOMIS charge number, suffixed -&lt;n&gt; where one NOMIS incident split into several DPS charges." size="16" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="originating_agency_id" nullable="false" remarks="Agency (prison) code where the incident was reported. Together with override_agency_id this controls which caseload may see and action the record." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="date_time_of_incident" nullable="false" remarks="When the incident occurred." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="handover_deadline" nullable="false" remarks="Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="location_id" nullable="true" remarks="Legacy NOMIS internal location id where the incident occurred. Superseded by location_uuid." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="statement" nullable="false" remarks="The reporting officer's free text account of the incident." size="2147483647" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="incident_role_code" nullable="true" remarks="Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit." size="5" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="incident_role_associated_prisoners_number" nullable="true" remarks="NOMIS offender number of the other prisoner involved, where the role code requires one." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="'AWAITING_REVIEW'::character varying" digits="0" id="14" name="status" nullable="false" remarks="Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="status_reason" nullable="true" remarks="Reason code recorded when the reviewer rejected or returned the report." size="128" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="status_details" nullable="true" remarks="Free text the reviewer gave alongside status_reason." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="17" name="is_youth_offender" nullable="false" remarks="True when the YOI rule set applies rather than the adult rule set." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="review_user_id" nullable="true" remarks="DPS username of the reviewer who accepted, rejected or returned the report." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="incident_role_associated_prisoners_name" nullable="true" remarks="Name of the other prisoner involved, held where they cannot be looked up." size="100" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="20" name="date_time_of_discovery" nullable="false" remarks="When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'MALE'::character varying" digits="0" id="21" name="gender" nullable="false" remarks="Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE." size="12" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="issuing_officer" nullable="true" remarks="DPS username of the officer who most recently issued the notice of report (DIS1/2) to the prisoner." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="23" name="date_time_of_issue" nullable="true" remarks="When the notice of report was most recently issued. Full history is in dis_issue_history." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="24" name="date_time_of_first_hearing" nullable="true" remarks="Denormalised date of the earliest hearing, maintained for reporting and sorting." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="override_agency_id" nullable="true" remarks="Agency code the prisoner transferred to after the charge was raised, set by TransferService from prisoner movement events. Null when there has been no transfer." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="26" name="last_modified_agency_id" nullable="true" remarks="Agency code of the establishment that last changed the record." size="6" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="27" name="agency_incident_id" nullable="true" remarks="NOMIS AGENCY_INCIDENT_ID the charge came from. Populated on migrated records and on records synchronised back to NOMIS." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="28" name="migrated" nullable="false" remarks="True when the record was migrated from NOMIS rather than raised in DPS." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="29" name="offender_booking_id" nullable="true" remarks="NOMIS OFFENDER_BOOK_ID for the booking the charge belongs to. Use this to join to NOMIS sentence and sanction data." size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="30" name="status_before_migration" nullable="true" remarks="Status the charge held in NOMIS before migration. Populated on migrated records only." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="31" name="created_on_behalf_of_officer" nullable="true" remarks="Name of the officer the report was created on behalf of, when someone else entered it for them." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="32" name="created_on_behalf_of_reason" nullable="true" remarks="Reason the report was created on behalf of another officer." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="33" name="migrated_inactive_prisoner" nullable="false" remarks="True when the record was migrated for a prisoner who was no longer active. These records are excluded from the INVALID_* status checks because their data cannot be corrected." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="34" name="migrated_split_record" nullable="false" remarks="True when a single NOMIS charge was split into multiple DPS charges during migration." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="35" name="date_time_resubmitted" nullable="true" remarks="When a returned report was resubmitted for review. Where set, this is treated as the report's created date in the API." size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="36" name="location_uuid" nullable="false" remarks="Location identifier in the locations-inside-prison service. This is the current location reference." size="2147483647" type="uuid" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reported_adjudications_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="agency_hearing_to_schedule_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="agency_hearing_to_schedule_idx2" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+         </index>
+         <index name="associate_merge_idx" unique="false">
+            <column ascending="true" name="incident_role_associated_prisoners_number"/>
+         </index>
+         <index name="booking_agency_adjudications_idx" unique="false">
+            <column ascending="true" name="offender_booking_id"/>
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="hearing_to_schedule_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="migrate_1" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+         </index>
+         <index name="migrate_2" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="migrated"/>
+         </index>
+         <index name="migrated_idx" unique="false">
+            <column ascending="true" name="migrated"/>
+         </index>
+         <index name="offender_bookingid_idx" unique="false">
+            <column ascending="true" name="offender_booking_id"/>
+         </index>
+         <index name="offender_bookingid_status_idx" unique="false">
+            <column ascending="true" name="offender_booking_id"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="override_agency_hearing_to_schedule_idx" unique="false">
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="override_agency_hearing_to_schedule_idx2" unique="false">
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="status"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+         </index>
+         <index name="prisoner_adjudications_idx" unique="false">
+            <column ascending="true" name="offender_booking_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="prisoner_and_status_idx" unique="false">
+            <column ascending="true" name="prisoner_number"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="prisoner_reported_adjudication_idx" unique="false">
+            <column ascending="true" name="prisoner_number"/>
+         </index>
+         <index name="repair_index" unique="false">
+            <column ascending="true" name="migrated"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="reported_adjudications_agency_hearing_date_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="date_time_of_first_hearing"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="reported_adjudications_agency_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="reported_adjudications_override_agency_hearing_date_idx" unique="false">
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="date_time_of_first_hearing"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="reported_adjudications_override_agency_idx" unique="false">
+            <column ascending="true" name="override_agency_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="reported_adjudications_user_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="create_user_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="sar_idx" unique="false">
+            <column ascending="true" name="prisoner_number"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+         </index>
+         <index name="transfer_out_date_idx" unique="false">
+            <column ascending="true" name="originating_agency_id"/>
+            <column ascending="true" name="date_time_of_discovery"/>
+            <column ascending="true" name="status"/>
+         </index>
+         <index name="unique_report_number" unique="true">
+            <column ascending="true" name="charge_number"/>
+         </index>
+      </table>
+      <table name="reported_damages" remarks="Damage to prison property recorded on a submitted adjudication." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('reported_damages_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reported_damages_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="details" nullable="false" remarks="Free text description of the damage." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="2" id="9" name="repair_cost" nullable="true" remarks="Cost of repair in pounds, where recorded. Separate from the DAMAGES_OWED punishment, which is the amount the prisoner was ordered to pay." size="10" type="numeric" typeCode="2"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reported_damages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="damage_reported_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="reported_evidence" remarks="Evidence recorded on a submitted adjudication." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('reported_evidence_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reported_evidence_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of evidence. One of PHOTO, BODY_WORN_CAMERA, CCTV, BAGGED_AND_TAGGED, OTHER." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="identifier" nullable="true" remarks="Reference number for the evidence, such as a body worn camera or seal number." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="details" nullable="false" remarks="Free text description of the evidence." size="4000" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="date_added" nullable="true" remarks="When the evidence was added to the report, where it was added after submission." size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reported_evidence_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="evidence_reported_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="reported_offence" remarks="The offence charged on a submitted adjudication. One row per reported adjudication." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('reported_offence_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4">
+            <child column="reported_offence_fk_id" foreignKey="protected_characteristics_reported_offence_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="protected_characteristics"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reported_offence_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code (an integer, not the Prison Rules paragraph). Resolved in application code by OffenceCodeLookupService against the OffenceCodes enum - there is no reference table in this database. Migrated NOMIS charges that could not be mapped use the MIGRATED_OFFENCE code and carry the original text in nomis_offence_code / nomis_offence_description. See the reference-data export for the full code list." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="victim_prisoners_number" nullable="true" remarks="NOMIS offender number of the prisoner victim, for offences that have one." size="7" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="victim_staff_username" nullable="true" remarks="DPS username of the staff victim, for offences that have one." size="30" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="victim_other_persons_name" nullable="true" remarks="Name of a victim who is neither a prisoner nor staff (for example a visitor)." size="100" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="nomis_offence_code" nullable="true" remarks="NOMIS OIC offence code, for example 51:1A. Populated on migrated records." size="10" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="nomis_offence_description" nullable="true" remarks="NOMIS offence description text. Populated on migrated records, and used in place of the DPS paragraph description where the offence could not be mapped." size="350" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="12" name="migrated" nullable="false" remarks="True when the offence row was created by the NOMIS migration." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="actual_offence_code" nullable="true" remarks="The offence code originally chosen, retained when the stored offence_code was subsequently adjusted." size="10" type="int4" typeCode="4"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reported_offence_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="offence_reported_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+         <index name="reported_merge_idx" unique="false">
+            <column ascending="true" name="victim_prisoners_number"/>
+         </index>
+      </table>
+      <table name="reported_witness" remarks="Witnesses recorded on a submitted adjudication." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('reported_witness_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="reported_witness_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of witness. One of OFFICER, STAFF, OTHER_PERSON, VICTIM, PRISONER." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="first_name" nullable="false" remarks="Witness first name." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="last_name" nullable="false" remarks="Witness last name." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="comment" nullable="true" remarks="Free text note about the witness or their evidence." size="240" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="username" nullable="true" remarks="DPS username of the witness where they are a member of staff." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="date_added" nullable="true" remarks="When the witness was added to the report, where they were added after submission." size="29" type="timestamp" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="reported_witness_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="reported_witness_draft_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="reported_adjudication_fk_id"/>
+         </index>
+      </table>
+      <table name="witness" remarks="Witnesses recorded on a draft adjudication. Copied to reported_witness on submission." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="nextval('witness_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="witness_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="code" nullable="false" remarks="Type of witness. One of OFFICER, STAFF, OTHER_PERSON, VICTIM, PRISONER." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="first_name" nullable="false" remarks="Witness first name." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="last_name" nullable="false" remarks="Witness last name." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reporter" nullable="false" remarks="DPS username of the officer who recorded this entry." size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="create_user_id" nullable="false" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="create_datetime" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modify_user_id" nullable="true" remarks="" size="32" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="modify_datetime" nullable="true" remarks="" size="29" type="timestamp" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="username" nullable="true" remarks="DPS username of the witness where they are a member of staff." size="32" type="varchar" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="witness_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="witness_draft_adjudication_fk_idx" unique="false">
+            <column ascending="true" name="draft_adjudication_fk_id"/>
+         </index>
+      </table>
+   </tables>
+</database>
