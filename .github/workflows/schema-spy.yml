@@ -72,7 +72,7 @@ jobs:
       - name: Initialise database and export reference data
         shell: bash
         run: |
-          docker compose -f ${{ inputs.docker_compose_file }} up -d
+          docker compose -f ${{ inputs.docker_compose_file }} up -d --wait
           export JAVA_OPTS="${{ inputs.java_options }}"
           ./gradlew -Pinit-db=true -PreferenceDataOutput="${PWD}/reference-data.csv" test \
             --tests uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.InitialiseDatabase \

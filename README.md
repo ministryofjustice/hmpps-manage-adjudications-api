@@ -119,7 +119,7 @@ can add to or replace comments at any time.
 To regenerate locally:
 
 ```bash
-docker compose -f docker-compose-schema-spy.yml up -d
+docker compose -f docker-compose-schema-spy.yml up -d --wait
 ./gradlew -Pinit-db=true test --tests '*InitialiseDatabase' --tests '*ExportReferenceData'
 docker run --rm --network host -v /tmp/schemaspy:/output schemaspy/schemaspy:6.2.4 \
   -t pgsql -host localhost -port 5432 -db adjudications -s public \
