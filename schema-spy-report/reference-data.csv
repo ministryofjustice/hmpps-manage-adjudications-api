@@ -86,6 +86,8 @@ column_ref,code,description,notes
 "punishment.type","CAUTION","",""
 "punishment.type","DAMAGES_OWED","",""
 "punishment.type","PAYBACK","",""
+"punishment.type","RESTRICTION_OF_SOCIAL_VISITS","",""
+"punishment.type","LOSS_OF_SOCIAL_VISITS","",""
 "punishment.privilege_type","CANTEEN","",""
 "punishment.privilege_type","FACILITIES","",""
 "punishment.privilege_type","MONEY","",""
