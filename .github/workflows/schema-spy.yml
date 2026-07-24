@@ -1,0 +1,106 @@
+name: SchemaSpy report
+
+# Publishes the adjudications data dictionary:
+#   https://ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report/
+#
+# Three artefacts are produced from one Flyway-built database:
+#   - the SchemaSpy report (browsable ER diagrams and table docs)
+#   - data-dictionary.csv (flat table/column export for the MOJ Data Catalogue / Glue)
+#   - reference-data.csv (enum and offence code lookups, which have no tables in the database)
+#
+# Column descriptions come from db/migration/V130__schema_comments.sql.
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        description: Java version
+        type: string
+        default: '25'
+      java_options:
+        description: Java options
+        type: string
+        default: '-Xmx512m -XX:ParallelGCThreads=2 -XX:ConcGCThreads=2 -Djava.util.concurrent.ForkJoinPool.common.parallelism=2 -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process'
+      docker_compose_file:
+        description: Path to Docker Compose file to start required containers
+        type: string
+        default: 'docker-compose-schema-spy.yml'
+      database_name:
+        description: Database name
+        type: string
+        default: 'adjudications'
+      database_user:
+        description: Database user name
+        type: string
+        default: 'adjudications'
+      database_password:
+        description: Database user password
+        type: string
+        default: 'adjudications'
+      database_schema:
+        description: Database schema name
+        type: string
+        default: 'public'
+      publish:
+        description: Publish the report to GitHub Pages
+        type: boolean
+        default: true
+
+jobs:
+  schema-spy:
+    name: Schema Spy report generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: test
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+          cache: gradle
+          cache-dependency-path: |
+            *.gradle*
+            **/gradle-wrapper.properties
+
+      - name: Initialise database and export reference data
+        shell: bash
+        run: |
+          docker compose -f ${{ inputs.docker_compose_file }} up -d --wait
+          export JAVA_OPTS="${{ inputs.java_options }}"
+          ./gradlew -Pinit-db=true -PreferenceDataOutput="${PWD}/reference-data.csv" test \
+            --tests uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.InitialiseDatabase \
+            --tests uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.ExportReferenceData
+
+      - name: Generate database schema report
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/database_schema_report@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
+        with:
+          database_name: ${{ inputs.database_name }}
+          schema: ${{ inputs.database_schema }}
+          user: ${{ inputs.database_user }}
+          password: ${{ inputs.database_password }}
+
+      - name: Generate CSV data dictionary
+        shell: bash
+        env:
+          DB_NAME: ${{ inputs.database_name }}
+          DB_USER: ${{ inputs.database_user }}
+          DB_PASSWORD: ${{ inputs.database_password }}
+          DB_SCHEMA: ${{ inputs.database_schema }}
+        run: |
+          scripts/generate-data-dictionary.sh /tmp/schemaspy/data-dictionary.csv
+          cp reference-data.csv /tmp/schemaspy/reference-data.csv
+
+      - name: Publish to GitHub Pages
+        if: ${{ inputs.publish }}
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        with:
+          branch: gh-pages
+          folder: /tmp/schemaspy
+          target-folder: schema-spy-report

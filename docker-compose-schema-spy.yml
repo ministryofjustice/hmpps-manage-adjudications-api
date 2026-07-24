@@ -1,0 +1,39 @@
+services:
+  hmpps-manage-adjudications-api-db:
+    image: postgres:18
+    networks:
+      - hmpps
+    container_name: hmpps-manage-adjudications-api-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=adjudications
+      - POSTGRES_USER=adjudications
+      - POSTGRES_PASSWORD=adjudications
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adjudications -d adjudications"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # The InitialiseDatabase test boots the full Spring context, which wires HmppsQueueService
+  # (SNS/SQS). Without LocalStack the context fails to start and Flyway never runs, so SchemaSpy
+  # has no schema to read. This mirrors the LocalStack service container the normal CI provides.
+  localstack:
+    image: localstack/localstack:community-archive
+    networks:
+      - hmpps
+    container_name: localstack-schema-spy
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+networks:
+  hmpps:

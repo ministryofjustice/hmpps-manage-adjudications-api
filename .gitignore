@@ -69,3 +69,7 @@ ecr.repo
 
 #Helm
 **/Chart.lock
+
+# Generated data dictionary artefacts - published to GitHub Pages, not committed
+/data-dictionary.csv
+/reference-data.csv
