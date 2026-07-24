@@ -59,7 +59,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-security-test")
   testImplementation("org.springframework.boot:spring-boot-jpa-test")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:2.5.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.6.0")
 }
 
