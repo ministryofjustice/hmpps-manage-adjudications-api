@@ -2,6 +2,7 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
 import jakarta.persistence.EntityManager
 import net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
@@ -11,14 +12,18 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.DraftAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.draft.IncidentRoleRequest
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentCommentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_REPORTED_DATE_TIME
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.UPDATED_LOCATION_UUID
@@ -55,6 +60,9 @@ class SubjectAccessRequestMigrationIntTest :
 
   @Autowired
   private lateinit var entityManager: EntityManager
+
+  @Autowired
+  private lateinit var jdbcTemplate: JdbcTemplate
 
   @BeforeEach
   fun setUp() {
@@ -100,6 +108,11 @@ class SubjectAccessRequestMigrationIntTest :
   @Test
   fun `SAR template endpoint returns the copied template`() {
     val expectedTemplate = this::class.java.getResource("/template_hmpps-manage-adjudications-api.mustache")!!.readText()
+
+    assertThat(expectedTemplate).contains(
+      "{{#monitor}}{{ getUserLastName . }}{{/monitor}}{{^monitor}}No Data Held{{/monitor}}",
+      "{{#referralOutcome}}",
+    )
 
     webTestClient.get()
       .uri("/subject-access-request/template")
@@ -194,6 +207,8 @@ class SubjectAccessRequestMigrationIntTest :
     createHearing(reported.chargeNumber, testData, userHeaders)
     createChargeProved(reported.chargeNumber, userHeaders)
     createPunishment(reported.chargeNumber, userHeaders)
+    createPunishmentComment(reported.chargeNumber, userHeaders)
+    addMigratedSarFields(reported.chargeNumber)
   }
 
   private fun getPrn(): String = PRISONER_NUMBER
@@ -458,7 +473,9 @@ class SubjectAccessRequestMigrationIntTest :
         mapOf(
           "punishments" to listOf(
             PunishmentRequest(
-              type = PunishmentType.CONFINEMENT,
+              type = PunishmentType.PRIVILEGE,
+              privilegeType = PrivilegeType.OTHER,
+              otherPrivilege = "Phone calls",
               duration = 10,
               suspendedUntil = LocalDate.of(2010, 12, 1),
             ),
@@ -467,6 +484,49 @@ class SubjectAccessRequestMigrationIntTest :
       )
       .exchange()
       .expectStatus().isCreated
+  }
+
+  private fun createPunishmentComment(
+    chargeNumber: String,
+    headers: (HttpHeaders) -> Unit,
+  ) {
+    webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/punishments/comment")
+      .headers(headers)
+      .bodyValue(
+        PunishmentCommentRequest(
+          comment = "Punishment comment",
+          reasonForChange = ReasonForChange.OTHER,
+        ),
+      )
+      .exchange()
+      .expectStatus().isCreated
+  }
+
+  private fun addMigratedSarFields(chargeNumber: String) {
+    val adjudicationId = "(SELECT id FROM reported_adjudications WHERE charge_number = ?)"
+
+    jdbcTemplate.update(
+      "UPDATE reported_damages SET repair_cost = ? WHERE reported_adjudication_fk_id = $adjudicationId",
+      12.34,
+      chargeNumber,
+    )
+    jdbcTemplate.update(
+      "UPDATE reported_witness SET comment = ? WHERE reported_adjudication_fk_id = $adjudicationId",
+      "Witness comment",
+      chargeNumber,
+    )
+    jdbcTemplate.update(
+      "UPDATE hearing SET representative = ? WHERE reported_adjudication_fk_id = $adjudicationId",
+      "Legal representative",
+      chargeNumber,
+    )
+    jdbcTemplate.update(
+      "UPDATE outcome SET details = ?, oic_hearing_id = ? WHERE reported_adjudication_fk_id = $adjudicationId",
+      "Outcome details",
+      12345L,
+      chargeNumber,
+    )
   }
 
   private fun hmppsHeaders(

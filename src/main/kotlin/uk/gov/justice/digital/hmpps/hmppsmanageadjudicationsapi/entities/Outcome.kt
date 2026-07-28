@@ -37,6 +37,7 @@ data class Outcome(
     reason = this.notProceedReason ?: if (this.code == OutcomeCode.NOT_PROCEED) NotProceedReason.OTHER else null,
     quashedReason = this.quashedReason,
     referGovReason = this.referGovReason,
+    oicHearingId = this.oicHearingId,
     canRemove = !hasLinkedAda,
   )
 }

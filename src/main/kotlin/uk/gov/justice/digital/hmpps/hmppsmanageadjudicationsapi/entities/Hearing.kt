@@ -77,5 +77,6 @@ data class Hearing(
     oicHearingType = this.oicHearingType,
     outcome = this.hearingOutcome?.toDto(),
     agencyId = this.agencyId,
+    representative = this.representative,
   )
 }
