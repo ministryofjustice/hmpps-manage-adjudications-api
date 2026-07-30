@@ -174,6 +174,9 @@ data class ReportedDamageDto(
   val details: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
   val reporter: String,
+  @Schema(description = "Cost of repairing the damage, where recorded", example = "12.50")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val repairCost: Double? = null,
 )
 
 @Schema(description = "Reported evidence")
@@ -205,6 +208,9 @@ data class ReportedWitnessDto(
   val lastName: String,
   @Schema(description = "The username of the person who added this record", example = "ABC12D")
   val reporter: String,
+  @Schema(description = "Optional comment about the witness or their evidence")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val comment: String? = null,
 )
 
 @Schema(description = "Hearing")
@@ -227,6 +233,9 @@ data class HearingDto(
   val outcome: HearingOutcomeDto? = null,
   @Schema(description = "agency id of hearing")
   val agencyId: String,
+  @Schema(description = "Name of the prisoner's representative at the hearing, where recorded")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val representative: String? = null,
 )
 
 @Schema(description = "hearing outcome")
@@ -291,6 +300,9 @@ data class OutcomeDto(
   val quashedReason: QuashedReason? = null,
   @Schema(description = "optional refer to gov reason")
   val referGovReason: ReferGovReason? = null,
+  @Schema(description = "NOMIS OIC hearing id associated with the outcome, where recorded")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  val oicHearingId: Long? = null,
   @Schema(description = "flag to indicate if the outcome can be removed")
   val canRemove: Boolean = true,
 )

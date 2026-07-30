@@ -58,5 +58,6 @@ data class ReportedWitness(
     firstName = this.firstName,
     lastName = this.lastName,
     reporter = this.reporter,
+    comment = this.comment,
   )
 }

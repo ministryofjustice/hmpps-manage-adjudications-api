@@ -48,5 +48,6 @@ data class ReportedDamage(
     code = this.code,
     details = this.details,
     reporter = this.reporter,
+    repairCost = this.repairCost,
   )
 }
