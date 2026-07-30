@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of adjudications.public</h4>
-                                <p>Generated on Thu Jul 30 08:56 UTC 2026</p>
+                                <p>Generated on Thu Jul 30 14:07 UTC 2026</p>
                             </div>
                         </div>
                     </div>
@@ -300,7 +300,7 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">128</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"></td>
                                     </tr>
@@ -314,15 +314,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>A scheduled or held adjudication hearing. A charge can have several hearings, for example where the first is adjourned. The ordered case history shown in the UI is assembled from this table and outcome by ReportedAdjudicationService.createOutcomeHistory().</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/incident_details.html">incident_details</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>When and where the incident happened, for a draft adjudication. One row per draft.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/incident_statement.html">incident_statement</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -330,6 +321,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>The reporting officer&rsquo;s free text account of the incident, for a draft adjudication. One row per draft.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/incident_details.html">incident_details</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>When and where the incident happened, for a draft adjudication. One row per draft.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/witness.html">witness</a></td>
@@ -404,15 +404,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>A punishment (NOMIS calls these awards or sanctions) given on a charge where the outcome was CHARGE_PROVED. The duration or amount is not held here but on the linked punishment_schedule rows. ADDITIONAL_DAYS and PROSPECTIVE_DAYS punishments are the added days that feed sentence calculation via the adjustments service.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/reported_adjudications.html">reported_adjudications</a></td>
-                                        <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">37</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>A submitted adjudication charge - the root record for everything that follows (hearings, outcomes and punishments). One row per charge, not per incident: an incident involving several prisoners, or several offences, produces several rows. Includes records migrated from NOMIS as well as those raised in DPS.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/reported_damages.html">reported_damages</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">1</td>
@@ -420,6 +411,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Damage to prison property recorded on a submitted adjudication.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/reported_adjudications.html">reported_adjudications</a></td>
+                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">37</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>A submitted adjudication charge - the root record for everything that follows (hearings, outcomes and punishments). One row per charge, not per incident: an incident involving several prisoners, or several offences, produces several rows. Includes records migrated from NOMIS as well as those raised in DPS.</p></td>
                                     </tr>
                             </table>
                         </div>
