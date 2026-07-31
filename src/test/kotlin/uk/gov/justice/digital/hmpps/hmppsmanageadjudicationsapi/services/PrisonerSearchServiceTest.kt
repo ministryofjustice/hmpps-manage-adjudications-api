@@ -96,6 +96,35 @@ class PrisonerSearchServiceTest {
     }
 
     @Test
+    fun `Given prisoner search is unavailable, When WebClient throws 503, Then the exception is propagated`() {
+      val prisonerNumber = "A1234BC"
+      val serviceUnavailableException = WebClientResponseException.create(
+        HttpStatus.SERVICE_UNAVAILABLE.value(),
+        "Service Unavailable",
+        org.springframework.http.HttpHeaders(),
+        "<html>Service Unavailable</html>".toByteArray(StandardCharsets.UTF_8),
+        null,
+      )
+
+      val requestHeadersUriSpec = mock<WebClient.RequestHeadersUriSpec<*>>()
+      val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
+      val responseSpec = mock<WebClient.ResponseSpec>()
+
+      whenever(webClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/prisoner/{prisonerNumber}", prisonerNumber))
+        .thenReturn(requestHeadersSpec)
+      whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
+      whenever(responseSpec.bodyToMono(PrisonerResponse::class.java))
+        .thenReturn(Mono.error(serviceUnavailableException))
+
+      val exception = assertThrows<WebClientResponseException> {
+        prisonerSearchService.getPrisonerDetail(prisonerNumber)
+      }
+
+      assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.statusCode)
+    }
+
+    @Test
     fun `Given an unexpected exception, When getPrisonerDetail is called, Then it throws a RuntimeException`() {
       // Given
       val prisonerNumber = "ANY_ID"

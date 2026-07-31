@@ -5,8 +5,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.IntegrationTestData.Companion.DEFAULT_DATE_TIME_OF_INCIDENT
@@ -15,6 +18,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Locatio
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.LocationService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.PrisonerSearchService
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 @Import(TestOAuth2Config::class)
@@ -85,6 +89,7 @@ class SubjectAccessRequestIntTest : SqsIntegrationTestBase() {
       .returnResult().responseBody!!
 
     assertThat(result.content).hasSize(1)
+    assertThat(result.content[0].prisonerName).isEqualTo("firstName lastName")
     assertThat(result.content[0].incidentDetails.locationName).isEqualTo("Landing")
     assertThat(result.content[0].hearings[0].locationName).isEqualTo("Landing")
   }
@@ -94,12 +99,7 @@ class SubjectAccessRequestIntTest : SqsIntegrationTestBase() {
     val locationUuid: UUID = UUID.fromString(UPDATED_LOCATION_UUID)
     val prisonerNumber: String = "AA1234D"
 
-    whenever(prisonerSearchService.getPrisonerDetail("AA1234D")).thenReturn(
-      PrisonerResponse(
-        firstName = "firstName2",
-        lastName = "lateName2",
-      ),
-    )
+    whenever(prisonerSearchService.getPrisonerDetail("AA1234D")).thenReturn(null)
 
     whenever(locationService.getLocationDetail(locationUuid)).thenReturn(
       LocationDetailResponse(
@@ -141,8 +141,46 @@ class SubjectAccessRequestIntTest : SqsIntegrationTestBase() {
       .returnResult().responseBody!!
 
     assertThat(result.content).hasSize(1)
+    assertThat(result.content[0].prisonerName).isNull()
     assertThat(result.content[0].incidentDetails.locationName).isEqualTo("Unknown")
     assertThat(result.content[0].hearings[0].locationName).isEqualTo("Unknown")
+  }
+
+  @Test
+  fun `subject access request returns downstream 503 instead of incomplete content`() {
+    val prisonerNumber = "AA1234E"
+    val testAdjudication = IntegrationTestData.getDefaultAdjudication(prisonerNumber = prisonerNumber)
+    val intTestBuilder = IntegrationTestScenarioBuilder(
+      intTestData = integrationTestData(),
+      intTestBase = this,
+      activeCaseload = testAdjudication.agencyId,
+    )
+
+    intTestBuilder
+      .startDraft(testAdjudication)
+      .setApplicableRules()
+      .setIncidentRole()
+      .setOffenceData()
+      .addDamages()
+      .addIncidentStatement()
+      .completeDraft()
+      .acceptReport(activeCaseload = testAdjudication.agencyId).issueReport()
+      .createHearing()
+
+    val serviceUnavailableException = WebClientResponseException.create(
+      HttpStatus.SERVICE_UNAVAILABLE.value(),
+      "Service Unavailable",
+      HttpHeaders(),
+      "<html>Service Unavailable</html>".toByteArray(StandardCharsets.UTF_8),
+      null,
+    )
+    whenever(prisonerSearchService.getPrisonerDetail(prisonerNumber)).thenThrow(serviceUnavailableException)
+
+    webTestClient.get()
+      .uri("/subject-access-request?prn=$prisonerNumber")
+      .headers(setHeaders(username = "IT_SAR", roles = listOf("ROLE_SAR_DATA_ACCESS")))
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
   }
 }
 

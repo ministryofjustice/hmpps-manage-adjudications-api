@@ -55,7 +55,7 @@ class SubjectAccessRequestService(
       // Use cache or call the service
       val prisonerName = prisonerCache.getOrPut(prisonerNumber) {
         val prisonerDet = prisonerSearchService.getPrisonerDetail(prisonerNumber)
-        prisonerDet?.firstName + " " + prisonerDet?.lastName
+        prisonerDet?.let { "${it.firstName} ${it.lastName}" }
       }
 
       dto.prisonerName = prisonerName
