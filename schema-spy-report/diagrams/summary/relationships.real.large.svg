@@ -339,53 +339,10 @@
 <polygon fill="#000000" stroke="#000000" points="320.0399,-436.4021 327.6409,-440.782 324.0199,-436.801 328,-437.2 328,-437.2 328,-437.2 324.0199,-436.801 328.3591,-433.618 320.0399,-436.4021 320.0399,-436.4021"/>
 <ellipse fill="none" stroke="#000000" cx="316.8558" cy="-436.0829" rx="3.2" ry="3.2"/>
 </g>
-<!-- incident_statement -->
-<g id="node12" class="node">
-<title>incident_statement</title>
-<g id="a_node12"><a xlink:href="../../tables/incident_statement.html" xlink:title="incident_statement" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="34,-451.2 34,-647.2 203,-647.2 203,-451.2 34,-451.2"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="34.5,-624.2 34.5,-647.2 203.5,-647.2 203.5,-624.2 34.5,-624.2"/>
-<polygon fill="none" stroke="#000000" points="34.5,-624.2 34.5,-647.2 203.5,-647.2 203.5,-624.2 34.5,-624.2"/>
-<text text-anchor="start" x="39.5" y="-632.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00" fill="#000000">incident_statement</text>
-<text text-anchor="start" x="169.0219" y="-632.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">[table]</text>
-<polygon fill="none" stroke="#000000" points="34.5,-602.2 34.5,-624.2 203.5,-624.2 203.5,-602.2 34.5,-602.2"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="39.5" y="-619.2"/>
-<text text-anchor="start" x="63.5" y="-609.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">id</text>
-<polygon fill="none" stroke="#000000" points="34.5,-580.2 34.5,-602.2 203.5,-602.2 203.5,-580.2 34.5,-580.2"/>
-<text text-anchor="start" x="63.5" y="-587.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">statement</text>
-<polygon fill="none" stroke="#000000" points="34.5,-558.2 34.5,-580.2 203.5,-580.2 203.5,-558.2 34.5,-558.2"/>
-<text text-anchor="start" x="63.5" y="-565.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">create_user_id</text>
-<polygon fill="none" stroke="#000000" points="34.5,-536.2 34.5,-558.2 203.5,-558.2 203.5,-536.2 34.5,-536.2"/>
-<text text-anchor="start" x="63.5" y="-543.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">create_datetime</text>
-<polygon fill="none" stroke="#000000" points="34.5,-514.2 34.5,-536.2 203.5,-536.2 203.5,-514.2 34.5,-514.2"/>
-<text text-anchor="start" x="63.5" y="-521.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">modify_user_id</text>
-<polygon fill="none" stroke="#000000" points="34.5,-492.2 34.5,-514.2 203.5,-514.2 203.5,-492.2 34.5,-492.2"/>
-<text text-anchor="start" x="63.5" y="-499.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">modify_datetime</text>
-<polygon fill="none" stroke="#000000" points="34.5,-470.2 34.5,-492.2 203.5,-492.2 203.5,-470.2 34.5,-470.2"/>
-<text text-anchor="start" x="63.5" y="-477.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">completed</text>
-<polygon fill="#ffffff" stroke="transparent" points="34.5,-451.2 34.5,-470.2 108.5,-470.2 108.5,-451.2 34.5,-451.2"/>
-<polygon fill="none" stroke="#000000" points="34.5,-451.2 34.5,-470.2 108.5,-470.2 108.5,-451.2 34.5,-451.2"/>
-<text text-anchor="start" x="37.5" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="108.5,-451.2 108.5,-470.2 151.5,-470.2 151.5,-451.2 108.5,-451.2"/>
-<polygon fill="none" stroke="#000000" points="108.5,-451.2 108.5,-470.2 151.5,-470.2 151.5,-451.2 108.5,-451.2"/>
-<text text-anchor="start" x="142.3862" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="151.5,-451.2 151.5,-470.2 203.5,-470.2 203.5,-451.2 151.5,-451.2"/>
-<polygon fill="none" stroke="#000000" points="151.5,-451.2 151.5,-470.2 203.5,-470.2 203.5,-451.2 151.5,-451.2"/>
-<text text-anchor="start" x="184.9053" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- draft_adjudications&#45;&gt;incident_statement -->
-<g id="edge5" class="edge">
-<title>draft_adjudications:w&#45;&gt;incident_statement:e</title>
-<path fill="none" stroke="#000000" d="M313.4633,-613.2C269.7082,-613.2 253.6458,-613.2 203.5,-613.2"/>
-<polygon fill="#000000" stroke="#000000" points="320,-613.2001 328,-616.8 324,-613.2 328,-613.2 328,-613.2 328,-613.2 324,-613.2 328,-609.6 320,-613.2001 320,-613.2001"/>
-<ellipse fill="none" stroke="#000000" cx="316.8" cy="-613.2001" rx="3.2" ry="3.2"/>
-</g>
 <!-- incident_details -->
-<g id="node13" class="node">
+<g id="node12" class="node">
 <title>incident_details</title>
-<g id="a_node13"><a xlink:href="../../tables/incident_details.html" xlink:title="incident_details" target="_top">
+<g id="a_node12"><a xlink:href="../../tables/incident_details.html" xlink:title="incident_details" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="29.5,-668.2 29.5,-930.2 207.5,-930.2 207.5,-668.2 29.5,-668.2"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="29.5,-907.2 29.5,-930.2 207.5,-930.2 207.5,-907.2 29.5,-907.2"/>
 <polygon fill="none" stroke="#000000" points="29.5,-907.2 29.5,-930.2 207.5,-930.2 207.5,-907.2 29.5,-907.2"/>
@@ -430,6 +387,49 @@
 <path fill="none" stroke="#000000" d="M313.5688,-636.4812C210.8686,-656.1711 330.0258,-896.2 207.5,-896.2"/>
 <polygon fill="#000000" stroke="#000000" points="320.0313,-635.9075 328.3184,-638.7859 324.0157,-635.5538 328,-635.2 328,-635.2 328,-635.2 324.0157,-635.5538 327.6816,-631.6141 320.0313,-635.9075 320.0313,-635.9075"/>
 <ellipse fill="none" stroke="#000000" cx="316.8439" cy="-636.1905" rx="3.2" ry="3.2"/>
+</g>
+<!-- incident_statement -->
+<g id="node13" class="node">
+<title>incident_statement</title>
+<g id="a_node13"><a xlink:href="../../tables/incident_statement.html" xlink:title="incident_statement" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="34,-451.2 34,-647.2 203,-647.2 203,-451.2 34,-451.2"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="34.5,-624.2 34.5,-647.2 203.5,-647.2 203.5,-624.2 34.5,-624.2"/>
+<polygon fill="none" stroke="#000000" points="34.5,-624.2 34.5,-647.2 203.5,-647.2 203.5,-624.2 34.5,-624.2"/>
+<text text-anchor="start" x="39.5" y="-632.8" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00" fill="#000000">incident_statement</text>
+<text text-anchor="start" x="169.0219" y="-632.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">[table]</text>
+<polygon fill="none" stroke="#000000" points="34.5,-602.2 34.5,-624.2 203.5,-624.2 203.5,-602.2 34.5,-602.2"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="39.5" y="-619.2"/>
+<text text-anchor="start" x="63.5" y="-609.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">id</text>
+<polygon fill="none" stroke="#000000" points="34.5,-580.2 34.5,-602.2 203.5,-602.2 203.5,-580.2 34.5,-580.2"/>
+<text text-anchor="start" x="63.5" y="-587.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">statement</text>
+<polygon fill="none" stroke="#000000" points="34.5,-558.2 34.5,-580.2 203.5,-580.2 203.5,-558.2 34.5,-558.2"/>
+<text text-anchor="start" x="63.5" y="-565.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">create_user_id</text>
+<polygon fill="none" stroke="#000000" points="34.5,-536.2 34.5,-558.2 203.5,-558.2 203.5,-536.2 34.5,-536.2"/>
+<text text-anchor="start" x="63.5" y="-543.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">create_datetime</text>
+<polygon fill="none" stroke="#000000" points="34.5,-514.2 34.5,-536.2 203.5,-536.2 203.5,-514.2 34.5,-514.2"/>
+<text text-anchor="start" x="63.5" y="-521.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">modify_user_id</text>
+<polygon fill="none" stroke="#000000" points="34.5,-492.2 34.5,-514.2 203.5,-514.2 203.5,-492.2 34.5,-492.2"/>
+<text text-anchor="start" x="63.5" y="-499.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">modify_datetime</text>
+<polygon fill="none" stroke="#000000" points="34.5,-470.2 34.5,-492.2 203.5,-492.2 203.5,-470.2 34.5,-470.2"/>
+<text text-anchor="start" x="63.5" y="-477.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">completed</text>
+<polygon fill="#ffffff" stroke="transparent" points="34.5,-451.2 34.5,-470.2 108.5,-470.2 108.5,-451.2 34.5,-451.2"/>
+<polygon fill="none" stroke="#000000" points="34.5,-451.2 34.5,-470.2 108.5,-470.2 108.5,-451.2 34.5,-451.2"/>
+<text text-anchor="start" x="37.5" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="108.5,-451.2 108.5,-470.2 151.5,-470.2 151.5,-451.2 108.5,-451.2"/>
+<polygon fill="none" stroke="#000000" points="108.5,-451.2 108.5,-470.2 151.5,-470.2 151.5,-451.2 108.5,-451.2"/>
+<text text-anchor="start" x="142.3862" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="151.5,-451.2 151.5,-470.2 203.5,-470.2 203.5,-451.2 151.5,-451.2"/>
+<polygon fill="none" stroke="#000000" points="151.5,-451.2 151.5,-470.2 203.5,-470.2 203.5,-451.2 151.5,-451.2"/>
+<text text-anchor="start" x="184.9053" y="-457.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- draft_adjudications&#45;&gt;incident_statement -->
+<g id="edge5" class="edge">
+<title>draft_adjudications:w&#45;&gt;incident_statement:e</title>
+<path fill="none" stroke="#000000" d="M313.4633,-613.2C269.7082,-613.2 253.6458,-613.2 203.5,-613.2"/>
+<polygon fill="#000000" stroke="#000000" points="320,-613.2001 328,-616.8 324,-613.2 328,-613.2 328,-613.2 328,-613.2 324,-613.2 328,-609.6 320,-613.2001 320,-613.2001"/>
+<ellipse fill="none" stroke="#000000" cx="316.8" cy="-613.2001" rx="3.2" ry="3.2"/>
 </g>
 <!-- punishment_comments -->
 <g id="node4" class="node">
