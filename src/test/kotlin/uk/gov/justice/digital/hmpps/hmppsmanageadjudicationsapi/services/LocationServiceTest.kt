@@ -104,6 +104,35 @@ class LocationServiceTest {
     }
 
     @Test
+    fun `Given the location service is unavailable, When WebClient throws 503, Then the exception is propagated`() {
+      val locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff")
+      val serviceUnavailableException = WebClientResponseException.create(
+        HttpStatus.SERVICE_UNAVAILABLE.value(),
+        "Service Unavailable",
+        org.springframework.http.HttpHeaders(),
+        "<html>Service Unavailable</html>".toByteArray(StandardCharsets.UTF_8),
+        null,
+      )
+
+      val requestHeadersUriSpec = mock<WebClient.RequestHeadersUriSpec<*>>()
+      val requestHeadersSpec = mock<WebClient.RequestHeadersSpec<*>>()
+      val responseSpec = mock<WebClient.ResponseSpec>()
+
+      whenever(locationDetailWebClient.get()).thenReturn(requestHeadersUriSpec)
+      whenever(requestHeadersUriSpec.uri("/locations/{locationUuid}?formatLocalName=true", locationUuid))
+        .thenReturn(requestHeadersSpec)
+      whenever(requestHeadersSpec.retrieve()).thenReturn(responseSpec)
+      whenever(responseSpec.bodyToMono(LocationDetailResponse::class.java))
+        .thenReturn(Mono.error(serviceUnavailableException))
+
+      val exception = assertThrows<WebClientResponseException> {
+        locationService.getLocationDetail(locationUuid)
+      }
+
+      assertEquals(HttpStatus.SERVICE_UNAVAILABLE, exception.statusCode)
+    }
+
+    @Test
     fun `Given an unexpected exception, When getLocationDetail is called, Then it throws a RuntimeException`() {
       // Given
       val locationUuid = UUID.fromString("0194ac90-2def-7c63-9f46-b3ccc911fdff")
