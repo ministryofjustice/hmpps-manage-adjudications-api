@@ -79,7 +79,7 @@ jobs:
             --tests uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.ExportReferenceData
 
       - name: Generate database schema report
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/database_schema_report@c89a206b6b32888d13f6aec01af0f7694df6b42f # v1.0.19
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/database_schema_report@35bb5e74a025299cddf50909c1968444d966c1dc # v1.0.21
         with:
           database_name: ${{ inputs.database_name }}
           schema: ${{ inputs.database_schema }}
