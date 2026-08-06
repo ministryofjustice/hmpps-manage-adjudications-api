@@ -113,6 +113,10 @@ class SubjectAccessRequestMigrationIntTest :
       "{{#monitor}}{{ getUserLastName . }}{{/monitor}}{{^monitor}}No Data Held{{/monitor}}",
       "{{#referralOutcome}}",
     )
+    assertThat(expectedTemplate).doesNotContain(
+      "offenceCode",
+      "victimOtherPersonsName",
+    )
 
     webTestClient.get()
       .uri("/subject-access-request/template")

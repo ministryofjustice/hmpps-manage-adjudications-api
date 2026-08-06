@@ -3,10 +3,11 @@ name: SchemaSpy report
 # Publishes the adjudications data dictionary:
 #   https://ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report/
 #
-# Three artefacts are produced from one Flyway-built database:
+# Four artefacts are published:
 #   - the SchemaSpy report (browsable ER diagrams and table docs)
 #   - data-dictionary.csv (flat table/column export for the MOJ Data Catalogue / Glue)
 #   - reference-data.csv (enum and offence code lookups, which have no tables in the database)
+#   - sar-data-dictionary.csv (fields considered for, or displayed in, the SAR report)
 #
 # Column descriptions come from db/migration/V130__schema_comments.sql.
 
@@ -86,7 +87,7 @@ jobs:
           user: ${{ inputs.database_user }}
           password: ${{ inputs.database_password }}
 
-      - name: Generate CSV data dictionary
+      - name: Generate CSV data dictionaries
         shell: bash
         env:
           DB_NAME: ${{ inputs.database_name }}
@@ -96,6 +97,7 @@ jobs:
         run: |
           scripts/generate-data-dictionary.sh /tmp/schemaspy/data-dictionary.csv
           cp reference-data.csv /tmp/schemaspy/reference-data.csv
+          cp doc/data-dictionary/sar-data-dictionary.csv /tmp/schemaspy/sar-data-dictionary.csv
 
       - name: Publish to GitHub Pages
         if: ${{ inputs.publish }}
