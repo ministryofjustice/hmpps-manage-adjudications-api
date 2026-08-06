@@ -104,17 +104,24 @@ The integration tests use containers and no longer require docker compose files.
 
 A browsable schema report is published from `main` to
 [ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report](https://ministryofjustice.github.io/hmpps-manage-adjudications-api/schema-spy-report/),
-along with two CSV exports for the MOJ Data Catalogue:
+along with three CSV exports for the MOJ Data Catalogue and SAR assurance:
 
 | File | Contents |
 |------|----------|
 | `data-dictionary.csv` | Every table and column, with its description, type, nullability, PK and FK |
 | `reference-data.csv`  | The enum and offence code lookups. These have no reference tables in the database - `reported_offence.offence_code` and every `@Enumerated` column resolve in Kotlin only |
+| `sar-data-dictionary.csv` | Fields considered for, or displayed in, the SAR report, including mandatory/template Y/N flags and database, derived or external source details |
 
 Table and column descriptions live in `src/main/resources/db/migration/V130__schema_comments.sql` as
 `COMMENT ON` statements, so the database is the single source of truth and SchemaSpy, the CSV export
 and any Glue crawl all agree. **Add a `COMMENT ON` for any new table or column** - a later migration
 can add to or replace comments at any time.
+
+The SAR dictionary is maintained in `doc/data-dictionary/sar-data-dictionary.csv`. `Mandatory` and
+`Included in Current Template` must contain `Y` or `N`. A value of `N` for template inclusion means
+the service may hold or return the field but does not render it in the current SAR template. The
+`Source type`, `Source reference` and `SAR API path` columns distinguish database values from derived
+values and values resolved through external services.
 
 To regenerate locally:
 
