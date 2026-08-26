@@ -1,5 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -55,6 +57,30 @@ class SarDataDictionaryTest {
       .toSet()
 
     assertThat(documentedLabels).containsAll(templateLabels)
+  }
+
+  @Test
+  fun `SAR data dictionary covers every field in the representative SAR API response`() {
+    val response = checkNotNull(javaClass.getResource("/sar/sar-api-response.json"))
+      .openStream()
+      .use { ObjectMapper().readTree(it) }
+    val responsePaths = collectLeafPaths(response)
+      .minus(NON_FIELD_RESPONSE_PATHS)
+    val documentedPaths = readDictionary()
+      .flatMap { it.values.getValue("SAR API path").split(";") }
+      .map(String::trim)
+      .filter { it.startsWith("[]") }
+      .toSet()
+
+    assertThat(documentedPaths).containsAll(responsePaths)
+  }
+
+  private fun collectLeafPaths(node: JsonNode, path: String = ""): Set<String> = when {
+    node.isArray -> node.firstOrNull()?.let { collectLeafPaths(it, "$path[]") }.orEmpty()
+    node.isObject -> node.properties().asSequence()
+      .flatMap { (name, value) -> collectLeafPaths(value, "$path.$name") }
+      .toSet()
+    else -> setOf(path)
   }
 
   private fun assertTemplateInclusion(rows: List<DictionaryRow>, expected: String, elements: Set<String>) {
@@ -133,6 +159,10 @@ class SarDataDictionaryTest {
     )
 
     val REQUIRED_COLUMNS = EXPECTED_HEADERS - "Template label"
+
+    val NON_FIELD_RESPONSE_PATHS = setOf(
+      "[].outcomes[].outcome.referralOutcome",
+    )
 
     val EXPLICITLY_EXCLUDED_ELEMENTS = setOf(
       "Offence|Offence Code",
