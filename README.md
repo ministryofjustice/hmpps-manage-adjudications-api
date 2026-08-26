@@ -110,7 +110,7 @@ along with three CSV exports for the MOJ Data Catalogue and SAR assurance:
 |------|----------|
 | `data-dictionary.csv` | Every table and column, with its description, type, nullability, PK and FK |
 | `reference-data.csv`  | The enum and offence code lookups. These have no reference tables in the database - `reported_offence.offence_code` and every `@Enumerated` column resolve in Kotlin only |
-| `sar-data-dictionary.csv` | Fields considered for, or displayed in, the SAR report, including mandatory/template Y/N flags and database, derived or external source details |
+| `sar-data-dictionary.csv` | Complete SAR field inventory, including mandatory/template Y/N flags and database, derived or externally resolved source details |
 
 Table and column descriptions live in `src/main/resources/db/migration/V130__schema_comments.sql` as
 `COMMENT ON` statements, so the database is the single source of truth and SchemaSpy, the CSV export
@@ -121,7 +121,8 @@ The SAR dictionary is maintained in `doc/data-dictionary/sar-data-dictionary.csv
 `Included in Current Template` must contain `Y` or `N`. A value of `N` for template inclusion means
 the service may hold or return the field but does not render it in the current SAR template. The
 `Source type`, `Source reference` and `SAR API path` columns distinguish database values from derived
-values and values resolved through external services.
+values and values resolved through external services. Tests check the supplied data-dictionary fields,
+all current template labels and every leaf field in the representative SAR API response.
 
 To regenerate locally:
 

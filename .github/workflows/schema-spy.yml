@@ -7,7 +7,7 @@ name: SchemaSpy report
 #   - the SchemaSpy report (browsable ER diagrams and table docs)
 #   - data-dictionary.csv (flat table/column export for the MOJ Data Catalogue / Glue)
 #   - reference-data.csv (enum and offence code lookups, which have no tables in the database)
-#   - sar-data-dictionary.csv (fields considered for, or displayed in, the SAR report)
+#   - sar-data-dictionary.csv (complete database, derived and externally resolved SAR field inventory)
 #
 # Column descriptions come from db/migration/V130__schema_comments.sql.
 
