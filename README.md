@@ -117,6 +117,33 @@ Table and column descriptions live in `src/main/resources/db/migration/V130__sch
 and any Glue crawl all agree. **Add a `COMMENT ON` for any new table or column** - a later migration
 can add to or replace comments at any time.
 
+### Data sensitivity
+
+Every column comment ends with a sensitivity classification, added by
+`V132__schema_comments_sensitivity.sql`. The vocabulary is shared with the other Manage Safety
+services - do not invent a new one:
+
+| Tag | Meaning |
+|-----|---------|
+| `NONE` | Not personal data in itself - keys, timestamps, process flags |
+| `PERSONAL` | Personal data about a prisoner - identifies or locates them |
+| `STAFF` | Personal data about a member of staff, typically the username that acted |
+| `SPECIAL-CATEGORY` | UK GDPR Article 9 data, or offence data under Article 10 |
+| `OFFICIAL-SENSITIVE` | Not personal data, but damaging if disclosed |
+
+Two rules decide the awkward cases. The tag describes **the column's own content, not the row's** - a
+`NONE` column in a row about an alleged assault is still `NONE`, because what matters for a subject
+access request is the record, not the column. And **every free-text column is assumed to contain more
+than its label asks**: `statement`, `details` and `comment` are written by officers in their own words
+and in practice name third parties and describe violence, health and offending.
+
+Note that DPA 2018 s.11(2) extends Article 10 to *alleged* offences, so the offence codes, incident
+role codes, charge status and plea are criminal offence data whichever value they hold - not only once
+a charge is proved.
+
+`SchemaCommentsTest` runs in the normal build and fails if a table or column has no comment, or if a
+column comment does not end in a valid tag. It is not part of the `-Pinit-db` schema-report run.
+
 The SAR dictionary is maintained in `doc/data-dictionary/sar-data-dictionary.csv`. `Mandatory` and
 `Included in Current Template` must contain `Y` or `N`. A value of `N` for template inclusion means
 the service may hold or return the field but does not render it in the current SAR template. The
