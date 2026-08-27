@@ -141,7 +141,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_time_of_incident">date_time_of_incident</span></td>
@@ -158,7 +158,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the incident occurred.</p></td>
+                                    <td><p>When the incident occurred. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="location_id">location_id</span></td>
@@ -175,7 +175,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Legacy NOMIS internal location id (AGENCY_INTERNAL_LOCATIONS.INTERNAL_LOCATION_ID). Superseded by location_uuid.</p></td>
+                                    <td><p>Legacy NOMIS internal location id (AGENCY_INTERNAL_LOCATIONS.INTERNAL_LOCATION_ID). Superseded by location_uuid. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -192,7 +192,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -209,7 +209,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -226,7 +226,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -243,7 +243,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="handover_deadline">handover_deadline</span></td>
@@ -260,7 +260,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery.</p></td>
+                                    <td><p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_time_of_discovery">date_time_of_discovery</span></td>
@@ -277,7 +277,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here.</p></td>
+                                    <td><p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="location_uuid">location_uuid</span></td>
@@ -294,7 +294,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Location identifier in the locations-inside-prison service. This is the current location reference.</p></td>
+                                    <td><p>Location identifier in the locations-inside-prison service. This is the current location reference. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

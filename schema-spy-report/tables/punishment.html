@@ -146,7 +146,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="reported_adjudication_fk_id">reported_adjudication_fk_id</span></td>
@@ -168,7 +168,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to reported_adjudications.</p></td>
+                                    <td><p>Foreign key to reported_adjudications. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="type">type</span></td>
@@ -185,7 +185,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Type of punishment. One of PRIVILEGE (loss of privileges - see privilege_type), EARNINGS (stoppage of earnings - see stoppage_percentage), CONFINEMENT (cellular confinement), REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS (added days awarded, ADA), PROSPECTIVE_DAYS (prospective added days, PADA - awarded where the prisoner is not yet sentenced), CAUTION, DAMAGES_OWED (money owed for damage - see amount), PAYBACK (payback punishment, measured in hours).</p></td>
+                                    <td><p>Type of punishment. One of PRIVILEGE (loss of privileges - see privilege_type), EARNINGS (stoppage of earnings - see stoppage_percentage), CONFINEMENT (cellular confinement), REMOVAL_ACTIVITY, EXCLUSION_WORK, EXTRA_WORK, REMOVAL_WING, ADDITIONAL_DAYS (added days awarded, ADA), PROSPECTIVE_DAYS (prospective added days, PADA - awarded where the prisoner is not yet sentenced), CAUTION, DAMAGES_OWED (money owed for damage - see amount), PAYBACK (payback punishment, measured in hours). <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="privilege_type">privilege_type</span></td>
@@ -202,7 +202,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Which privilege was lost. One of CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, GYM, OTHER. Null unless type is PRIVILEGE.</p></td>
+                                    <td><p>Which privilege was lost. One of CANTEEN, FACILITIES, MONEY, TV, ASSOCIATION, GYM, OTHER. Null unless type is PRIVILEGE. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="other_privilege">other_privilege</span></td>
@@ -219,7 +219,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text description of the privilege lost, when privilege_type is OTHER.</p></td>
+                                    <td><p>Free text description of the privilege lost, when privilege_type is OTHER. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="stoppage_percentage">stoppage_percentage</span></td>
@@ -236,7 +236,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Percentage of earnings stopped. Null unless type is EARNINGS.</p></td>
+                                    <td><p>Percentage of earnings stopped. Null unless type is EARNINGS. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -253,7 +253,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -270,7 +270,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -287,7 +287,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -304,7 +304,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="activated_by_charge_number">activated_by_charge_number</span></td>
@@ -321,7 +321,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Charge number of the later adjudication that activated this suspended punishment. Null while the punishment remains suspended or was never suspended.</p></td>
+                                    <td><p>Charge number of the later adjudication that activated this suspended punishment. Null while the punishment remains suspended or was never suspended. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="suspended_until">suspended_until</span></td>
@@ -338,7 +338,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Date the punishment is suspended until. Non-null means the punishment is suspended and not currently in force. Mirrors the suspended_until on the latest punishment_schedule row.</p></td>
+                                    <td><p>Date the punishment is suspended until. Non-null means the punishment is suspended and not currently in force. Mirrors the suspended_until on the latest punishment_schedule row. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="sanction_seq">sanction_seq</span></td>
@@ -355,7 +355,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS OFFENDER_OIC_SANCTIONS.SANCTION_SEQ. With reported_adjudications.offender_booking_id this forms the composite key of the matching NOMIS sanction row.</p></td>
+                                    <td><p>NOMIS OFFENDER_OIC_SANCTIONS.SANCTION_SEQ. With reported_adjudications.offender_booking_id this forms the composite key of the matching NOMIS sanction row. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="amount">amount</span></td>
@@ -372,7 +372,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Amount of money owed, in pounds. Null unless type is DAMAGES_OWED.</p></td>
+                                    <td><p>Amount of money owed, in pounds. Null unless type is DAMAGES_OWED. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="deleted">deleted</span></td>
@@ -389,7 +389,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Soft delete flag. Rows where this is true are excluded everywhere; queries must filter on &ldquo;deleted is not true&rdquo;.</p></td>
+                                    <td><p>Soft delete flag. Rows where this is true are excluded everywhere; queries must filter on &ldquo;deleted is not true&rdquo;. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="consecutive_to_charge_number">consecutive_to_charge_number</span></td>
@@ -406,7 +406,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Charge number this punishment runs consecutively to. Used for added days that follow on from an award on an earlier charge.</p></td>
+                                    <td><p>Charge number this punishment runs consecutively to. Used for added days that follow on from an award on an earlier charge. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="nomis_status">nomis_status</span></td>
@@ -423,7 +423,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS sanction status (reference domain OIC_SANCT_ST) for records that came from or were synchronised to NOMIS. Values include IMMEDIATE, PROSPECTIVE, SUSPENDED, SUSP_PROSP, QUASHED, AWARD_RED, REDAPP, SUSPEN_RED, SUSPEN_EXT, AS_AWARDED.</p></td>
+                                    <td><p>NOMIS sanction status (reference domain OIC_SANCT_ST) for records that came from or were synchronised to NOMIS. Values include IMMEDIATE, PROSPECTIVE, SUSPENDED, SUSP_PROSP, QUASHED, AWARD_RED, REDAPP, SUSPEN_RED, SUSPEN_EXT, AS_AWARDED. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="punishment_pre_migrate_id">punishment_pre_migrate_id</span></td>
@@ -440,7 +440,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated.</p></td>
+                                    <td><p>Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="actual_created_date">actual_created_date</span></td>
@@ -457,7 +457,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>The real date the punishment was awarded, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology.</p></td>
+                                    <td><p>The real date the punishment was awarded, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="payback_notes">payback_notes</span></td>
@@ -474,7 +474,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text description of the payback work required. Null unless type is PAYBACK.</p></td>
+                                    <td><p>Free text description of the payback work required. Null unless type is PAYBACK. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="rehab_not_completed_outcome">rehab_not_completed_outcome</span></td>
@@ -491,7 +491,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>What was decided when rehabilitative activities were not completed. One of FULL_ACTIVATE, PARTIAL_ACTIVATE, EXT_SUSPEND, NO_ACTION.</p></td>
+                                    <td><p>What was decided when rehabilitative activities were not completed. One of FULL_ACTIVATE, PARTIAL_ACTIVATE, EXT_SUSPEND, NO_ACTION. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="rehab_completed">rehab_completed</span></td>
@@ -508,7 +508,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Whether the attached rehabilitative activities were completed. Null where no rehabilitative activity applies or the outcome has not yet been recorded.</p></td>
+                                    <td><p>Whether the attached rehabilitative activities were completed. Null where no rehabilitative activity applies or the outcome has not yet been recorded. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="has_child_under_18">has_child_under_18</span></td>
@@ -525,7 +525,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Whether the prisoner has a child under 18. Recorded against payback punishments so the work ordered does not conflict with childcare responsibilities. Added by V131. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

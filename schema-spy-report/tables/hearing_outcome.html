@@ -141,7 +141,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="code">code</span></td>
@@ -158,7 +158,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>What the adjudicator did. One of COMPLETE (a finding was reached - see the linked outcome row for what it was), ADJOURN, REFER_POLICE, REFER_INAD, REFER_GOV, NOMIS (outcome was entered in NOMIS rather than DPS).</p></td>
+                                    <td><p>What the adjudicator did. One of COMPLETE (a finding was reached - see the linked outcome row for what it was), ADJOURN, REFER_POLICE, REFER_INAD, REFER_GOV, NOMIS (outcome was entered in NOMIS rather than DPS). <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="adjudicator">adjudicator</span></td>
@@ -175,7 +175,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Name or username of the governor or independent adjudicator who heard the case.</p></td>
+                                    <td><p>Name or username of the governor or independent adjudicator who heard the case. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="adjourn_reason">adjourn_reason</span></td>
@@ -192,7 +192,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Why the hearing was adjourned. One of LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER. Null unless code is ADJOURN.</p></td>
+                                    <td><p>Why the hearing was adjourned. One of LEGAL_ADVICE, LEGAL_REPRESENTATION, RO_ATTEND, HELP, UNFIT, WITNESS, WITNESS_SUPPORT, MCKENZIE, EVIDENCE, INVESTIGATION, OTHER. Null unless code is ADJOURN. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="plea">plea</span></td>
@@ -209,7 +209,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>The prisoner&rsquo;s plea. One of GUILTY, NOT_GUILTY, ABSTAIN, UNFIT, NOT_ASKED.</p></td>
+                                    <td><p>The prisoner&rsquo;s plea. One of GUILTY, NOT_GUILTY, ABSTAIN, UNFIT, NOT_ASKED. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="details">details</span></td>
@@ -226,7 +226,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text notes recorded against the hearing outcome.</p></td>
+                                    <td><p>Free text notes recorded against the hearing outcome. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -243,7 +243,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -260,7 +260,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -277,7 +277,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -294,7 +294,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="nomis_outcome">nomis_outcome</span></td>
@@ -311,7 +311,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the outcome was recorded in NOMIS rather than DPS, so DPS holds only a placeholder.</p></td>
+                                    <td><p>True when the outcome was recorded in NOMIS rather than DPS, so DPS holds only a placeholder. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="migrated">migrated</span></td>
@@ -328,7 +328,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the row was created by the NOMIS migration.</p></td>
+                                    <td><p>True when the row was created by the NOMIS migration. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="hearing_outcome_pre_migrate_id">hearing_outcome_pre_migrate_id</span></td>
@@ -345,7 +345,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated.</p></td>
+                                    <td><p>Legacy column from the NOMIS migration. The table it referenced was dropped in V91 and it is no longer populated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

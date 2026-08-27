@@ -136,7 +136,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="code">code</span></td>
@@ -153,7 +153,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>The finding or decision. One of REFER_POLICE, REFER_INAD, REFER_GOV, NOT_PROCEED, DISMISSED, PROSECUTION, SCHEDULE_HEARING, CHARGE_PROVED, QUASHED. CHARGE_PROVED is the outcome that allows punishments to be awarded; QUASHED revokes them.</p></td>
+                                    <td><p>The finding or decision. One of REFER_POLICE, REFER_INAD, REFER_GOV, NOT_PROCEED, DISMISSED, PROSECUTION, SCHEDULE_HEARING, CHARGE_PROVED, QUASHED. CHARGE_PROVED is the outcome that allows punishments to be awarded; QUASHED revokes them. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="not_proceed_reason">not_proceed_reason</span></td>
@@ -170,7 +170,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Why the charge was not proceeded with. One of ANOTHER_WAY, RELEASED, WITNESS_NOT_ATTEND, UNFIT, FLAWED, EXPIRED_NOTICE, EXPIRED_HEARING, NOT_FAIR, OTHER. Null unless code is NOT_PROCEED.</p></td>
+                                    <td><p>Why the charge was not proceeded with. One of ANOTHER_WAY, RELEASED, WITNESS_NOT_ATTEND, UNFIT, FLAWED, EXPIRED_NOTICE, EXPIRED_HEARING, NOT_FAIR, OTHER. Null unless code is NOT_PROCEED. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="details">details</span></td>
@@ -187,7 +187,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text supporting the outcome.</p></td>
+                                    <td><p>Free text supporting the outcome. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -204,7 +204,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -221,7 +221,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -238,7 +238,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -255,7 +255,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="reported_adjudication_fk_id">reported_adjudication_fk_id</span></td>
@@ -277,7 +277,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to reported_adjudications.</p></td>
+                                    <td><p>Foreign key to reported_adjudications. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="quashed_reason">quashed_reason</span></td>
@@ -294,7 +294,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Why the charge was quashed. One of FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD, OTHER. Null unless code is QUASHED.</p></td>
+                                    <td><p>Why the charge was quashed. One of FLAWED_CASE, JUDICIAL_REVIEW, APPEAL_UPHELD, OTHER. Null unless code is QUASHED. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="oic_hearing_id">oic_hearing_id</span></td>
@@ -311,7 +311,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS OIC_HEARING_ID the outcome relates to, where the outcome came from or was synchronised to NOMIS.</p></td>
+                                    <td><p>NOMIS OIC_HEARING_ID the outcome relates to, where the outcome came from or was synchronised to NOMIS. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="deleted">deleted</span></td>
@@ -328,7 +328,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Soft delete flag. Rows where this is true are excluded from the case history and from status calculation; queries must filter on &ldquo;deleted is not true&rdquo;.</p></td>
+                                    <td><p>Soft delete flag. Rows where this is true are excluded from the case history and from status calculation; queries must filter on &ldquo;deleted is not true&rdquo;. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="actual_created_date">actual_created_date</span></td>
@@ -345,7 +345,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>The real date the outcome was reached, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology.</p></td>
+                                    <td><p>The real date the outcome was reached, as opposed to create_datetime which for migrated records is the date of the migration run. Use this for chronology. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="migrated">migrated</span></td>
@@ -362,7 +362,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the row was created by the NOMIS migration.</p></td>
+                                    <td><p>True when the row was created by the NOMIS migration. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="refer_gov_reason">refer_gov_reason</span></td>
@@ -379,7 +379,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Why the case was referred to the governor. One of REVIEW_FOR_REFER_POLICE, GOV_INQUIRY, OTHER. Null unless code is REFER_GOV.</p></td>
+                                    <td><p>Why the case was referred to the governor. One of REVIEW_FOR_REFER_POLICE, GOV_INQUIRY, OTHER. Null unless code is REFER_GOV. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

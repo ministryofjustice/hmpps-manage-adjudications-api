@@ -136,7 +136,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="reported_adjudication_fk_id">reported_adjudication_fk_id</span></td>
@@ -158,7 +158,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to reported_adjudications.</p></td>
+                                    <td><p>Foreign key to reported_adjudications. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="code">code</span></td>
@@ -175,7 +175,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM.</p></td>
+                                    <td><p>Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="details">details</span></td>
@@ -192,7 +192,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text description of the damage.</p></td>
+                                    <td><p>Free text description of the damage. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="reporter">reporter</span></td>
@@ -209,7 +209,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>DPS username of the officer who recorded this entry.</p></td>
+                                    <td><p>DPS username of the officer who recorded this entry. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -226,7 +226,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -243,7 +243,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -260,7 +260,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -277,7 +277,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="repair_cost">repair_cost</span></td>
@@ -294,7 +294,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Cost of repair in pounds, where recorded. Separate from the DAMAGES_OWED punishment, which is the amount the prisoner was ordered to pay.</p></td>
+                                    <td><p>Cost of repair in pounds, where recorded. Separate from the DAMAGES_OWED punishment, which is the amount the prisoner was ordered to pay. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

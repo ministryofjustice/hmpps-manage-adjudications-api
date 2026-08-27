@@ -156,7 +156,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="prisoner_number">prisoner_number</span></td>
@@ -173,7 +173,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS offender number (noms id) of the prisoner the charge is against.</p></td>
+                                    <td><p>NOMIS offender number (noms id) of the prisoner the charge is against. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="incident_details_id">incident_details_id</span></td>
@@ -195,7 +195,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to incident_details.</p></td>
+                                    <td><p>Foreign key to incident_details. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="incident_statement_id">incident_statement_id</span></td>
@@ -217,7 +217,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to incident_statement.</p></td>
+                                    <td><p>Foreign key to incident_statement. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_user_id">create_user_id</span></td>
@@ -234,7 +234,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -251,7 +251,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -268,7 +268,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -285,7 +285,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="originating_agency_id">originating_agency_id</span></td>
@@ -302,7 +302,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Agency (prison) code where the incident was reported.</p></td>
+                                    <td><p>Agency (prison) code where the incident was reported. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="charge_number">charge_number</span></td>
@@ -319,7 +319,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Charge number, populated only once the draft has been submitted and a reported adjudication exists. Format is <agency>&lt;6 digit sequence&gt;, optionally suffixed -<n> for additional charges on the same incident.</p></td>
+                                    <td><p>Charge number, populated only once the draft has been submitted and a reported adjudication exists. Format is <agency>&lt;6 digit sequence&gt;, optionally suffixed -<n> for additional charges on the same incident. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="report_by_user_id">report_by_user_id</span></td>
@@ -336,7 +336,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>DPS username of the officer who submitted the report. Null while the draft is unsubmitted.</p></td>
+                                    <td><p>DPS username of the officer who submitted the report. Null while the draft is unsubmitted. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="incident_role_id">incident_role_id</span></td>
@@ -358,7 +358,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Foreign key to incident_role.</p></td>
+                                    <td><p>Foreign key to incident_role. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="is_youth_offender">is_youth_offender</span></td>
@@ -375,7 +375,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the YOI rule set applies rather than the adult rule set. Determines which offence paragraphs and hearing types are valid.</p></td>
+                                    <td><p>True when the YOI rule set applies rather than the adult rule set. Determines which offence paragraphs and hearing types are valid. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="damages_saved">damages_saved</span></td>
@@ -392,7 +392,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True once the reporter has completed the damages page, including confirming there were none. Distinguishes &ldquo;no damages&rdquo; from &ldquo;not yet asked&rdquo;.</p></td>
+                                    <td><p>True once the reporter has completed the damages page, including confirming there were none. Distinguishes &ldquo;no damages&rdquo; from &ldquo;not yet asked&rdquo;. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="evidence_saved">evidence_saved</span></td>
@@ -409,7 +409,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True once the reporter has completed the evidence page, including confirming there was none.</p></td>
+                                    <td><p>True once the reporter has completed the evidence page, including confirming there was none. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="witnesses_saved">witnesses_saved</span></td>
@@ -426,7 +426,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True once the reporter has completed the witnesses page, including confirming there were none.</p></td>
+                                    <td><p>True once the reporter has completed the witnesses page, including confirming there were none. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="gender">gender</span></td>
@@ -443,7 +443,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE.</p></td>
+                                    <td><p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="override_agency_id">override_agency_id</span></td>
@@ -460,7 +460,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Agency code the prisoner has since transferred to. Set when the report needs to be actioned by the receiving prison.</p></td>
+                                    <td><p>Agency code the prisoner has since transferred to. Set when the report needs to be actioned by the receiving prison. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_on_behalf_of_officer">created_on_behalf_of_officer</span></td>
@@ -477,7 +477,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Name of the officer the report was created on behalf of, when someone else entered it for them.</p></td>
+                                    <td><p>Name of the officer the report was created on behalf of, when someone else entered it for them. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_on_behalf_of_reason">created_on_behalf_of_reason</span></td>
@@ -494,7 +494,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Reason the report was created on behalf of another officer.</p></td>
+                                    <td><p>Reason the report was created on behalf of another officer. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="offender_booking_id">offender_booking_id</span></td>
@@ -511,7 +511,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS OFFENDER_BOOK_ID for the prisoner&rsquo;s booking at the time of the incident.</p></td>
+                                    <td><p>NOMIS OFFENDER_BOOK_ID for the prisoner&rsquo;s booking at the time of the incident. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>

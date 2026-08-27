@@ -181,7 +181,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="prisoner_number">prisoner_number</span></td>
@@ -198,7 +198,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS offender number (noms id) of the prisoner charged.</p></td>
+                                    <td><p>NOMIS offender number (noms id) of the prisoner charged. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="charge_number">charge_number</span></td>
@@ -215,7 +215,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Business key for the charge, unique across the service. Format is <agency>&lt;6 digit sequence&gt; for DPS-raised charges (for example MDI001234); migrated NOMIS charges use the NOMIS charge number, suffixed -<n> where one NOMIS incident split into several DPS charges.</p></td>
+                                    <td><p>Business key for the charge, unique across the service. Format is <agency>&lt;6 digit sequence&gt; for DPS-raised charges (for example MDI001234); migrated NOMIS charges use the NOMIS charge number, suffixed -<n> where one NOMIS incident split into several DPS charges. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="originating_agency_id">originating_agency_id</span></td>
@@ -232,7 +232,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Agency (prison) code where the incident was reported. Together with override_agency_id this controls which caseload may see and action the record.</p></td>
+                                    <td><p>Agency (prison) code where the incident was reported. Together with override_agency_id this controls which caseload may see and action the record. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_time_of_incident">date_time_of_incident</span></td>
@@ -249,7 +249,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the incident occurred.</p></td>
+                                    <td><p>When the incident occurred. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="handover_deadline">handover_deadline</span></td>
@@ -266,7 +266,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery.</p></td>
+                                    <td><p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="location_id">location_id</span></td>
@@ -283,7 +283,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Legacy NOMIS internal location id where the incident occurred. Superseded by location_uuid.</p></td>
+                                    <td><p>Legacy NOMIS internal location id where the incident occurred. Superseded by location_uuid. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="statement">statement</span></td>
@@ -300,7 +300,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>The reporting officer&rsquo;s free text account of the incident.</p></td>
+                                    <td><p>The reporting officer&rsquo;s free text account of the incident. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="create_user_id">create_user_id</span></td>
@@ -317,7 +317,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="create_datetime">create_datetime</span></td>
@@ -334,7 +334,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_user_id">modify_user_id</span></td>
@@ -351,7 +351,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>DPS username of the person who last updated the row. Null if it has never been updated. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="modify_datetime">modify_datetime</span></td>
@@ -368,7 +368,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>When the row was last updated. Null if it has never been updated. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="incident_role_code">incident_role_code</span></td>
@@ -385,7 +385,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit.</p></td>
+                                    <td><p>Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="incident_role_associated_prisoners_number">incident_role_associated_prisoners_number</span></td>
@@ -402,7 +402,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS offender number of the other prisoner involved, where the role code requires one.</p></td>
+                                    <td><p>NOMIS offender number of the other prisoner involved, where the role code requires one. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="status">status</span></td>
@@ -419,7 +419,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states.</p></td>
+                                    <td><p>Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="status_reason">status_reason</span></td>
@@ -436,7 +436,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Reason code recorded when the reviewer rejected or returned the report.</p></td>
+                                    <td><p>Reason code recorded when the reviewer rejected or returned the report. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="status_details">status_details</span></td>
@@ -453,7 +453,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Free text the reviewer gave alongside status_reason.</p></td>
+                                    <td><p>Free text the reviewer gave alongside status_reason. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="is_youth_offender">is_youth_offender</span></td>
@@ -470,7 +470,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the YOI rule set applies rather than the adult rule set.</p></td>
+                                    <td><p>True when the YOI rule set applies rather than the adult rule set. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="review_user_id">review_user_id</span></td>
@@ -487,7 +487,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>DPS username of the reviewer who accepted, rejected or returned the report.</p></td>
+                                    <td><p>DPS username of the reviewer who accepted, rejected or returned the report. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="incident_role_associated_prisoners_name">incident_role_associated_prisoners_name</span></td>
@@ -504,7 +504,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Name of the other prisoner involved, held where they cannot be looked up.</p></td>
+                                    <td><p>Name of the other prisoner involved, held where they cannot be looked up. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="date_time_of_discovery">date_time_of_discovery</span></td>
@@ -521,7 +521,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here.</p></td>
+                                    <td><p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="gender">gender</span></td>
@@ -538,7 +538,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE.</p></td>
+                                    <td><p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="issuing_officer">issuing_officer</span></td>
@@ -555,7 +555,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>DPS username of the officer who most recently issued the notice of report (DIS1/2) to the prisoner.</p></td>
+                                    <td><p>DPS username of the officer who most recently issued the notice of report (DIS1/2) to the prisoner. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_time_of_issue">date_time_of_issue</span></td>
@@ -572,7 +572,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the notice of report was most recently issued. Full history is in dis_issue_history.</p></td>
+                                    <td><p>When the notice of report was most recently issued. Full history is in dis_issue_history. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="date_time_of_first_hearing">date_time_of_first_hearing</span></td>
@@ -589,7 +589,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Denormalised date of the earliest hearing, maintained for reporting and sorting.</p></td>
+                                    <td><p>Denormalised date of the earliest hearing, maintained for reporting and sorting. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="override_agency_id">override_agency_id</span></td>
@@ -606,7 +606,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Agency code the prisoner transferred to after the charge was raised, set by TransferService from prisoner movement events. Null when there has been no transfer.</p></td>
+                                    <td><p>Agency code the prisoner transferred to after the charge was raised, set by TransferService from prisoner movement events. Null when there has been no transfer. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="last_modified_agency_id">last_modified_agency_id</span></td>
@@ -623,7 +623,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Agency code of the establishment that last changed the record.</p></td>
+                                    <td><p>Agency code of the establishment that last changed the record. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="agency_incident_id">agency_incident_id</span></td>
@@ -640,7 +640,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS AGENCY_INCIDENT_ID the charge came from. Populated on migrated records and on records synchronised back to NOMIS.</p></td>
+                                    <td><p>NOMIS AGENCY_INCIDENT_ID the charge came from. Populated on migrated records and on records synchronised back to NOMIS. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="migrated">migrated</span></td>
@@ -657,7 +657,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the record was migrated from NOMIS rather than raised in DPS.</p></td>
+                                    <td><p>True when the record was migrated from NOMIS rather than raised in DPS. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="offender_booking_id">offender_booking_id</span></td>
@@ -674,7 +674,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>NOMIS OFFENDER_BOOK_ID for the booking the charge belongs to. Use this to join to NOMIS sentence and sanction data.</p></td>
+                                    <td><p>NOMIS OFFENDER_BOOK_ID for the booking the charge belongs to. Use this to join to NOMIS sentence and sanction data. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="status_before_migration">status_before_migration</span></td>
@@ -691,7 +691,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Status the charge held in NOMIS before migration. Populated on migrated records only.</p></td>
+                                    <td><p>Status the charge held in NOMIS before migration. Populated on migrated records only. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_on_behalf_of_officer">created_on_behalf_of_officer</span></td>
@@ -708,7 +708,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Name of the officer the report was created on behalf of, when someone else entered it for them.</p></td>
+                                    <td><p>Name of the officer the report was created on behalf of, when someone else entered it for them. <a href="./../null">Sensitivity: STAFF</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_on_behalf_of_reason">created_on_behalf_of_reason</span></td>
@@ -725,7 +725,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Reason the report was created on behalf of another officer.</p></td>
+                                    <td><p>Reason the report was created on behalf of another officer. <a href="./../null">Sensitivity: SPECIAL-CATEGORY</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="migrated_inactive_prisoner">migrated_inactive_prisoner</span></td>
@@ -742,7 +742,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when the record was migrated for a prisoner who was no longer active. These records are excluded from the INVALID_* status checks because their data cannot be corrected.</p></td>
+                                    <td><p>True when the record was migrated for a prisoner who was no longer active. These records are excluded from the INVALID_* status checks because their data cannot be corrected. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="migrated_split_record">migrated_split_record</span></td>
@@ -759,7 +759,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True when a single NOMIS charge was split into multiple DPS charges during migration.</p></td>
+                                    <td><p>True when a single NOMIS charge was split into multiple DPS charges during migration. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_time_resubmitted">date_time_resubmitted</span></td>
@@ -776,7 +776,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When a returned report was resubmitted for review. Where set, this is treated as the report&rsquo;s created date in the API.</p></td>
+                                    <td><p>When a returned report was resubmitted for review. Where set, this is treated as the report&rsquo;s created date in the API. <a href="./../null">Sensitivity: NONE</a></p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="location_uuid">location_uuid</span></td>
@@ -793,7 +793,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Location identifier in the locations-inside-prison service. This is the current location reference.</p></td>
+                                    <td><p>Location identifier in the locations-inside-prison service. This is the current location reference. <a href="./../null">Sensitivity: PERSONAL</a></p></td>
                                 </tr>
                                 </tbody>
                             </table>
