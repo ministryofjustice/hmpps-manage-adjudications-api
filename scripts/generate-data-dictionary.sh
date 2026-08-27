@@ -2,8 +2,10 @@
 #
 # Exports the adjudications schema as a flat CSV data dictionary.
 #
-# The descriptions come from the COMMENT ON statements in db/migration/V130__schema_comments.sql,
-# so this is the same source of truth as the SchemaSpy report. The output is intended for the MOJ
+# The descriptions come from the COMMENT ON statements in db/migration/V130__schema_comments.sql and
+# V132__schema_comments_sensitivity.sql, so this is the same source of truth as the SchemaSpy report.
+# The sensitivity classification is pulled out of the trailing [Sensitivity: X] tag into its own
+# column, so a consumer can filter on it rather than parse prose. The output is intended for the MOJ
 # Data Catalogue / AWS Glue.
 #
 # Usage:
@@ -37,7 +39,14 @@ SELECT
   c.character_maximum_length,
   c.is_nullable,
   c.column_default,
-  col_description(pc.oid, c.ordinal_position)            AS column_description,
+  regexp_replace(
+    col_description(pc.oid, c.ordinal_position),
+    '\s*\[Sensitivity: [A-Z-]+\]\$', ''
+  )                                                      AS column_description,
+  substring(
+    col_description(pc.oid, c.ordinal_position)
+    from '\[Sensitivity: ([A-Z-]+)\]'
+  )                                                      AS sensitivity,
   CASE WHEN pk.column_name IS NOT NULL THEN 'Y' ELSE 'N' END AS is_primary_key,
   fk.references_table                                    AS foreign_key_references
 FROM information_schema.columns c
@@ -45,26 +54,34 @@ JOIN pg_class pc
   ON pc.relname = c.table_name
  AND pc.relnamespace = '${DB_SCHEMA}'::regnamespace
  AND pc.relkind = 'r'
+-- Constraints are read from pg_catalog rather than information_schema. Constraint names are unique
+-- per table in Postgres, not per schema, and information_schema.key_column_usage joins only on
+-- constraint_name and schema - so two tables with a same-named constraint fan out and duplicate every
+-- column of both. No two tables here share a constraint name today, so the output is unchanged by
+-- this fix, but with 23 tables it is only a matter of time. It bit the incentives API for real (see
+-- IR-1879), where the CSV silently gained six phantom rows. pg_constraint carries the owning
+-- relation, so it cannot fan out.
 LEFT JOIN (
-  SELECT kcu.table_name, kcu.column_name
-  FROM information_schema.table_constraints tc
-  JOIN information_schema.key_column_usage kcu
-    ON kcu.constraint_name = tc.constraint_name
-   AND kcu.table_schema = tc.table_schema
-  WHERE tc.constraint_type = 'PRIMARY KEY'
-    AND tc.table_schema = '${DB_SCHEMA}'
+  SELECT rel.relname AS table_name, att.attname AS column_name
+  FROM pg_constraint con
+  JOIN pg_class rel ON rel.oid = con.conrelid
+  JOIN unnest(con.conkey) AS k(attnum) ON TRUE
+  JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = k.attnum
+  WHERE con.contype = 'p'
+    AND con.connamespace = '${DB_SCHEMA}'::regnamespace
+  GROUP BY rel.relname, att.attname
 ) pk ON pk.table_name = c.table_name AND pk.column_name = c.column_name
 LEFT JOIN (
-  SELECT kcu.table_name, kcu.column_name, ccu.table_name AS references_table
-  FROM information_schema.table_constraints tc
-  JOIN information_schema.key_column_usage kcu
-    ON kcu.constraint_name = tc.constraint_name
-   AND kcu.table_schema = tc.table_schema
-  JOIN information_schema.constraint_column_usage ccu
-    ON ccu.constraint_name = tc.constraint_name
-   AND ccu.table_schema = tc.table_schema
-  WHERE tc.constraint_type = 'FOREIGN KEY'
-    AND tc.table_schema = '${DB_SCHEMA}'
+  SELECT rel.relname AS table_name, att.attname AS column_name,
+         string_agg(DISTINCT ref.relname, '; ') AS references_table
+  FROM pg_constraint con
+  JOIN pg_class rel ON rel.oid = con.conrelid
+  JOIN pg_class ref ON ref.oid = con.confrelid
+  JOIN unnest(con.conkey) AS k(attnum) ON TRUE
+  JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = k.attnum
+  WHERE con.contype = 'f'
+    AND con.connamespace = '${DB_SCHEMA}'::regnamespace
+  GROUP BY rel.relname, att.attname
 ) fk ON fk.table_name = c.table_name AND fk.column_name = c.column_name
 WHERE c.table_schema = '${DB_SCHEMA}'
   AND c.table_name <> 'flyway_schema_history'

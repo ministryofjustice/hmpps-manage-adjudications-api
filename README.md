@@ -108,7 +108,7 @@ along with three CSV exports for the MOJ Data Catalogue and SAR assurance:
 
 | File | Contents |
 |------|----------|
-| `data-dictionary.csv` | Every table and column, with its description, type, nullability, PK and FK |
+| `data-dictionary.csv` | Every table and column, with its description, sensitivity classification, type, nullability, PK and FK |
 | `reference-data.csv`  | The enum and offence code lookups. These have no reference tables in the database - `reported_offence.offence_code` and every `@Enumerated` column resolve in Kotlin only |
 | `sar-data-dictionary.csv` | Complete SAR field inventory, including mandatory/template Y/N flags and database, derived or externally resolved source details |
 
