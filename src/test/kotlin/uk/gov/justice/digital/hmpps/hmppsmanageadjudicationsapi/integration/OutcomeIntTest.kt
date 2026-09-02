@@ -3,6 +3,8 @@ package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.context.annotation.Import
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
@@ -328,6 +330,18 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
       )
       .exchange()
 
+    private fun unquash(chargeNumber: String) = webTestClient.delete()
+      .uri("/reported-adjudications/$chargeNumber/outcome")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .exchange()
+
+    private fun invalidConsecutiveTargetMessage(
+      sourceCharge: String,
+      targetCharge: String,
+    ) = "Validation failure: Unable to unquash $sourceCharge because the following consecutive target charges " +
+      "do not have a live charge-proved additional days punishment: $targetCharge. " +
+      "Restore the target punishments first"
+
     @Test
     fun `cannot quash a charge in the middle of a four charge consecutive ADA chain`() {
       val firstCharge = createChargeWithAdditionalDays()
@@ -356,7 +370,7 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectBody()
         .jsonPath("$.userMessage").isEqualTo(
           "Validation failure: Unable to quash $secondCharge because additional days on $thirdCharge " +
-            "are consecutive to it. Remove the consecutive links first",
+            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
         )
 
       webTestClient.get()
@@ -403,6 +417,43 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectStatus().isOk
         .expectBody()
         .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+
+      unquash(secondCharge)
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo(invalidConsecutiveTargetMessage(secondCharge, firstCharge))
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$secondCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
+    }
+
+    @Test
+    fun `cannot unquash when the consecutive target was quashed in the meantime`() {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+
+      quash(secondCharge).expectStatus().isCreated
+      quash(firstCharge).expectStatus().isCreated
+
+      unquash(secondCharge)
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo(invalidConsecutiveTargetMessage(secondCharge, firstCharge))
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$secondCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
     }
 
     @Test
@@ -412,14 +463,46 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
 
       quash(secondCharge).expectStatus().isCreated
 
-      webTestClient.delete()
-        .uri("/reported-adjudications/$secondCharge/outcome")
-        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
-        .exchange()
+      unquash(secondCharge)
         .expectStatus().isOk
         .expectBody()
         .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
         .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+      value = ReportedAdjudicationStatus::class,
+      names = ["INVALID_SUSPENDED", "INVALID_OUTCOME"],
+    )
+    fun `a dependent with a charge-proved latest outcome remains live for derived invalid statuses`(
+      dependentStatus: ReportedAdjudicationStatus,
+    ) {
+      val targetCharge = createChargeWithAdditionalDays()
+      val dependentCharge = createChargeWithAdditionalDays(consecutiveTo = targetCharge)
+
+      reportedAdjudicationRepository.save(
+        reportedAdjudicationRepository.findByChargeNumber(dependentCharge)!!.also {
+          it.status = dependentStatus
+        },
+      )
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$targetCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+
+      quash(targetCharge)
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo(
+          "Validation failure: Unable to quash $targetCharge because additional days on $dependentCharge " +
+            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+        )
     }
 
     @Test

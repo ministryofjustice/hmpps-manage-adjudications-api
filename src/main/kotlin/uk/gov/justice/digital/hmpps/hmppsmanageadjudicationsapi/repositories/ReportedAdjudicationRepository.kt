@@ -168,19 +168,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Long
 
   @Query(
-    value = """
-        SELECT DISTINCT ra.*
-        FROM reported_adjudications ra
-        JOIN punishment p 
-            ON p.reported_adjudication_fk_id = ra.id
-        JOIN punishment_schedule ps
-            ON ps.punishment_fk_id = p.id
-        JOIN reported_adjudications ra2
-            ON ra2.charge_number = p.consecutive_to_charge_number
-        WHERE p.consecutive_to_charge_number = :chargeNumber
-          AND p.type::text IN (:types)
-          AND (p.deleted <> true OR p.deleted IS NULL)
-    """,
+    value = REPORTS_WITH_ACTIVE_CONSECUTIVE_PUNISHMENTS_QUERY,
     nativeQuery = true,
   )
   fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
@@ -189,20 +177,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
 
   @Query(
-    value = """
-        SELECT DISTINCT ra.*
-        FROM reported_adjudications ra
-        JOIN punishment p
-            ON p.reported_adjudication_fk_id = ra.id
-        JOIN punishment_schedule ps
-            ON ps.punishment_fk_id = p.id
-        JOIN reported_adjudications ra2
-            ON ra2.charge_number = p.consecutive_to_charge_number
-        WHERE p.consecutive_to_charge_number = :chargeNumber
-          AND p.type::text IN (:types)
-          AND (p.deleted <> true OR p.deleted IS NULL)
-          AND ra.status = 'CHARGE_PROVED'
-    """,
+    value = "$REPORTS_WITH_ACTIVE_CONSECUTIVE_PUNISHMENTS_QUERY $LATEST_OUTCOME_IS_CHARGE_PROVED",
     nativeQuery = true,
   )
   fun findChargeProvedReportsWithActiveConsecutivePunishments(
@@ -358,6 +333,27 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   fun existsByOffenderBookingId(offenderBookingId: Long): Boolean
 
   companion object {
+
+    private const val REPORTS_WITH_ACTIVE_CONSECUTIVE_PUNISHMENTS_QUERY = """
+      SELECT DISTINCT ra.*
+      FROM reported_adjudications ra
+      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+      JOIN reported_adjudications ra2 ON ra2.charge_number = p.consecutive_to_charge_number
+      WHERE p.consecutive_to_charge_number = :chargeNumber
+        AND p.type::text IN (:types)
+        AND COALESCE(p.deleted, false) = false
+    """
+
+    private const val LATEST_OUTCOME_IS_CHARGE_PROVED = """
+      AND (
+        SELECT o.code
+        FROM outcome o
+        WHERE o.reported_adjudication_fk_id = ra.id
+          AND COALESCE(o.deleted, false) = false
+        ORDER BY COALESCE(o.actual_created_date, o.create_datetime) DESC, o.id DESC
+        LIMIT 1
+      ) = 'CHARGE_PROVED'
+    """
 
     private const val STATUS_FILTER = "ra.status in :statuses "
     private const val DATE_AND_STATUS_FILTER =

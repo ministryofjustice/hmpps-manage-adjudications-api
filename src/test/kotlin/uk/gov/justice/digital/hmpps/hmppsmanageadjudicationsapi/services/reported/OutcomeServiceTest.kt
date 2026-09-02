@@ -362,7 +362,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       }.isInstanceOf(ValidationException::class.java)
         .hasMessage(
           "Unable to quash LGI-011192 because additional days on LGI-011206, LGI-011290 " +
-            "are consecutive to it. Remove the consecutive links first",
+            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
         )
     }
 

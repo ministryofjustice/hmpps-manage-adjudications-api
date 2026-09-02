@@ -74,7 +74,7 @@ open class ReportedAdjudicationBaseService(
   ): List<String> = reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
     consecutiveChargeNumber,
     types.map { it.name },
-  ).map { it.chargeNumber }.distinct().sorted()
+  ).map { it.chargeNumber }.sorted()
 
   protected fun chargesConsecutiveTo(consecutiveChargeNumber: String, types: List<PunishmentType>): List<String> = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
     consecutiveChargeNumber,
