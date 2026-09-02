@@ -11,6 +11,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
@@ -297,6 +298,130 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
 
   @Nested
   inner class Quashed {
+    private val hearingDate = LocalDateTime.of(2026, 1, 1, 10, 0)
+
+    private fun createChargeWithAdditionalDays(consecutiveTo: String? = null): String {
+      val chargeNumber = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+        .createHearing(dateTimeOfHearing = hearingDate, oicHearingType = OicHearingType.INAD_ADULT)
+        .createChargeProved()
+        .getGeneratedChargeNumber()
+
+      createPunishments(
+        chargeNumber = chargeNumber,
+        type = PunishmentType.ADDITIONAL_DAYS,
+        consecutiveChargeNumber = consecutiveTo,
+        isSuspended = false,
+        duration = 20,
+      ).expectStatus().isCreated
+
+      return chargeNumber
+    }
+
+    private fun quash(chargeNumber: String) = webTestClient.post()
+      .uri("/reported-adjudications/$chargeNumber/outcome/quashed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "reason" to QuashedReason.APPEAL_UPHELD,
+          "details" to "details",
+        ),
+      )
+      .exchange()
+
+    @Test
+    fun `cannot quash a charge in the middle of a four charge consecutive ADA chain`() {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+      val thirdCharge = createChargeWithAdditionalDays(consecutiveTo = secondCharge)
+      val fourthCharge = createChargeWithAdditionalDays(consecutiveTo = thirdCharge)
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$secondCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(false)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(false)
+
+      webTestClient.put()
+        .uri("/reported-adjudications/$secondCharge/punishments/v2")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .bodyValue(mapOf("punishments" to emptyList<Any>()))
+        .exchange()
+        .expectStatus().isBadRequest
+
+      quash(secondCharge)
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo(
+          "Validation failure: Unable to quash $secondCharge because additional days on $thirdCharge " +
+            "are consecutive to it. Remove the consecutive links first",
+        )
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$secondCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$thirdCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(secondCharge)
+
+      quash(fourthCharge).expectStatus().isCreated
+    }
+
+    @Test
+    fun `a quashed inbound link no longer prevents changing the target ADA`() {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+
+      quash(secondCharge).expectStatus().isCreated
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$firstCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(true)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(true)
+
+      webTestClient.put()
+        .uri("/reported-adjudications/$firstCharge/punishments/v2")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .bodyValue(mapOf("punishments" to emptyList<Any>()))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments.size()").isEqualTo(0)
+    }
+
+    @Test
+    fun `quashing then unquashing the last charge preserves its consecutive target`() {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+
+      quash(secondCharge).expectStatus().isCreated
+
+      webTestClient.delete()
+        .uri("/reported-adjudications/$secondCharge/outcome")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
+    }
+
     @Test
     fun `quash completed hearing outcome `() {
       val testData = IntegrationTestData.getDefaultAdjudication()

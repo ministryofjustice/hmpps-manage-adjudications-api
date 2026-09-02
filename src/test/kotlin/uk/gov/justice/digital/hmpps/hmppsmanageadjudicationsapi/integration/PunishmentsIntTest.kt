@@ -146,6 +146,40 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       )
   }
 
+  @Test
+  fun `loop detection still includes a consecutive link from a quashed charge`() {
+    val chargeX = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val chargeY = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(
+      chargeNumber = chargeY,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = chargeX,
+      isSuspended = false,
+    ).expectStatus().isCreated
+
+    webTestClient.post()
+      .uri("/reported-adjudications/$chargeY/outcome/quashed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(mapOf("reason" to "APPEAL_UPHELD", "details" to "details"))
+      .exchange()
+      .expectStatus().isCreated
+
+    createPunishments(
+      chargeNumber = chargeX,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = chargeY,
+      isSuspended = false,
+    )
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo(
+        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because $chargeY is already consecutive to this charge",
+      )
+  }
+
   @CsvSource("true", "false")
   @ParameterizedTest
   fun `create a payback punishment`(hasDetails: Boolean) {

@@ -167,11 +167,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     @Param("cutOffDate") cutOffDate: LocalDateTime,
   ): Long
 
-  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
-    chargeNumber: String,
-    types: List<PunishmentType>,
-  ): List<ReportedAdjudication>
-
   @Query(
     value = """
         SELECT DISTINCT ra.*
@@ -189,6 +184,28 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
     nativeQuery = true,
   )
   fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+    @Param("chargeNumber") chargeNumber: String,
+    @Param("types") types: List<String>,
+  ): List<ReportedAdjudication>
+
+  @Query(
+    value = """
+        SELECT DISTINCT ra.*
+        FROM reported_adjudications ra
+        JOIN punishment p
+            ON p.reported_adjudication_fk_id = ra.id
+        JOIN punishment_schedule ps
+            ON ps.punishment_fk_id = p.id
+        JOIN reported_adjudications ra2
+            ON ra2.charge_number = p.consecutive_to_charge_number
+        WHERE p.consecutive_to_charge_number = :chargeNumber
+          AND p.type::text IN (:types)
+          AND (p.deleted <> true OR p.deleted IS NULL)
+          AND ra.status = 'CHARGE_PROVED'
+    """,
+    nativeQuery = true,
+  )
+  fun findChargeProvedReportsWithActiveConsecutivePunishments(
     @Param("chargeNumber") chargeNumber: String,
     @Param("types") types: List<String>,
   ): List<ReportedAdjudication>

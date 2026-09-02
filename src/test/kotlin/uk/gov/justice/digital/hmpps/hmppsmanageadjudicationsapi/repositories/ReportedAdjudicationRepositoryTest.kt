@@ -749,30 +749,6 @@ class ReportedAdjudicationRepositoryTest {
   }
 
   @Test
-  fun `find by consecutive report number and type `() {
-    reportedAdjudicationRepository.save(
-      entityBuilder.reportedAdjudication(chargeNumber = "-9999").also {
-        it.hearings.clear()
-        it.addPunishment(
-          Punishment(
-            type = PunishmentType.PROSPECTIVE_DAYS,
-            consecutiveToChargeNumber = "1234",
-            schedule = mutableListOf(
-              PunishmentSchedule(duration = 10),
-            ),
-          ),
-        )
-      },
-    )
-
-    val result = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
-      "1234",
-      listOf(PunishmentType.PROSPECTIVE_DAYS),
-    )
-    assertThat(result.size).isEqualTo(1)
-  }
-
-  @Test
   @org.junit.jupiter.api.Disabled("Requires PostgreSQL sequence - skipped for H2 tests")
   fun `get next charge number`() {
     assertThat(reportedAdjudicationRepository.getNextChargeSequence("MDI_CHARGE_SEQUENCE")).isEqualTo(1)

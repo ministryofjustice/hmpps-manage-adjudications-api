@@ -112,6 +112,13 @@ class OutcomeService(
     details: String,
   ): ReportedAdjudicationDto {
     findByChargeNumber(chargeNumber).latestOutcome().canQuash()
+    chargeProvedReportsConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).takeIf { it.isNotEmpty() }
+      ?.let { dependentChargeNumbers ->
+        throw ValidationException(
+          "Unable to quash $chargeNumber because additional days on ${dependentChargeNumbers.joinToString(", ")} " +
+            "are consecutive to it. Remove the consecutive links first",
+        )
+      }
 
     return createOutcome(
       chargeNumber = chargeNumber,
@@ -196,7 +203,7 @@ class OutcomeService(
     reportedAdjudication.calculateStatus()
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
-      if (isLinkedToReport(
+      if (isLinkedToChargeProvedReport(
           chargeNumber,
           PunishmentType.additionalDays(),
         )

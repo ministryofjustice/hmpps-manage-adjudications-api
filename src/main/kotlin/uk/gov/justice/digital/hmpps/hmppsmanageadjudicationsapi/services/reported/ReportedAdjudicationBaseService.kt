@@ -63,18 +63,18 @@ open class ReportedAdjudicationBaseService(
 
   protected fun findByChargeNumberIn(chargeNumbers: List<String>) = reportedAdjudicationRepository.findByChargeNumberIn(chargeNumbers)
 
-  protected fun isLinkedToReport(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
-    consecutiveChargeNumber,
-    types,
-  ).isNotEmpty()
+  protected fun isLinkedToChargeProvedReport(
+    consecutiveChargeNumber: String,
+    types: List<PunishmentType>,
+  ): Boolean = chargeProvedReportsConsecutiveTo(consecutiveChargeNumber, types).isNotEmpty()
 
-  protected fun isLinkedToReportV2(consecutiveChargeNumber: String, types: List<PunishmentType>): Boolean {
-    val stringTypes = types.map { it.name }
-    return reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-      consecutiveChargeNumber,
-      stringTypes,
-    ).isNotEmpty()
-  }
+  protected fun chargeProvedReportsConsecutiveTo(
+    consecutiveChargeNumber: String,
+    types: List<PunishmentType>,
+  ): List<String> = reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+    consecutiveChargeNumber,
+    types.map { it.name },
+  ).map { it.chargeNumber }.distinct().sorted()
 
   protected fun chargesConsecutiveTo(consecutiveChargeNumber: String, types: List<PunishmentType>): List<String> = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
     consecutiveChargeNumber,
@@ -93,7 +93,7 @@ open class ReportedAdjudicationBaseService(
       if (reportedAdjudication.getPunishments().none { PunishmentType.additionalDays().contains(it.type) }) {
         false
       } else {
-        isLinkedToReportV2(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
+        isLinkedToChargeProvedReport(reportedAdjudication.chargeNumber, PunishmentType.additionalDays())
       }
 
     else -> false
