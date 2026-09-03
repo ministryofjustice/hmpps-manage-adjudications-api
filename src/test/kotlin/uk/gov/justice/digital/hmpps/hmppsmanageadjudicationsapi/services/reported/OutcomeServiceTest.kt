@@ -337,6 +337,35 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       }
     }
 
+    @Test
+    fun `create quashed names each charge with live additional days consecutive to this charge`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("LGI-011192")).thenReturn(
+        reportedAdjudication.also {
+          it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+        },
+      )
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          "LGI-011192",
+          PunishmentType.additionalDays().map { it.name },
+        ),
+      ).thenReturn(
+        listOf(
+          entityBuilder.reportedAdjudication(chargeNumber = "LGI-011290"),
+          entityBuilder.reportedAdjudication(chargeNumber = "LGI-011206"),
+        ),
+      )
+
+      Assertions.assertThatThrownBy {
+        outcomeService.createQuashed("LGI-011192", QuashedReason.APPEAL_UPHELD, "details")
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessage(
+          "Unable to quash LGI-011192 because additional days on LGI-011206, LGI-011290 " +
+            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+        )
+    }
+
     @CsvSource(
       "REFER_POLICE",
       "REFER_INAD",
@@ -740,7 +769,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `delete outcome throws exception if ADA linked to another report`() {
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeIn(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           any(),
           any(),
         ),

@@ -112,6 +112,13 @@ class OutcomeService(
     details: String,
   ): ReportedAdjudicationDto {
     findByChargeNumber(chargeNumber).latestOutcome().canQuash()
+    chargeProvedReportsConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).takeIf { it.isNotEmpty() }
+      ?.let { dependentChargeNumbers ->
+        throw ValidationException(
+          "Unable to quash $chargeNumber because additional days on ${dependentChargeNumbers.joinToString(", ")} " +
+            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+        )
+      }
 
     return createOutcome(
       chargeNumber = chargeNumber,
@@ -182,9 +189,13 @@ class OutcomeService(
       }
 
       else -> reportedAdjudication.getOutcome(id)
-    }.also {
-      it.deleted = true
     }
+
+    if (outcomeToDelete.code == OutcomeCode.QUASHED && reportedAdjudication.latestOutcome() === outcomeToDelete) {
+      validateConsecutiveTargetsForUnquash(reportedAdjudication)
+    }
+    outcomeToDelete.deleted = true
+
     val hasVisitsPunishment = reportedAdjudication.getPunishments().any { it.type.isVisitsPunishment() }
     val lossOfVisitsChangeType = when {
       !hasVisitsPunishment -> null
@@ -196,7 +207,7 @@ class OutcomeService(
     reportedAdjudication.calculateStatus()
 
     if (outcomeToDelete.code == OutcomeCode.CHARGE_PROVED) {
-      if (isLinkedToReport(
+      if (isLinkedToChargeProvedReport(
           chargeNumber,
           PunishmentType.additionalDays(),
         )
@@ -222,6 +233,31 @@ class OutcomeService(
   }
 
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
+
+  private fun validateConsecutiveTargetsForUnquash(reportedAdjudication: ReportedAdjudication) {
+    val consecutiveTargetChargeNumbers = reportedAdjudication.getPunishments()
+      .filter { PunishmentType.additionalDays().contains(it.type) }
+      .mapNotNull { it.consecutiveToChargeNumber }
+      .distinct()
+      .sorted()
+    if (consecutiveTargetChargeNumbers.isEmpty()) return
+
+    val targetReports = findByChargeNumberIn(consecutiveTargetChargeNumbers).associateBy { it.chargeNumber }
+    val invalidTargets = consecutiveTargetChargeNumbers.filter { chargeNumber ->
+      targetReports[chargeNumber]?.let { target ->
+        target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
+          target.getPunishments().any { PunishmentType.additionalDays().contains(it.type) }
+      } != true
+    }
+
+    if (invalidTargets.isNotEmpty()) {
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because the following consecutive target charges " +
+          "do not have a live charge-proved additional days punishment: ${invalidTargets.joinToString(", ")}. " +
+          "Restore the target punishments first",
+      )
+    }
+  }
 
   private fun ReportedAdjudication.removePunishments(): SuspendedPunishmentUpdates {
     this.clearPunishments()

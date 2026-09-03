@@ -354,7 +354,7 @@ class PunishmentsService(
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
     if (PunishmentType.additionalDays().contains(this)) {
-      if (isLinkedToReportV2(chargeNumber, listOf(this))) {
+      if (isLinkedToChargeProvedReport(chargeNumber, listOf(this))) {
         throw ValidationException("Unable to modify: $this is linked to another report")
       }
     }

@@ -1112,7 +1112,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           "1",
           listOf(type.name),
         ),
@@ -1148,7 +1148,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           "1",
           listOf(type.name),
         ),
@@ -1190,7 +1190,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
       )
 
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           "1",
           listOf(type.name),
         ),

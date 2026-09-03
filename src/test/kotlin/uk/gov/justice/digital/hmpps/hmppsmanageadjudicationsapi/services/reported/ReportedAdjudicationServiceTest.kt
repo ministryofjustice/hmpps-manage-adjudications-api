@@ -320,7 +320,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
         },
       )
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           any(),
           any(),
         ),
@@ -1751,7 +1751,7 @@ class ReportedAdjudicationServiceTest : ReportedAdjudicationTestBase() {
 
       val stringTypes = PunishmentType.additionalDays().map { it.name }
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           "12345",
           stringTypes,
         ),

@@ -157,6 +157,7 @@ abstract class IntegrationTestBase : TestBase() {
     isSuspended: Boolean = true,
     activatedFrom: String? = null,
     id: Long? = null,
+    duration: Int = 10,
   ): WebTestClient.ResponseSpec {
     val suspendedUntil = LocalDate.now().plusMonths(1)
 
@@ -172,10 +173,10 @@ abstract class IntegrationTestBase : TestBase() {
                 type = type,
                 suspendedUntil = if (isSuspended) suspendedUntil else null,
                 startDate = if (isSuspended) null else suspendedUntil,
-                endDate = if (isSuspended) null else suspendedUntil.plusDays(10),
+                endDate = if (isSuspended) null else suspendedUntil.plusDays(duration.toLong()),
                 consecutiveChargeNumber = consecutiveChargeNumber,
                 activatedFrom = activatedFrom,
-                duration = 10,
+                duration = duration,
               ),
             ),
         ),
