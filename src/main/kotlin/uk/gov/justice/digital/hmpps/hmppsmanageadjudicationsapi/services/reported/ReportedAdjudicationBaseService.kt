@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import jakarta.persistence.EntityNotFoundException
+import jakarta.validation.ValidationException
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsChangeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisitsEventDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
@@ -26,18 +27,29 @@ open class ReportedAdjudicationBaseService(
     val lossOfVisitsEvents: List<LossOfVisitsEventDto> = emptyList(),
   )
 
-  protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication {
-    val reportedAdjudication =
-      reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(
-        chargeNumber,
-      )
+  protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication = authorizeForActiveCaseload(
+    reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(chargeNumber),
+  )
 
+  /**
+   * Locks a charge while a write may change the validity of a consecutive-punishment chain.
+   * Link writers lock their target charge through [lockByChargeNumber], so target changes and new
+   * links cannot pass validation concurrently and leave a dangling chain.
+   */
+  protected fun findByChargeNumberForUpdate(chargeNumber: String): ReportedAdjudication = authorizeForActiveCaseload(
+    reportedAdjudicationRepository.findByChargeNumberForUpdate(chargeNumber)
+      ?: throwEntityNotFoundException(chargeNumber),
+  )
+
+  protected fun lockByChargeNumber(chargeNumber: String): ReportedAdjudication? = reportedAdjudicationRepository.findByChargeNumberForUpdate(chargeNumber)
+
+  private fun authorizeForActiveCaseload(reportedAdjudication: ReportedAdjudication): ReportedAdjudication {
     val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
 
     if (listOf(reportedAdjudication.originatingAgencyId, overrideAgencyId)
         .none { it == authenticationFacade.activeCaseload }
     ) {
-      throwEntityNotFoundException(chargeNumber)
+      throwEntityNotFoundException(reportedAdjudication.chargeNumber)
     }
 
     return reportedAdjudication
@@ -75,11 +87,6 @@ open class ReportedAdjudicationBaseService(
     consecutiveChargeNumber,
     types.map { it.name },
   ).map { it.chargeNumber }.sorted()
-
-  protected fun chargesConsecutiveTo(consecutiveChargeNumber: String, types: List<PunishmentType>): List<String> = reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-    consecutiveChargeNumber,
-    types.map { it.name },
-  ).map { it.chargeNumber }
 
   protected fun findMultipleOffenceCharges(prisonerNumber: String, chargeNumber: String): List<String> = reportedAdjudicationRepository.findByPrisonerNumberAndChargeNumberStartsWith(
     prisonerNumber = prisonerNumber,
@@ -120,18 +127,31 @@ open class ReportedAdjudicationBaseService(
     val updatedReports = linkedMapOf<String, ReportedAdjudication>()
     val reportsWithVisitsChanges = mutableSetOf<String>()
 
-    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber).forEach { report ->
-      report.getPunishments()
-        .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == p.id } && p.getSchedule().size > 1 }
-        .forEach { punishmentToRestore ->
+    reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(chargeNumber = chargeNumber)
+      .associateBy { it.chargeNumber }
+      .toSortedMap()
+      .values
+      .map { lockByChargeNumber(it.chargeNumber) ?: it }
+      .forEach { report ->
+        report.getPunishments()
+          .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == p.id } && p.getSchedule().size > 1 }
+          .forEach { punishmentToRestore ->
+            if (
+              PunishmentType.additionalDays().contains(punishmentToRestore.type) &&
+              isLinkedToChargeProvedReport(report.chargeNumber, listOf(punishmentToRestore.type))
+            ) {
+              throw ValidationException(
+                "Unable to deactivate: ${punishmentToRestore.type} on ${report.chargeNumber} is linked to another report",
+              )
+            }
 
-          punishmentToRestore.removeSchedule(punishmentToRestore.latestSchedule())
-          punishmentToRestore.activatedByChargeNumber = null
+            punishmentToRestore.removeSchedule(punishmentToRestore.latestSchedule())
+            punishmentToRestore.activatedByChargeNumber = null
 
-          updatedReports[report.chargeNumber] = report
-          if (punishmentToRestore.type.isVisitsPunishment()) reportsWithVisitsChanges.add(report.chargeNumber)
-        }
-    }
+            updatedReports[report.chargeNumber] = report
+            if (punishmentToRestore.type.isVisitsPunishment()) reportsWithVisitsChanges.add(report.chargeNumber)
+          }
+      }
 
     val events = updatedReports.values.map { report ->
       SuspendedPunishmentEvent(

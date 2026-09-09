@@ -1,7 +1,9 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories
 
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
@@ -99,6 +101,12 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByChargeNumber(chargeNumber: String): ReportedAdjudication?
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT ra FROM ReportedAdjudication ra WHERE ra.chargeNumber = :chargeNumber")
+  fun findByChargeNumberForUpdate(
+    @Param("chargeNumber") chargeNumber: String,
+  ): ReportedAdjudication?
+
   fun findByChargeNumberIn(chargeNumbers: List<String>): List<ReportedAdjudication>
 
   fun findByStatusAndPrisonerNumberAndPunishmentsSuspendedUntilAfter(
@@ -168,15 +176,6 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): Long
 
   @Query(
-    value = REPORTS_WITH_ACTIVE_CONSECUTIVE_PUNISHMENTS_QUERY,
-    nativeQuery = true,
-  )
-  fun findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-    @Param("chargeNumber") chargeNumber: String,
-    @Param("types") types: List<String>,
-  ): List<ReportedAdjudication>
-
-  @Query(
     value = "$REPORTS_WITH_ACTIVE_CONSECUTIVE_PUNISHMENTS_QUERY $LATEST_OUTCOME_IS_CHARGE_PROVED",
     nativeQuery = true,
   )
@@ -218,6 +217,22 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   )
   fun findByPunishmentIdIn(
     @Param("punishmentIds") punishmentIds: List<Long>,
+  ): List<ReportedAdjudication>
+
+  @Query(
+    value = """
+      SELECT DISTINCT ra.*
+      FROM reported_adjudications ra
+      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+      WHERE p.consecutive_to_charge_number IS NOT NULL
+        AND p.type::text IN (:types)
+        AND p.suspended_until IS NULL
+        AND COALESCE(p.deleted, false) = false
+    """,
+    nativeQuery = true,
+  )
+  fun findReportsWithActiveConsecutivePunishments(
+    @Param("types") types: List<String>,
   ): List<ReportedAdjudication>
 
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)

@@ -111,7 +111,7 @@ class OutcomeService(
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    findByChargeNumber(chargeNumber).latestOutcome().canQuash()
+    findByChargeNumberForUpdate(chargeNumber).latestOutcome().canQuash()
     chargeProvedReportsConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).takeIf { it.isNotEmpty() }
       ?.let { dependentChargeNumbers ->
         throw ValidationException(
@@ -175,7 +175,7 @@ class OutcomeService(
   }
 
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber)
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
 
@@ -235,20 +235,25 @@ class OutcomeService(
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
   private fun validateConsecutiveTargetsForUnquash(reportedAdjudication: ReportedAdjudication) {
-    val consecutiveTargetChargeNumbers = reportedAdjudication.getPunishments()
+    val consecutivePunishments = reportedAdjudication.getPunishments()
       .filter { PunishmentType.additionalDays().contains(it.type) }
-      .mapNotNull { it.consecutiveToChargeNumber }
-      .distinct()
-      .sorted()
-    if (consecutiveTargetChargeNumbers.isEmpty()) return
+      .filter { it.consecutiveToChargeNumber != null }
+    if (consecutivePunishments.isEmpty()) return
 
-    val targetReports = findByChargeNumberIn(consecutiveTargetChargeNumbers).associateBy { it.chargeNumber }
-    val invalidTargets = consecutiveTargetChargeNumbers.filter { chargeNumber ->
-      targetReports[chargeNumber]?.let { target ->
-        target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
-          target.getPunishments().any { PunishmentType.additionalDays().contains(it.type) }
-      } != true
-    }
+    val sourceHearingDate = reportedAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
+    val invalidTargets = consecutivePunishments.mapNotNull { punishment ->
+      val chargeNumber = requireNotNull(punishment.consecutiveToChargeNumber)
+      val targetIsValid = punishment.getSuspendedUntil() == null &&
+        lockByChargeNumber(chargeNumber)?.let { target ->
+          target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
+            target.prisonerNumber == reportedAdjudication.prisonerNumber &&
+            target.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == sourceHearingDate &&
+            target.getPunishments().any {
+              it.type == punishment.type && it.getSuspendedUntil() == null
+            }
+        } == true
+      chargeNumber.takeUnless { targetIsValid }
+    }.distinct().sorted()
 
     if (invalidTargets.isNotEmpty()) {
       throw ValidationException(

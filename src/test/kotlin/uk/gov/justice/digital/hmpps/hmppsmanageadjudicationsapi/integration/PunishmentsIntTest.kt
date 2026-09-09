@@ -30,6 +30,19 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     setAuditTime()
   }
 
+  private fun punishmentIdFor(chargeNumber: String): Long = webTestClient.get()
+    .uri("/reported-adjudications/$chargeNumber/v2")
+    .headers(setHeaders(username = "ITAG_ALO"))
+    .exchange()
+    .expectStatus().isOk
+    .expectBody(ReportedAdjudicationResponse::class.java)
+    .returnResult()
+    .responseBody!!
+    .reportedAdjudication
+    .punishments
+    .single()
+    .id!!
+
   @Test
   fun `create punishments v2`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
@@ -124,7 +137,13 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
     val chargeY = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
       .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
 
-    // charge Y is already consecutive to charge X
+    createPunishments(
+      chargeNumber = chargeX,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      isSuspended = false,
+    ).expectStatus().isCreated
+
+    // charge Y is already consecutive to charge X.
     createPunishments(
       chargeNumber = chargeY,
       type = PunishmentType.ADDITIONAL_DAYS,
@@ -132,17 +151,27 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       isSuspended = false,
     ).expectStatus().isCreated
 
-    // making charge X consecutive to charge Y would close the loop - reject it
-    createPunishments(
-      chargeNumber = chargeX,
-      type = PunishmentType.ADDITIONAL_DAYS,
-      consecutiveChargeNumber = chargeY,
-      isSuspended = false,
-    )
+    // Making charge X consecutive to charge Y would close the loop - reject it.
+    webTestClient.put()
+      .uri("/reported-adjudications/$chargeX/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to listOf(
+            PunishmentRequest(
+              id = punishmentIdFor(chargeX),
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = chargeY,
+              duration = 10,
+            ),
+          ),
+        ),
+      )
+      .exchange()
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo(
-        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because $chargeY is already consecutive to this charge",
+        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because it would create a consecutive punishment loop",
       )
   }
 
@@ -152,6 +181,12 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
     val chargeY = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
       .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(
+      chargeNumber = chargeX,
+      type = PunishmentType.ADDITIONAL_DAYS,
+      isSuspended = false,
+    ).expectStatus().isCreated
 
     createPunishments(
       chargeNumber = chargeY,
@@ -167,16 +202,103 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .exchange()
       .expectStatus().isCreated
 
+    webTestClient.put()
+      .uri("/reported-adjudications/$chargeX/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to listOf(
+            PunishmentRequest(
+              id = punishmentIdFor(chargeX),
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = chargeY,
+              duration = 10,
+            ),
+          ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo(
+        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because it would create a consecutive punishment loop",
+      )
+  }
+
+  @Test
+  fun `rejects creating a three charge consecutive loop`() {
+    val firstCharge = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val secondCharge = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val thirdCharge = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(firstCharge, PunishmentType.ADDITIONAL_DAYS, isSuspended = false).expectStatus().isCreated
     createPunishments(
-      chargeNumber = chargeX,
-      type = PunishmentType.ADDITIONAL_DAYS,
-      consecutiveChargeNumber = chargeY,
+      secondCharge,
+      PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = firstCharge,
+      isSuspended = false,
+    ).expectStatus().isCreated
+    createPunishments(
+      thirdCharge,
+      PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = secondCharge,
+      isSuspended = false,
+    ).expectStatus().isCreated
+
+    webTestClient.put()
+      .uri("/reported-adjudications/$firstCharge/punishments/v2")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(
+        mapOf(
+          "punishments" to listOf(
+            PunishmentRequest(
+              id = punishmentIdFor(firstCharge),
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = thirdCharge,
+              duration = 10,
+            ),
+          ),
+        ),
+      )
+      .exchange()
+      .expectStatus().isBadRequest
+      .expectBody()
+      .jsonPath("$.userMessage").isEqualTo(
+        "Validation failure: charge $firstCharge cannot be consecutive to $thirdCharge because it would create a consecutive punishment loop",
+      )
+  }
+
+  @Test
+  fun `rejects a quashed consecutive target`() {
+    val targetCharge = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+    val sourceCharge = initDataForUnScheduled(testData = IntegrationTestData.getDefaultAdjudication())
+      .createHearing(oicHearingType = OicHearingType.INAD_ADULT).createChargeProved().getGeneratedChargeNumber()
+
+    createPunishments(targetCharge, PunishmentType.ADDITIONAL_DAYS, isSuspended = false)
+      .expectStatus().isCreated
+
+    webTestClient.post()
+      .uri("/reported-adjudications/$targetCharge/outcome/quashed")
+      .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+      .bodyValue(mapOf("reason" to "APPEAL_UPHELD", "details" to "details"))
+      .exchange()
+      .expectStatus().isCreated
+
+    createPunishments(
+      sourceCharge,
+      PunishmentType.ADDITIONAL_DAYS,
+      consecutiveChargeNumber = targetCharge,
       isSuspended = false,
     )
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo(
-        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because $chargeY is already consecutive to this charge",
+        "Validation failure: Unable to make $sourceCharge consecutive to $targetCharge because $targetCharge " +
+          "does not have a live, unsuspended ADDITIONAL_DAYS punishment for the same prisoner and hearing date",
       )
   }
 
@@ -531,7 +653,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
-  fun `create punishments - additional days v2`() {
+  fun `rejects a nonexistent consecutive target`() {
     val testData = IntegrationTestData.getDefaultAdjudication()
     val scenario = initDataForUnScheduled(testData = testData).createHearing(oicHearingType = OicHearingType.INAD_ADULT)
       .createChargeProved()
@@ -540,11 +662,11 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       chargeNumber = scenario.getGeneratedChargeNumber(),
       type = PunishmentType.ADDITIONAL_DAYS,
       consecutiveChargeNumber = "9999",
+      isSuspended = false,
     )
-      .expectStatus().isCreated
+      .expectStatus().isBadRequest
       .expectBody()
-      .jsonPath("$.reportedAdjudication.punishments[0].type").isEqualTo(PunishmentType.ADDITIONAL_DAYS.name)
-      .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(9999)
+      .jsonPath("$.userMessage").isEqualTo("Validation failure: consecutive target charge 9999 does not exist")
   }
 
   @Test

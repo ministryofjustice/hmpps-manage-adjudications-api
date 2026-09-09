@@ -24,9 +24,9 @@ class ScheduleTaskController(
   @DeleteMapping(value = ["/delete-orphaned-draft-adjudications"])
   fun deleteOrphanedDraftAdjudications(): Unit = draftAdjudicationService.deleteOrphanedDraftAdjudications()
 
-  @PostMapping(value = ["/fix-consecutive-punishment-loops"])
-  fun fixConsecutivePunishmentLoops() {
-    consecutivePunishmentCorrectionService.clearLoopedConsecutivePunishments().forEach {
+  @PostMapping(value = ["/fix-consecutive-punishment-loops", "/repair-consecutive-punishment-chains"])
+  fun repairConsecutivePunishmentChains() {
+    consecutivePunishmentCorrectionService.repairConsecutivePunishmentChains().forEach {
       eventPublishService.publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, it)
     }
   }

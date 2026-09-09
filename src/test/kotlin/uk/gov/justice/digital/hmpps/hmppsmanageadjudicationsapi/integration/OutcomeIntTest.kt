@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.context.annotation.Import
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
@@ -454,6 +455,46 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectBody()
         .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
         .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
+    }
+
+    @Test
+    fun `cannot unquash when the target additional days type changed in the meantime`() {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+
+      quash(secondCharge).expectStatus().isCreated
+
+      val firstPunishmentId = webTestClient.get()
+        .uri("/reported-adjudications/$firstCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .returnResult(ReportedAdjudicationResponse::class.java)
+        .responseBody
+        .blockFirst()!!
+        .reportedAdjudication.punishments.single().id
+
+      webTestClient.put()
+        .uri("/reported-adjudications/$firstCharge/punishments/v2")
+        .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+        .bodyValue(
+          mapOf(
+            "punishments" to listOf(
+              PunishmentRequest(
+                id = firstPunishmentId,
+                type = PunishmentType.PROSPECTIVE_DAYS,
+                duration = 20,
+              ),
+            ),
+          ),
+        )
+        .exchange()
+        .expectStatus().isOk
+
+      unquash(secondCharge)
+        .expectStatus().isBadRequest
+        .expectBody()
+        .jsonPath("$.userMessage").isEqualTo(invalidConsecutiveTargetMessage(secondCharge, firstCharge))
     }
 
     @Test

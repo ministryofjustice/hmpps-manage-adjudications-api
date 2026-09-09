@@ -7,12 +7,16 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.utils.EntityBuilder
+import java.time.LocalDateTime
 
 class ConsecutivePunishmentCorrectionServiceTest {
 
@@ -64,5 +68,50 @@ class ConsecutivePunishmentCorrectionServiceTest {
     assertThat(result).hasSize(1)
     assertThat(report.getPunishments().first { it.id == 1L }.consecutiveToChargeNumber).isNull()
     assertThat(report.getPunishments().first { it.id == 2L }.consecutiveToChargeNumber).isEqualTo("A-3")
+  }
+
+  @Test
+  fun `reconnects a live punishment to the first live ancestor through quashed charges`() {
+    val root = additionalDaysReport("A-1", OutcomeCode.CHARGE_PROVED)
+    val quashed = additionalDaysReport("A-2", OutcomeCode.QUASHED, consecutiveTo = root.chargeNumber)
+    val source = additionalDaysReport("A-3", OutcomeCode.CHARGE_PROVED, consecutiveTo = quashed.chargeNumber)
+
+    whenever(
+      reportedAdjudicationRepository.findReportsWithActiveConsecutivePunishments(
+        listOf(PunishmentType.ADDITIONAL_DAYS.name, PunishmentType.PROSPECTIVE_DAYS.name),
+      ),
+    ).thenReturn(listOf(source))
+    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(source.chargeNumber)).thenReturn(source)
+    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(quashed.chargeNumber)).thenReturn(quashed)
+    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(root.chargeNumber)).thenReturn(root)
+
+    val result = service.repairLinksThroughQuashedCharges()
+
+    assertThat(result.map { it.chargeNumber }).containsExactly(source.chargeNumber)
+    assertThat(source.getPunishments().single().consecutiveToChargeNumber).isEqualTo(root.chargeNumber)
+
+    val secondResult = service.repairLinksThroughQuashedCharges()
+    assertThat(secondResult).isEmpty()
+  }
+
+  private fun additionalDaysReport(
+    chargeNumber: String,
+    outcomeCode: OutcomeCode,
+    consecutiveTo: String? = null,
+  ): ReportedAdjudication = entityBuilder.reportedAdjudication(
+    chargeNumber = chargeNumber,
+    dateTime = LocalDateTime.of(2023, 1, 1, 10, 0),
+  ).also { report ->
+    report.status = outcomeCode.status
+    report.addOutcome(
+      Outcome(code = outcomeCode).also { it.createDateTime = LocalDateTime.of(2023, 1, 2, 10, 0) },
+    )
+    report.addPunishment(
+      Punishment(
+        type = PunishmentType.ADDITIONAL_DAYS,
+        consecutiveToChargeNumber = consecutiveTo,
+        schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+      ),
+    )
   }
 }
