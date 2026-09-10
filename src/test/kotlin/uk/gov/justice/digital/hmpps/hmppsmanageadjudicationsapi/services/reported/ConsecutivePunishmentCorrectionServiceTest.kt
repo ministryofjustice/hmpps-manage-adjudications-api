@@ -1,8 +1,10 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -22,11 +24,13 @@ class ConsecutivePunishmentCorrectionServiceTest {
 
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository = mock()
   private val offenceCodeLookupService: OffenceCodeLookupService = OffenceCodeLookupService()
+  private val entityManager: EntityManager = mock()
   private val entityBuilder = EntityBuilder()
 
   private val service = ConsecutivePunishmentCorrectionService(
     reportedAdjudicationRepository,
     offenceCodeLookupService,
+    entityManager,
   )
 
   @Test
@@ -61,6 +65,9 @@ class ConsecutivePunishmentCorrectionServiceTest {
     }
 
     whenever(reportedAdjudicationRepository.findLoopedConsecutivePunishmentIdsToClear()).thenReturn(listOf(1))
+    whenever(reportedAdjudicationRepository.findPrisonerNumbersByPunishmentIdIn(listOf(1))).thenReturn(
+      listOf(report.prisonerNumber),
+    )
     whenever(reportedAdjudicationRepository.findByPunishmentIdIn(listOf(1))).thenReturn(listOf(report))
 
     val result = service.clearLoopedConsecutivePunishments()
@@ -77,27 +84,65 @@ class ConsecutivePunishmentCorrectionServiceTest {
     val source = additionalDaysReport("A-3", OutcomeCode.CHARGE_PROVED, consecutiveTo = quashed.chargeNumber)
 
     whenever(
-      reportedAdjudicationRepository.findReportsWithActiveConsecutivePunishments(
+      reportedAdjudicationRepository.findChargeNumbersWithActiveConsecutivePunishments(
         listOf(PunishmentType.ADDITIONAL_DAYS.name, PunishmentType.PROSPECTIVE_DAYS.name),
       ),
-    ).thenReturn(listOf(source))
-    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(source.chargeNumber)).thenReturn(source)
-    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(quashed.chargeNumber)).thenReturn(quashed)
-    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(root.chargeNumber)).thenReturn(root)
+    ).thenReturn(listOf(source.chargeNumber))
+    whenever(reportedAdjudicationRepository.findPrisonerNumbersByChargeNumberIn(listOf(source.chargeNumber))).thenReturn(
+      listOf(source.prisonerNumber),
+    )
+    whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(quashed.chargeNumber)).thenReturn(quashed)
+    whenever(reportedAdjudicationRepository.findByChargeNumber(root.chargeNumber)).thenReturn(root)
 
     val result = service.repairLinksThroughQuashedCharges()
 
     assertThat(result.map { it.chargeNumber }).containsExactly(source.chargeNumber)
     assertThat(source.getPunishments().single().consecutiveToChargeNumber).isEqualTo(root.chargeNumber)
+    inOrder(reportedAdjudicationRepository) {
+      verify(reportedAdjudicationRepository).lockConsecutivePunishmentOperationsForPrisoner(source.prisonerNumber)
+      verify(reportedAdjudicationRepository).findByChargeNumber(source.chargeNumber)
+    }
 
     val secondResult = service.repairLinksThroughQuashedCharges()
     assertThat(secondResult).isEmpty()
+  }
+
+  @Test
+  fun `flushes cleared loops before resolving the next repair phase`() {
+    val loopedReport = additionalDaysReport("A-1", OutcomeCode.CHARGE_PROVED, consecutiveTo = "A-2", punishmentId = 1)
+    val repairCandidate = additionalDaysReport("A-3", OutcomeCode.CHARGE_PROVED)
+    val prisonerNumber = loopedReport.prisonerNumber
+
+    whenever(reportedAdjudicationRepository.findLoopedConsecutivePunishmentIdsToClear()).thenReturn(listOf(1))
+    whenever(
+      reportedAdjudicationRepository.findChargeNumbersWithActiveConsecutivePunishments(
+        PunishmentType.additionalDays().map { it.name },
+      ),
+    ).thenReturn(listOf(repairCandidate.chargeNumber))
+    whenever(reportedAdjudicationRepository.findPrisonerNumbersByPunishmentIdIn(listOf(1))).thenReturn(
+      listOf(prisonerNumber),
+    )
+    whenever(
+      reportedAdjudicationRepository.findPrisonerNumbersByChargeNumberIn(listOf(repairCandidate.chargeNumber)),
+    ).thenReturn(listOf(prisonerNumber))
+    whenever(reportedAdjudicationRepository.findByPunishmentIdIn(listOf(1))).thenReturn(listOf(loopedReport))
+    whenever(reportedAdjudicationRepository.findByChargeNumber(repairCandidate.chargeNumber)).thenReturn(repairCandidate)
+
+    service.repairConsecutivePunishmentChains()
+
+    inOrder(reportedAdjudicationRepository, entityManager) {
+      verify(reportedAdjudicationRepository).findByPunishmentIdIn(listOf(1))
+      verify(entityManager).flush()
+      verify(reportedAdjudicationRepository).findByChargeNumber(repairCandidate.chargeNumber)
+    }
   }
 
   private fun additionalDaysReport(
     chargeNumber: String,
     outcomeCode: OutcomeCode,
     consecutiveTo: String? = null,
+    punishmentId: Long? = null,
   ): ReportedAdjudication = entityBuilder.reportedAdjudication(
     chargeNumber = chargeNumber,
     dateTime = LocalDateTime.of(2023, 1, 1, 10, 0),
@@ -108,6 +153,7 @@ class ConsecutivePunishmentCorrectionServiceTest {
     )
     report.addPunishment(
       Punishment(
+        id = punishmentId,
         type = PunishmentType.ADDITIONAL_DAYS,
         consecutiveToChargeNumber = consecutiveTo,
         schedule = mutableListOf(PunishmentSchedule(duration = 5)),

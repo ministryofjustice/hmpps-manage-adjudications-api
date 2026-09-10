@@ -16,7 +16,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
@@ -111,6 +110,7 @@ class PunishmentsService(
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
     deactivateActivatedPunishments(
       chargeNumber = chargeNumber,
+      prisonerNumber = reportedAdjudication.prisonerNumber,
       idsToIgnore = idsToUpdate,
     ).also { updates ->
       suspendedPunishmentEvents.addAll(updates.events)
@@ -192,7 +192,7 @@ class PunishmentsService(
     punishmentId: Long,
     completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber = chargeNumber)
     val visitsPunishmentsBefore = reportedAdjudication.getPunishments().toVisitsPunishmentStates()
     val punishment = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentId)
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
@@ -203,6 +203,30 @@ class PunishmentsService(
     }
 
     val latestSchedule = punishment.latestSchedule()
+    when (completeRehabilitativeActivityRequest.outcome) {
+      NotCompletedOutcome.PARTIAL_ACTIVATE -> {
+        val daysToActivate = completeRehabilitativeActivityRequest.daysToActivate
+          ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
+        if (punishment.type.isVisitsPunishment()) {
+          val maximumDuration = minOf(
+            requireNotNull(latestSchedule.duration),
+            requireNotNull(punishment.type.maximumDuration),
+          )
+          if (daysToActivate !in 1..maximumDuration) {
+            throw ValidationException("daysToActivate for ${punishment.type} must be between 1 and $maximumDuration days")
+          }
+        }
+      }
+
+      NotCompletedOutcome.EXT_SUSPEND ->
+        completeRehabilitativeActivityRequest.suspendedUntil
+          ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
+
+      else -> Unit
+    }
+    if (punishment.scheduleWillChange(completeRehabilitativeActivityRequest.outcome)) {
+      punishment.type.consecutiveReportValidation(chargeNumber)
+    }
 
     when (completeRehabilitativeActivityRequest.outcome) {
       NotCompletedOutcome.FULL_ACTIVATE -> {
@@ -217,17 +241,7 @@ class PunishmentsService(
       }
 
       NotCompletedOutcome.PARTIAL_ACTIVATE -> {
-        val daysToActivate = completeRehabilitativeActivityRequest.daysToActivate
-          ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
-        if (punishment.type.isVisitsPunishment()) {
-          val maximumDuration = minOf(
-            requireNotNull(latestSchedule.duration),
-            requireNotNull(punishment.type.maximumDuration),
-          )
-          if (daysToActivate !in 1..maximumDuration) {
-            throw ValidationException("daysToActivate for ${punishment.type} must be between 1 and $maximumDuration days")
-          }
-        }
+        val daysToActivate = requireNotNull(completeRehabilitativeActivityRequest.daysToActivate)
         val startDate = LocalDate.now()
         punishment.addSchedule(
           PunishmentSchedule(
@@ -239,11 +253,9 @@ class PunishmentsService(
       }
 
       NotCompletedOutcome.EXT_SUSPEND -> {
-        completeRehabilitativeActivityRequest.suspendedUntil
-          ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
         punishment.addSchedule(
           PunishmentSchedule(
-            suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil,
+            suspendedUntil = requireNotNull(completeRehabilitativeActivityRequest.suspendedUntil),
             duration = latestSchedule.duration,
           ),
         )
@@ -286,6 +298,11 @@ class PunishmentsService(
       punishment.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
       val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! }
         ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
+      if (reportToUpdate.prisonerNumber != reportedAdjudication.prisonerNumber) {
+        throw ValidationException(
+          "Unable to activate punishment ${punishment.id}: prisoner on ${reportToUpdate.chargeNumber} does not match ${reportedAdjudication.chargeNumber}",
+        )
+      }
 
       reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let { punishmentToActivate ->
         if (
@@ -366,71 +383,27 @@ class PunishmentsService(
       throw ValidationException("a punishment cannot be consecutive to its own charge ${source.chargeNumber}")
     }
 
-    val reports = mutableMapOf(source.chargeNumber to source)
-    fun lockedReport(chargeNumber: String): ReportedAdjudication = reports.getOrPut(chargeNumber) {
-      lockByChargeNumber(chargeNumber)
-        ?: throw ValidationException("consecutive target charge $chargeNumber does not exist")
+    if (source.getLatestHearing()?.dateTimeOfHearing == null) {
+      throw ValidationException("charge ${source.chargeNumber} has no hearing date")
     }
 
-    validateNoTransitiveLoop(source.chargeNumber, targetChargeNumber, ::lockedReport)
+    when (val issue = findConsecutiveChainIssue(source, punishmentType, targetChargeNumber)) {
+      is MissingConsecutiveTarget -> throw ValidationException(
+        "consecutive target charge ${issue.chargeNumber} does not exist",
+      )
 
-    val sourceHearingDate = source.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
-      ?: throw ValidationException("charge ${source.chargeNumber} has no hearing date")
-    val toValidate = ArrayDeque<String>().apply { add(targetChargeNumber) }
-    val validated = mutableSetOf<String>()
+      is InvalidConsecutiveTarget -> throw ValidationException(
+        "Unable to make ${source.chargeNumber} consecutive to $targetChargeNumber because ${issue.chargeNumber} " +
+          "does not have a live, unsuspended $punishmentType punishment for the same prisoner and hearing date",
+      )
 
-    while (toValidate.isNotEmpty()) {
-      val chargeNumber = toValidate.removeFirst()
-      if (!validated.add(chargeNumber)) continue
+      is ConsecutivePunishmentLoop -> throw ValidationException(
+        "charge ${source.chargeNumber} cannot be consecutive to $targetChargeNumber because it would create a consecutive punishment loop",
+      )
 
-      val target = lockedReport(chargeNumber)
-      val targetHearingDate = target.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
-      val matchingPunishments = target.getPunishments().filter {
-        it.type == punishmentType && it.getSuspendedUntil() == null
-      }
-      val targetIsEligible = target.prisonerNumber == source.prisonerNumber &&
-        targetHearingDate == sourceHearingDate &&
-        target.latestOutcomeCode() == OutcomeCode.CHARGE_PROVED &&
-        matchingPunishments.isNotEmpty()
-
-      if (!targetIsEligible) {
-        throw ValidationException(
-          "Unable to make ${source.chargeNumber} consecutive to $targetChargeNumber because $chargeNumber " +
-            "does not have a live, unsuspended $punishmentType punishment for the same prisoner and hearing date",
-        )
-      }
-
-      matchingPunishments.mapNotNull { it.consecutiveToChargeNumber }.forEach(toValidate::add)
+      null -> Unit
     }
   }
-
-  private fun validateNoTransitiveLoop(
-    sourceChargeNumber: String,
-    targetChargeNumber: String,
-    findReport: (String) -> ReportedAdjudication,
-  ) {
-    val toVisit = ArrayDeque<String>().apply { add(targetChargeNumber) }
-    val visited = mutableSetOf<String>()
-
-    while (toVisit.isNotEmpty()) {
-      val chargeNumber = toVisit.removeFirst()
-      if (chargeNumber == sourceChargeNumber) {
-        throw ValidationException(
-          "charge $sourceChargeNumber cannot be consecutive to $targetChargeNumber because it would create a consecutive punishment loop",
-        )
-      }
-      if (!visited.add(chargeNumber)) continue
-
-      findReport(chargeNumber).getPunishments()
-        .filter { PunishmentType.additionalDays().contains(it.type) }
-        .mapNotNull { it.consecutiveToChargeNumber }
-        .forEach(toVisit::add)
-    }
-  }
-
-  private fun ReportedAdjudication.latestOutcomeCode(): OutcomeCode? = getOutcomes()
-    .maxWithOrNull(compareBy<uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome>({ it.getCreatedDateTime() }, { it.id }))
-    ?.code
 
   private fun Punishment.isChangedBy(request: PunishmentRequest): Boolean {
     val scheduleChanged = latestSchedule().hasScheduleBeenUpdated(request)
@@ -446,6 +419,22 @@ class PunishmentsService(
       paybackNotes != request.paybackNotes ||
       activities != requestedActivities ||
       scheduleChanged
+  }
+
+  private fun Punishment.scheduleWillChange(outcome: NotCompletedOutcome?): Boolean = when (outcome) {
+    NotCompletedOutcome.FULL_ACTIVATE,
+    NotCompletedOutcome.PARTIAL_ACTIVATE,
+    NotCompletedOutcome.EXT_SUSPEND,
+    -> true
+
+    NotCompletedOutcome.NO_ACTION,
+    null,
+    -> rehabCompleted != null &&
+      rehabNotCompletedOutcome in setOf(
+        NotCompletedOutcome.FULL_ACTIVATE,
+        NotCompletedOutcome.PARTIAL_ACTIVATE,
+        NotCompletedOutcome.EXT_SUSPEND,
+      )
   }
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {

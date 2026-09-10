@@ -23,6 +23,9 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
   fun beforeEach() {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
     whenever(authenticationFacade.activeCaseload).thenReturn("MDI")
+    whenever(reportedAdjudicationRepository.findPrisonerNumberByChargeNumber(any())).thenAnswer {
+      reportedAdjudicationRepository.findByChargeNumber(it.getArgument(0))?.prisonerNumber
+    }
     whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(any())).thenAnswer {
       reportedAdjudicationRepository.findByChargeNumber(it.getArgument(0))
     }

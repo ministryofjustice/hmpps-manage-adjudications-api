@@ -1,5 +1,6 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
+import jakarta.persistence.EntityManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -24,26 +25,41 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.Offence
 class ConsecutivePunishmentCorrectionService(
   private val reportedAdjudicationRepository: ReportedAdjudicationRepository,
   private val offenceCodeLookupService: OffenceCodeLookupService,
+  private val entityManager: EntityManager,
 ) {
 
   @Transactional
-  fun repairConsecutivePunishmentChains(): List<ReportedAdjudicationDto> = (clearLoopedConsecutivePunishments() + repairLinksThroughQuashedCharges())
-    .associateBy { it.chargeNumber }
-    .values
-    .toList()
+  fun repairConsecutivePunishmentChains(): List<ReportedAdjudicationDto> {
+    val loopedPunishmentIds = reportedAdjudicationRepository.findLoopedConsecutivePunishmentIdsToClear()
+    val repairCandidateChargeNumbers = findRepairCandidateChargeNumbers()
+    lockCandidatePrisoners(loopedPunishmentIds, repairCandidateChargeNumbers)
+
+    val clearedLoops = clearLoopedConsecutivePunishments(loopedPunishmentIds)
+    // The next phase resolves links from database state, so make the first phase visible explicitly.
+    entityManager.flush()
+    val repairedLinks = repairLinksThroughQuashedCharges(repairCandidateChargeNumbers)
+
+    return (clearedLoops + repairedLinks)
+      .associateBy { it.chargeNumber }
+      .values
+      .toList()
+  }
 
   @Transactional
   fun clearLoopedConsecutivePunishments(): List<ReportedAdjudicationDto> {
     val idsToClear = reportedAdjudicationRepository.findLoopedConsecutivePunishmentIdsToClear()
     if (idsToClear.isEmpty()) return emptyList()
+    lockCandidatePrisoners(loopedPunishmentIds = idsToClear)
 
-    return reportedAdjudicationRepository.findByPunishmentIdIn(idsToClear).map { report ->
-      report.getPunishments().filter { idsToClear.contains(it.id) }.forEach {
-        log.info("clearing looped consecutive punishment ${it.id} on charge ${report.chargeNumber}")
-        it.consecutiveToChargeNumber = null
-      }
-      report.toDto(offenceCodeLookupService)
+    return clearLoopedConsecutivePunishments(idsToClear)
+  }
+
+  private fun clearLoopedConsecutivePunishments(idsToClear: List<Long>): List<ReportedAdjudicationDto> = reportedAdjudicationRepository.findByPunishmentIdIn(idsToClear).map { report ->
+    report.getPunishments().filter { idsToClear.contains(it.id) }.forEach {
+      log.info("clearing looped consecutive punishment ${it.id} on charge ${report.chargeNumber}")
+      it.consecutiveToChargeNumber = null
     }
+    report.toDto(offenceCodeLookupService)
   }
 
   /**
@@ -54,15 +70,20 @@ class ConsecutivePunishmentCorrectionService(
    */
   @Transactional
   fun repairLinksThroughQuashedCharges(): List<ReportedAdjudicationDto> {
+    val repairCandidateChargeNumbers = findRepairCandidateChargeNumbers()
+    if (repairCandidateChargeNumbers.isEmpty()) return emptyList()
+    lockCandidatePrisoners(repairCandidateChargeNumbers = repairCandidateChargeNumbers)
+
+    return repairLinksThroughQuashedCharges(repairCandidateChargeNumbers)
+  }
+
+  private fun repairLinksThroughQuashedCharges(
+    repairCandidateChargeNumbers: List<String>,
+  ): List<ReportedAdjudicationDto> {
     val repairedReports = linkedMapOf<String, ReportedAdjudication>()
 
-    reportedAdjudicationRepository.findReportsWithActiveConsecutivePunishments(
-      PunishmentType.additionalDays().map { it.name },
-    )
-      .map { it.chargeNumber }
-      .distinct()
-      .sorted()
-      .mapNotNull(reportedAdjudicationRepository::findByChargeNumberForUpdate)
+    repairCandidateChargeNumbers
+      .mapNotNull(reportedAdjudicationRepository::findByChargeNumber)
       .filter { it.latestOutcomeCode() == OutcomeCode.CHARGE_PROVED }
       .forEach { source ->
         source.getPunishments()
@@ -73,7 +94,7 @@ class ConsecutivePunishmentCorrectionService(
           }
           .forEach punishments@{ punishment ->
             val currentTarget = requireNotNull(punishment.consecutiveToChargeNumber)
-            val targetReport = reportedAdjudicationRepository.findByChargeNumberForUpdate(currentTarget)
+            val targetReport = reportedAdjudicationRepository.findByChargeNumber(currentTarget)
             if (targetReport?.latestOutcomeCode() != OutcomeCode.QUASHED) return@punishments
 
             resolveLiveAncestor(source, punishment, targetReport)?.let { resolvedTarget ->
@@ -124,8 +145,29 @@ class ConsecutivePunishmentCorrectionService(
 
       val nextChargeNumber = matchingPunishments.single().consecutiveToChargeNumber
         ?: return ResolvedTarget(null)
-      target = reportedAdjudicationRepository.findByChargeNumberForUpdate(nextChargeNumber) ?: return null
+      target = reportedAdjudicationRepository.findByChargeNumber(nextChargeNumber) ?: return null
     }
+  }
+
+  private fun findRepairCandidateChargeNumbers(): List<String> = reportedAdjudicationRepository.findChargeNumbersWithActiveConsecutivePunishments(
+    PunishmentType.additionalDays().map { it.name },
+  )
+
+  private fun lockCandidatePrisoners(
+    loopedPunishmentIds: List<Long> = emptyList(),
+    repairCandidateChargeNumbers: List<String> = emptyList(),
+  ) {
+    val prisonersWithLoops = loopedPunishmentIds.takeIf { it.isNotEmpty() }
+      ?.let(reportedAdjudicationRepository::findPrisonerNumbersByPunishmentIdIn)
+      .orEmpty()
+    val prisonersWithRepairCandidates = repairCandidateChargeNumbers.takeIf { it.isNotEmpty() }
+      ?.let(reportedAdjudicationRepository::findPrisonerNumbersByChargeNumberIn)
+      .orEmpty()
+
+    (prisonersWithLoops + prisonersWithRepairCandidates)
+      .distinct()
+      .sorted()
+      .forEach(reportedAdjudicationRepository::lockConsecutivePunishmentOperationsForPrisoner)
   }
 
   private fun ReportedAdjudication.latestOutcomeCode(): OutcomeCode? = getOutcomes()

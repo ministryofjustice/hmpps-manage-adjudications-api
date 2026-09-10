@@ -739,6 +739,51 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `cannot unquash when a deeper consecutive target is invalid`() {
+      fun additionalDaysReport(
+        chargeNumber: String,
+        latestOutcomeCode: OutcomeCode,
+        consecutiveTo: String? = null,
+      ) = entityBuilder.reportedAdjudication(
+        chargeNumber = chargeNumber,
+        dateTime = DATE_TIME_OF_INCIDENT,
+      ).also { report ->
+        report.status = latestOutcomeCode.status
+        report.addOutcome(
+          Outcome(code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = LocalDateTime.now() },
+        )
+        if (latestOutcomeCode == OutcomeCode.QUASHED) {
+          report.addOutcome(
+            Outcome(code = OutcomeCode.QUASHED).also { it.createDateTime = LocalDateTime.now().plusSeconds(1) },
+          )
+        }
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveToChargeNumber = consecutiveTo,
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+
+      val root = additionalDaysReport("root", OutcomeCode.QUASHED)
+      val middle = additionalDaysReport("middle", OutcomeCode.CHARGE_PROVED, consecutiveTo = root.chargeNumber)
+      val source = additionalDaysReport("source", OutcomeCode.QUASHED, consecutiveTo = middle.chargeNumber)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(middle.chargeNumber)).thenReturn(middle)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(root.chargeNumber)).thenReturn(root)
+
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(source.chargeNumber)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining(
+          "following consecutive target charges do not have a live charge-proved additional days punishment: root",
+        )
+
+      assertThat(source.getOutcomes().maxBy { it.getCreatedDateTime()!! }.code).isEqualTo(OutcomeCode.QUASHED)
+    }
+
+    @Test
     fun `deletes NOT_PROCEED from REFER_GOV`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication

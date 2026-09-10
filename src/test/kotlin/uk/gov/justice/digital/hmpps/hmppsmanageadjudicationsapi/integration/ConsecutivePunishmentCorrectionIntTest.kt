@@ -85,6 +85,31 @@ class ConsecutivePunishmentCorrectionIntTest : SqsIntegrationTestBase() {
   }
 
   @Test
+  fun `does not clear reciprocal links belonging to different additional days types`() {
+    saveReport(
+      chargeNumber = olderCharge,
+      consecutiveTo = newerCharge,
+      createdAt = LocalDateTime.of(2023, 1, 1, 9, 0),
+      punishmentType = PunishmentType.ADDITIONAL_DAYS,
+    )
+    saveReport(
+      chargeNumber = newerCharge,
+      consecutiveTo = olderCharge,
+      createdAt = LocalDateTime.of(2023, 1, 2, 9, 0),
+      punishmentType = PunishmentType.PROSPECTIVE_DAYS,
+    )
+
+    webTestClient.post()
+      .uri("/scheduled-tasks/fix-consecutive-punishment-loops")
+      .exchange()
+      .expectStatus().isOk
+
+    assertConsecutiveLink(olderCharge, expected = newerCharge)
+    assertConsecutiveLink(newerCharge, expected = olderCharge)
+    verify(eventPublishService, never()).publishEvent(any(), any())
+  }
+
+  @Test
   fun `reconnects an active chain through a quashed middle charge and is idempotent`() {
     val firstCharge = "CHAIN-1"
     val quashedCharge = "CHAIN-2"
@@ -137,6 +162,7 @@ class ConsecutivePunishmentCorrectionIntTest : SqsIntegrationTestBase() {
     consecutiveTo: String?,
     createdAt: LocalDateTime,
     outcomeCodes: List<OutcomeCode> = listOf(OutcomeCode.CHARGE_PROVED),
+    punishmentType: PunishmentType = PunishmentType.ADDITIONAL_DAYS,
   ) {
     setAuditTime(createdAt)
     val report: ReportedAdjudication = entityBuilder.reportedAdjudication(
@@ -148,7 +174,7 @@ class ConsecutivePunishmentCorrectionIntTest : SqsIntegrationTestBase() {
       outcomeCodes.forEach { code -> it.addOutcome(Outcome(code = code)) }
       it.addPunishment(
         Punishment(
-          type = PunishmentType.ADDITIONAL_DAYS,
+          type = punishmentType,
           consecutiveToChargeNumber = consecutiveTo,
           schedule = mutableListOf(PunishmentSchedule(duration = 5)),
         ),

@@ -240,20 +240,26 @@ class OutcomeService(
       .filter { it.consecutiveToChargeNumber != null }
     if (consecutivePunishments.isEmpty()) return
 
-    val sourceHearingDate = reportedAdjudication.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
-    val invalidTargets = consecutivePunishments.mapNotNull { punishment ->
-      val chargeNumber = requireNotNull(punishment.consecutiveToChargeNumber)
-      val targetIsValid = punishment.getSuspendedUntil() == null &&
-        lockByChargeNumber(chargeNumber)?.let { target ->
-          target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
-            target.prisonerNumber == reportedAdjudication.prisonerNumber &&
-            target.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == sourceHearingDate &&
-            target.getPunishments().any {
-              it.type == punishment.type && it.getSuspendedUntil() == null
-            }
-        } == true
-      chargeNumber.takeUnless { targetIsValid }
-    }.distinct().sorted()
+    val issues = consecutivePunishments.mapNotNull { punishment ->
+      val targetChargeNumber = requireNotNull(punishment.consecutiveToChargeNumber)
+      if (punishment.getSuspendedUntil() != null) {
+        InvalidConsecutiveTarget(targetChargeNumber)
+      } else {
+        findConsecutiveChainIssue(reportedAdjudication, punishment.type, targetChargeNumber)
+      }
+    }
+    val loopedCharges = issues.filterIsInstance<ConsecutivePunishmentLoop>()
+      .map { it.chargeNumber }
+      .distinct()
+      .sorted()
+    if (loopedCharges.isNotEmpty()) {
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because its consecutive punishment chain " +
+          "contains a loop at: ${loopedCharges.joinToString(", ")}. Repair the chain first",
+      )
+    }
+
+    val invalidTargets = issues.map { it.chargeNumber }.distinct().sorted()
 
     if (invalidTargets.isNotEmpty()) {
       throw ValidationException(
@@ -267,7 +273,11 @@ class OutcomeService(
   private fun ReportedAdjudication.removePunishments(): SuspendedPunishmentUpdates {
     this.clearPunishments()
     this.punishmentComments.clear()
-    return deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList())
+    return deactivateActivatedPunishments(
+      chargeNumber = chargeNumber,
+      prisonerNumber = prisonerNumber,
+      idsToIgnore = emptyList(),
+    )
   }
 
   private fun createOutcome(
@@ -306,6 +316,7 @@ class OutcomeService(
     if (code == OutcomeCode.QUASHED) {
       deactivateActivatedPunishments(
         chargeNumber = chargeNumber,
+        prisonerNumber = reportedAdjudication.prisonerNumber,
         idsToIgnore = emptyList(),
       ).also { updates ->
         suspendedPunishmentEvents.addAll(updates.events)

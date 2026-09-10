@@ -101,6 +101,31 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   fun findByChargeNumber(chargeNumber: String): ReportedAdjudication?
 
+  @Query("SELECT ra.prisonerNumber FROM ReportedAdjudication ra WHERE ra.chargeNumber = :chargeNumber")
+  fun findPrisonerNumberByChargeNumber(
+    @Param("chargeNumber") chargeNumber: String,
+  ): String?
+
+  /**
+   * A stable per-prisoner mutex for consecutive-punishment writes. Every such write takes this
+   * lock before locking an individual charge, preventing opposite chain edits from acquiring
+   * charge locks in opposite orders.
+   */
+  @Query(
+    value = """
+      SELECT id
+      FROM reported_adjudications
+      WHERE prisoner_number = :prisonerNumber
+      ORDER BY id
+      LIMIT 1
+      FOR UPDATE
+    """,
+    nativeQuery = true,
+  )
+  fun lockConsecutivePunishmentOperationsForPrisoner(
+    @Param("prisonerNumber") prisonerNumber: String,
+  ): Long?
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT ra FROM ReportedAdjudication ra WHERE ra.chargeNumber = :chargeNumber")
   fun findByChargeNumberForUpdate(
@@ -199,6 +224,7 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
                                        AND ra2.prisoner_number = ra1.prisoner_number
         JOIN punishment p2 ON p2.reported_adjudication_fk_id = ra2.id AND coalesce(p2.deleted, false) = false
         WHERE p2.consecutive_to_charge_number = ra1.charge_number
+          AND p2.type = p1.type
           AND ra1.id < ra2.id
       )
       SELECT punishment_id_to_clear FROM looped_charges
@@ -221,19 +247,46 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
 
   @Query(
     value = """
-      SELECT DISTINCT ra.*
+      SELECT DISTINCT ra.prisoner_number
+      FROM reported_adjudications ra
+      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
+      WHERE p.id IN :punishmentIds
+      ORDER BY ra.prisoner_number
+    """,
+    nativeQuery = true,
+  )
+  fun findPrisonerNumbersByPunishmentIdIn(
+    @Param("punishmentIds") punishmentIds: List<Long>,
+  ): List<String>
+
+  @Query(
+    value = """
+      SELECT DISTINCT ra.charge_number
       FROM reported_adjudications ra
       JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
       WHERE p.consecutive_to_charge_number IS NOT NULL
         AND p.type::text IN (:types)
         AND p.suspended_until IS NULL
         AND COALESCE(p.deleted, false) = false
+      ORDER BY ra.charge_number
     """,
     nativeQuery = true,
   )
-  fun findReportsWithActiveConsecutivePunishments(
+  fun findChargeNumbersWithActiveConsecutivePunishments(
     @Param("types") types: List<String>,
-  ): List<ReportedAdjudication>
+  ): List<String>
+
+  @Query(
+    """
+      SELECT DISTINCT ra.prisonerNumber
+      FROM ReportedAdjudication ra
+      WHERE ra.chargeNumber IN :chargeNumbers
+      ORDER BY ra.prisonerNumber
+    """,
+  )
+  fun findPrisonerNumbersByChargeNumberIn(
+    @Param("chargeNumbers") chargeNumbers: List<String>,
+  ): List<String>
 
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
   fun getNextChargeSequence(

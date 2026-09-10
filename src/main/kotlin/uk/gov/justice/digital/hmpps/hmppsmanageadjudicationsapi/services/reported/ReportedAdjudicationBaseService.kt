@@ -7,6 +7,8 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudication
@@ -27,21 +29,131 @@ open class ReportedAdjudicationBaseService(
     val lossOfVisitsEvents: List<LossOfVisitsEventDto> = emptyList(),
   )
 
+  protected sealed interface ConsecutiveChainIssue {
+    val chargeNumber: String
+  }
+
+  protected data class InvalidConsecutiveTarget(
+    override val chargeNumber: String,
+  ) : ConsecutiveChainIssue
+
+  protected data class MissingConsecutiveTarget(
+    override val chargeNumber: String,
+  ) : ConsecutiveChainIssue
+
+  protected data class ConsecutivePunishmentLoop(
+    override val chargeNumber: String,
+  ) : ConsecutiveChainIssue
+
   protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication = authorizeForActiveCaseload(
     reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(chargeNumber),
   )
 
   /**
-   * Locks a charge while a write may change the validity of a consecutive-punishment chain.
-   * Link writers lock their target charge through [lockByChargeNumber], so target changes and new
-   * links cannot pass validation concurrently and leave a dangling chain.
+   * Consecutive-punishment changes are serialized per prisoner before an individual charge is
+   * locked. This stable lock order prevents opposite chain edits from deadlocking and keeps chain
+   * validation valid until the transaction completes.
    */
-  protected fun findByChargeNumberForUpdate(chargeNumber: String): ReportedAdjudication = authorizeForActiveCaseload(
-    reportedAdjudicationRepository.findByChargeNumberForUpdate(chargeNumber)
-      ?: throwEntityNotFoundException(chargeNumber),
-  )
+  protected fun findByChargeNumberForUpdate(chargeNumber: String): ReportedAdjudication {
+    val prisonerNumber = reportedAdjudicationRepository.findPrisonerNumberByChargeNumber(chargeNumber)
+      ?: throwEntityNotFoundException(chargeNumber)
+    reportedAdjudicationRepository.lockConsecutivePunishmentOperationsForPrisoner(prisonerNumber)
 
-  protected fun lockByChargeNumber(chargeNumber: String): ReportedAdjudication? = reportedAdjudicationRepository.findByChargeNumberForUpdate(chargeNumber)
+    return authorizeForActiveCaseload(
+      reportedAdjudicationRepository.findByChargeNumberForUpdate(chargeNumber)
+        ?: throwEntityNotFoundException(chargeNumber),
+    )
+  }
+
+  protected fun findConsecutiveReport(chargeNumber: String): ReportedAdjudication? = reportedAdjudicationRepository.findByChargeNumber(chargeNumber)
+
+  /**
+   * Validates every exact-type target reachable from a consecutive punishment. The source
+   * prisoner's mutex must be held by the caller before invoking this function.
+   */
+  protected fun findConsecutiveChainIssue(
+    source: ReportedAdjudication,
+    punishmentType: PunishmentType,
+    targetChargeNumber: String,
+  ): ConsecutiveChainIssue? {
+    val sourceHearingDate = source.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
+      ?: return InvalidConsecutiveTarget(source.chargeNumber)
+    val reports = mutableMapOf(source.chargeNumber to source)
+    fun findReport(chargeNumber: String): ReportedAdjudication? = reports[chargeNumber]
+      ?: findConsecutiveReport(chargeNumber)?.also { reports[chargeNumber] = it }
+
+    findExactTypeLoop(source.chargeNumber, targetChargeNumber, punishmentType, ::findReport)?.let {
+      return ConsecutivePunishmentLoop(it)
+    }
+
+    val toValidate = ArrayDeque<String>().apply { add(targetChargeNumber) }
+    val validated = mutableSetOf<String>()
+    while (toValidate.isNotEmpty()) {
+      val chargeNumber = toValidate.removeFirst()
+      if (!validated.add(chargeNumber)) continue
+
+      val target = findReport(chargeNumber) ?: return MissingConsecutiveTarget(chargeNumber)
+      val matchingPunishments = target.getPunishments().filter {
+        it.type == punishmentType && it.getSuspendedUntil() == null
+      }
+      val targetIsEligible = target.prisonerNumber == source.prisonerNumber &&
+        target.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == sourceHearingDate &&
+        target.latestOutcomeCode() == OutcomeCode.CHARGE_PROVED &&
+        matchingPunishments.isNotEmpty()
+      if (!targetIsEligible) return InvalidConsecutiveTarget(chargeNumber)
+
+      matchingPunishments.mapNotNull { it.consecutiveToChargeNumber }.forEach(toValidate::add)
+    }
+
+    return null
+  }
+
+  private fun findExactTypeLoop(
+    sourceChargeNumber: String,
+    targetChargeNumber: String,
+    punishmentType: PunishmentType,
+    findReport: (String) -> ReportedAdjudication?,
+  ): String? {
+    val visitState = mutableMapOf(sourceChargeNumber to ChainVisitState.VISITING)
+    val stack = ArrayDeque<ChainFrame>().apply { addLast(ChainFrame(targetChargeNumber)) }
+
+    while (stack.isNotEmpty()) {
+      val frame = stack.last()
+      val state = visitState[frame.chargeNumber]
+      if (state == ChainVisitState.VISITING && frame.targets == null) {
+        return frame.chargeNumber
+      }
+      if (state == ChainVisitState.VISITED) {
+        stack.removeLast()
+        continue
+      }
+
+      if (frame.targets == null) {
+        visitState[frame.chargeNumber] = ChainVisitState.VISITING
+        frame.targets = findReport(frame.chargeNumber)
+          ?.getPunishments()
+          ?.filter { it.type == punishmentType }
+          ?.mapNotNull { it.consecutiveToChargeNumber }
+          ?.iterator()
+          ?: emptyList<String>().iterator()
+      }
+
+      val targets = requireNotNull(frame.targets)
+      if (targets.hasNext()) {
+        val nextChargeNumber = targets.next()
+        when (visitState[nextChargeNumber]) {
+          ChainVisitState.VISITING -> return nextChargeNumber
+          ChainVisitState.VISITED -> Unit
+          null -> stack.addLast(ChainFrame(nextChargeNumber))
+        }
+      } else {
+        visitState[frame.chargeNumber] = ChainVisitState.VISITED
+        stack.removeLast()
+      }
+    }
+
+    return null
+  }
 
   private fun authorizeForActiveCaseload(reportedAdjudication: ReportedAdjudication): ReportedAdjudication {
     val overrideAgencyId = reportedAdjudication.overrideAgencyId ?: reportedAdjudication.originatingAgencyId
@@ -122,6 +234,7 @@ open class ReportedAdjudicationBaseService(
 
   protected fun deactivateActivatedPunishments(
     chargeNumber: String,
+    prisonerNumber: String,
     idsToIgnore: List<Long>,
   ): SuspendedPunishmentUpdates {
     val updatedReports = linkedMapOf<String, ReportedAdjudication>()
@@ -131,8 +244,12 @@ open class ReportedAdjudicationBaseService(
       .associateBy { it.chargeNumber }
       .toSortedMap()
       .values
-      .map { lockByChargeNumber(it.chargeNumber) ?: it }
       .forEach { report ->
+        if (report.prisonerNumber != prisonerNumber) {
+          throw ValidationException(
+            "Unable to deactivate punishments on ${report.chargeNumber}: prisoner does not match $chargeNumber",
+          )
+        }
         report.getPunishments()
           .filter { p -> p.activatedByChargeNumber == chargeNumber && idsToIgnore.none { id -> id == p.id } && p.getSchedule().size > 1 }
           .forEach { punishmentToRestore ->
@@ -172,4 +289,15 @@ open class ReportedAdjudicationBaseService(
   companion object {
     fun throwEntityNotFoundException(id: String): Nothing = throw EntityNotFoundException("ReportedAdjudication not found for $id")
   }
+
+  private data class ChainFrame(
+    val chargeNumber: String,
+    var targets: Iterator<String>? = null,
+  )
+
+  private enum class ChainVisitState { VISITING, VISITED }
+
+  private fun ReportedAdjudication.latestOutcomeCode(): OutcomeCode? = getOutcomes()
+    .maxWithOrNull(compareBy<Outcome>({ it.getCreatedDateTime() }, { it.id }))
+    ?.code
 }
