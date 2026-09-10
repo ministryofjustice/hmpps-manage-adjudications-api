@@ -739,6 +739,161 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `cannot unquash when a deeper consecutive target is invalid`() {
+      fun additionalDaysReport(
+        chargeNumber: String,
+        latestOutcomeCode: OutcomeCode,
+        consecutiveTo: String? = null,
+      ) = entityBuilder.reportedAdjudication(
+        chargeNumber = chargeNumber,
+        dateTime = DATE_TIME_OF_INCIDENT,
+      ).also { report ->
+        report.status = latestOutcomeCode.status
+        report.addOutcome(
+          Outcome(code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = LocalDateTime.now() },
+        )
+        if (latestOutcomeCode == OutcomeCode.QUASHED) {
+          report.addOutcome(
+            Outcome(code = OutcomeCode.QUASHED).also { it.createDateTime = LocalDateTime.now().plusSeconds(1) },
+          )
+        }
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveToChargeNumber = consecutiveTo,
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+
+      val root = additionalDaysReport("root", OutcomeCode.QUASHED)
+      val middle = additionalDaysReport("middle", OutcomeCode.CHARGE_PROVED, consecutiveTo = root.chargeNumber)
+      val source = additionalDaysReport("source", OutcomeCode.QUASHED, consecutiveTo = middle.chargeNumber)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(middle.chargeNumber)).thenReturn(middle)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(root.chargeNumber)).thenReturn(root)
+
+      Assertions.assertThatThrownBy {
+        outcomeService.deleteOutcome(source.chargeNumber)
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining(
+          "following consecutive target charges do not have a live charge-proved additional days punishment: root",
+        )
+
+      assertThat(source.getOutcomes().maxBy { it.getCreatedDateTime()!! }.code).isEqualTo(OutcomeCode.QUASHED)
+    }
+
+    @Test
+    fun `unquashes a legacy suspended additional days punishment that retains a consecutive link`() {
+      val createdAt = LocalDateTime.now()
+      val source = entityBuilder.reportedAdjudication(chargeNumber = "source").also { report ->
+        report.status = ReportedAdjudicationStatus.QUASHED
+        report.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = createdAt })
+        report.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED).also { it.createDateTime = createdAt.plusSeconds(1) })
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            suspendedUntil = LocalDate.now().plusDays(10),
+            consecutiveToChargeNumber = "target",
+            schedule = mutableListOf(PunishmentSchedule(duration = 5, suspendedUntil = LocalDate.now().plusDays(10))),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+      whenever(reportedAdjudicationRepository.save(source)).thenReturn(source)
+
+      val response = outcomeService.deleteOutcome(source.chargeNumber)
+
+      assertThat(response.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+      assertThat(source.getPunishments().single().consecutiveToChargeNumber).isEqualTo("target")
+    }
+
+    @Test
+    fun `cannot unquash when doing so would give a target two live dependents`() {
+      val createdAt = LocalDateTime.now()
+      val target = entityBuilder.reportedAdjudication(chargeNumber = "target").also { report ->
+        report.status = ReportedAdjudicationStatus.CHARGE_PROVED
+        report.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = createdAt })
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+      val source = entityBuilder.reportedAdjudication(chargeNumber = "source").also { report ->
+        report.status = ReportedAdjudicationStatus.QUASHED
+        report.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = createdAt })
+        report.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED).also { it.createDateTime = createdAt.plusSeconds(1) })
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveToChargeNumber = target.chargeNumber,
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+      val existingDependent = entityBuilder.reportedAdjudication(chargeNumber = "dependent")
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+      whenever(reportedAdjudicationRepository.findByChargeNumber(target.chargeNumber)).thenReturn(target)
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          target.chargeNumber,
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(existingDependent))
+
+      Assertions.assertThatThrownBy { outcomeService.deleteOutcome(source.chargeNumber) }
+        .isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("consecutive target target already has a live dependent on dependent")
+    }
+
+    @Test
+    fun `unquash reports a missing source hearing without naming it as an invalid target`() {
+      val createdAt = LocalDateTime.now()
+      val source = entityBuilder.reportedAdjudication(chargeNumber = "source").also { report ->
+        report.hearings.clear()
+        report.status = ReportedAdjudicationStatus.QUASHED
+        report.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = createdAt })
+        report.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED).also { it.createDateTime = createdAt.plusSeconds(1) })
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveToChargeNumber = "target",
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+
+      Assertions.assertThatThrownBy { outcomeService.deleteOutcome(source.chargeNumber, id = 2) }
+        .isInstanceOf(ValidationException::class.java)
+        .hasMessage("Unable to unquash source because the source charge has no hearing date")
+    }
+
+    @Test
+    fun `uses outcome id to break timestamp ties before validating an unquash`() {
+      val createdAt = LocalDateTime.now()
+      val source = entityBuilder.reportedAdjudication(chargeNumber = "source").also { report ->
+        report.status = ReportedAdjudicationStatus.QUASHED
+        report.addOutcome(Outcome(id = 1, code = OutcomeCode.CHARGE_PROVED).also { it.createDateTime = createdAt })
+        report.addOutcome(Outcome(id = 2, code = OutcomeCode.QUASHED).also { it.createDateTime = createdAt })
+        report.addPunishment(
+          Punishment(
+            type = PunishmentType.ADDITIONAL_DAYS,
+            consecutiveToChargeNumber = "missing-target",
+            schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(source.chargeNumber)).thenReturn(source)
+
+      Assertions.assertThatThrownBy { outcomeService.deleteOutcome(source.chargeNumber, id = 2) }
+        .isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("missing-target")
+    }
+
+    @Test
     fun `deletes NOT_PROCEED from REFER_GOV`() {
       whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(
         reportedAdjudication

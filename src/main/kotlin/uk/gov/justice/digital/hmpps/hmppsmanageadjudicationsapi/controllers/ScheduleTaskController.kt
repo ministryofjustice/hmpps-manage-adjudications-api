@@ -30,4 +30,11 @@ class ScheduleTaskController(
       eventPublishService.publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, it)
     }
   }
+
+  @PostMapping(value = ["/repair-consecutive-punishment-chains"])
+  fun repairConsecutivePunishmentChains() {
+    consecutivePunishmentCorrectionService.repairConsecutivePunishmentChains().forEach {
+      eventPublishService.publishEvent(AdjudicationDomainEventType.PUNISHMENTS_UPDATED, it)
+    }
+  }
 }

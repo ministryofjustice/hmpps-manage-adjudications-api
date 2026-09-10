@@ -12,6 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.CompleteRehabilitativeActivityRequest
@@ -128,22 +130,65 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
     @ParameterizedTest
     fun `throws validation exception when creating a consecutive loop`(punishmentType: PunishmentType) {
-      whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
-          "1",
-          listOf("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS"),
-        ),
-      ).thenReturn(
-        listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")),
-      )
+      val sourceChargeNumber = reportedAdjudication.chargeNumber
+      val target = activeAdditionalDaysReport("2", punishmentType, consecutiveTo = sourceChargeNumber)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(target)
 
       assertThatThrownBy {
         punishmentsService.create(
-          chargeNumber = "1",
+          chargeNumber = sourceChargeNumber,
           listOf(PunishmentRequest(type = punishmentType, consecutiveChargeNumber = "2", duration = 1)),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("charge 1 cannot be consecutive to 2 because 2 is already consecutive to this charge")
+        .hasMessageContaining(
+          "charge $sourceChargeNumber cannot be consecutive to 2 because it would create a consecutive punishment loop",
+        )
+    }
+
+    @Test
+    fun `does not mix additional and prospective days when checking for a loop`() {
+      val sourceChargeNumber = reportedAdjudication.chargeNumber
+      val target = activeAdditionalDaysReport("2", PunishmentType.ADDITIONAL_DAYS).also {
+        it.addPunishment(
+          Punishment(
+            type = PunishmentType.PROSPECTIVE_DAYS,
+            consecutiveToChargeNumber = sourceChargeNumber,
+            schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+          ),
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(target)
+
+      assertDoesNotThrow {
+        punishmentsService.create(
+          chargeNumber = sourceChargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = "2",
+              duration = 1,
+            ),
+          ),
+        )
+      }
+
+      verify(reportedAdjudicationRepository, never()).findByChargeNumberForUpdate("2")
+    }
+
+    @Test
+    fun `takes the prisoner mutex before locking the source charge`() {
+      punishmentsService.create(
+        chargeNumber = reportedAdjudication.chargeNumber,
+        listOf(PunishmentRequest(type = PunishmentType.CAUTION)),
+      )
+
+      inOrder(reportedAdjudicationRepository) {
+        verify(reportedAdjudicationRepository).findPrisonerNumberByChargeNumber(reportedAdjudication.chargeNumber)
+        verify(reportedAdjudicationRepository).lockConsecutivePunishmentOperationsForPrisoner(
+          reportedAdjudication.prisonerNumber,
+        )
+        verify(reportedAdjudicationRepository).findByChargeNumberForUpdate(reportedAdjudication.chargeNumber)
+      }
     }
 
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
@@ -151,11 +196,149 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     fun `throws validation exception when consecutive to its own charge`(punishmentType: PunishmentType) {
       assertThatThrownBy {
         punishmentsService.create(
-          chargeNumber = "1",
-          listOf(PunishmentRequest(type = punishmentType, consecutiveChargeNumber = "1", duration = 1)),
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = punishmentType,
+              consecutiveChargeNumber = reportedAdjudication.chargeNumber,
+              duration = 1,
+            ),
+          ),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("a punishment cannot be consecutive to its own charge 1")
+        .hasMessageContaining("a punishment cannot be consecutive to its own charge ${reportedAdjudication.chargeNumber}")
+    }
+
+    @Test
+    fun `rejects a consecutive target on a non additional days punishment`() {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.CONFINEMENT,
+              consecutiveChargeNumber = "2",
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("only additional days punishments can be consecutive to another charge")
+    }
+
+    @Test
+    fun `rejects a suspended consecutive additional days punishment`() {
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = "2",
+              suspendedUntil = LocalDate.now(),
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("a suspended additional days punishment cannot be consecutive to another charge")
+    }
+
+    @Test
+    fun `rejects a nonexistent consecutive target`() {
+      whenever(reportedAdjudicationRepository.findByChargeNumber("missing")).thenReturn(null)
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = "missing",
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("consecutive target charge missing does not exist")
+    }
+
+    @CsvSource("different-prisoner", "different-hearing", "different-type", "suspended", "quashed")
+    @ParameterizedTest
+    fun `rejects an ineligible consecutive target`(invalidCondition: String) {
+      val target = activeAdditionalDaysReport("2", PunishmentType.ADDITIONAL_DAYS)
+      when (invalidCondition) {
+        "different-prisoner" -> target.prisonerNumber = "B12345"
+        "different-hearing" -> target.hearings.first().dateTimeOfHearing =
+          target.hearings.first().dateTimeOfHearing.plusDays(1)
+        "different-type" -> {
+          target.clearPunishments()
+          target.addPunishment(
+            Punishment(
+              type = PunishmentType.PROSPECTIVE_DAYS,
+              schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+            ),
+          )
+        }
+        "suspended" -> {
+          target.clearPunishments()
+          target.addPunishment(
+            Punishment(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              suspendedUntil = LocalDate.now(),
+              schedule = mutableListOf(PunishmentSchedule(duration = 1, suspendedUntil = LocalDate.now())),
+            ),
+          )
+        }
+        "quashed" -> {
+          target.clearOutcomes()
+          target.addOutcome(Outcome(code = OutcomeCode.QUASHED))
+        }
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(target)
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = "2",
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining(
+          "does not have a live, unsuspended ADDITIONAL_DAYS punishment for the same prisoner and hearing date",
+        )
+    }
+
+    @Test
+    fun `rejects a consecutive target that already has another live dependent`() {
+      val target = activeAdditionalDaysReport("2", PunishmentType.ADDITIONAL_DAYS)
+      val existingDependent = entityBuilder.reportedAdjudication(chargeNumber = "3")
+      whenever(reportedAdjudicationRepository.findByChargeNumber(target.chargeNumber)).thenReturn(target)
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          target.chargeNumber,
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(existingDependent))
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = target.chargeNumber,
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("already has a live consecutive ADDITIONAL_DAYS dependent on 3")
     }
 
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
@@ -473,6 +656,9 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     @Test
     fun `creates a set of punishments `() {
       val argumentCaptor = ArgumentCaptor.forClass(ReportedAdjudication::class.java)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("999")).thenReturn(
+        activeAdditionalDaysReport("999", PunishmentType.ADDITIONAL_DAYS),
+      )
 
       val response = punishmentsService.create(
         chargeNumber = "1",
@@ -708,7 +894,6 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
               startDate = LocalDate.now(),
               endDate = LocalDate.now().plusDays(1),
               activatedFrom = "2",
-              consecutiveChargeNumber = "12345",
             ),
           ),
         )
@@ -1209,23 +1394,45 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("Unable to modify: $type is linked to another report")
     }
 
-    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @CsvSource("PROSPECTIVE_DAYS", "ADDITIONAL_DAYS")
     @ParameterizedTest
-    fun `throws validation exception when updating to create a consecutive loop`(type: PunishmentType) {
+    fun `throws validation exception if a linked additional days duration is amended`(type: PunishmentType) {
       whenever(reportedAdjudicationRepository.findByChargeNumber(any())).thenReturn(
         entityBuilder.reportedAdjudication().also {
           it.status = ReportedAdjudicationStatus.CHARGE_PROVED
+          it.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+          it.addPunishment(
+            Punishment(
+              id = 1,
+              type = type,
+              schedule = mutableListOf(PunishmentSchedule(duration = 10)),
+            ),
+          )
         },
       )
-
       whenever(
-        reportedAdjudicationRepository.findByPunishmentsConsecutiveToChargeNumberAndPunishmentsTypeInV2(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
           "1",
-          listOf("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS"),
+          listOf(type.name),
         ),
-      ).thenReturn(
-        listOf(entityBuilder.reportedAdjudication(chargeNumber = "2")),
-      )
+      ).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "1234")))
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          chargeNumber = "1",
+          punishments = listOf(PunishmentRequest(id = 1, type = type, duration = 9)),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("Unable to modify: $type is linked to another report")
+    }
+
+    @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
+    @ParameterizedTest
+    fun `throws validation exception when updating to create a consecutive loop`(type: PunishmentType) {
+      val source = activeAdditionalDaysReport("1", type)
+      val target = activeAdditionalDaysReport("2", type, consecutiveTo = "1")
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(source)
+      whenever(reportedAdjudicationRepository.findByChargeNumber("2")).thenReturn(target)
 
       assertThatThrownBy {
         punishmentsService.update(
@@ -1233,7 +1440,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishments = listOf(PunishmentRequest(type = type, consecutiveChargeNumber = "2", duration = 1)),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("charge 1 cannot be consecutive to 2 because 2 is already consecutive to this charge")
+        .hasMessageContaining("charge 1 cannot be consecutive to 2 because it would create a consecutive punishment loop")
     }
 
     @Test
@@ -1956,6 +2163,95 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
     }
 
     @Test
+    fun `does not deactivate an activated additional days punishment used by a consecutive charge`() {
+      reportToActivateFrom.also {
+        it.getPunishments().forEach { punishment ->
+          punishment.activatedByChargeNumber = currentCharge.chargeNumber
+          punishment.addSchedule(
+            PunishmentSchedule(
+              id = 2,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
+              duration = 10,
+            ).also { schedule -> schedule.createDateTime = LocalDateTime.now().plusDays(1) },
+          )
+        }
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("12345")).thenReturn(currentCharge)
+      whenever(reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber("12345")).thenReturn(
+        listOf(reportToActivateFrom),
+      )
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          "activated",
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(entityBuilder.reportedAdjudication(chargeNumber = "dependent")))
+
+      assertThatThrownBy {
+        punishmentsServiceV2.update(
+          chargeNumber = "12345",
+          punishments = listOf(
+            PunishmentRequest(
+              type = PunishmentType.EXCLUSION_WORK,
+              duration = 10,
+              startDate = LocalDate.now(),
+              endDate = LocalDate.now(),
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessage("Unable to deactivate: ADDITIONAL_DAYS on activated is linked to another report")
+
+      reportToActivateFrom.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }.also {
+        assertThat(it.getSuspendedUntil()).isNull()
+        assertThat(it.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
+      }
+    }
+
+    @Test
+    fun `allows one update to remove its own consecutive link and deactivate its activated punishment`() {
+      currentCharge.addPunishment(
+        Punishment(
+          id = 3,
+          type = PunishmentType.ADDITIONAL_DAYS,
+          consecutiveToChargeNumber = reportToActivateFrom.chargeNumber,
+          schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+        ),
+      )
+      reportToActivateFrom.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }.also {
+        it.activatedByChargeNumber = currentCharge.chargeNumber
+        it.addSchedule(
+          PunishmentSchedule(
+            id = 2,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(9),
+            duration = 10,
+          ).also { schedule -> schedule.createDateTime = LocalDateTime.now().plusDays(1) },
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(currentCharge.chargeNumber)).thenReturn(currentCharge)
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(currentCharge.chargeNumber),
+      ).thenReturn(listOf(reportToActivateFrom))
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          reportToActivateFrom.chargeNumber,
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(currentCharge))
+      whenever(reportedAdjudicationRepository.save(currentCharge)).thenReturn(currentCharge)
+
+      punishmentsServiceV2.update(currentCharge.chargeNumber, punishments = emptyList())
+
+      val restoredPunishment = reportToActivateFrom.getPunishments()
+        .first { it.type == PunishmentType.ADDITIONAL_DAYS }
+      assertThat(restoredPunishment.activatedByChargeNumber).isNull()
+      assertThat(restoredPunishment.getSchedule()).hasSize(1)
+      assertThat(currentCharge.getPunishments()).isEmpty()
+    }
+
+    @Test
     fun `activating a suspended visits punishment emits the updated snapshot for its original charge`() {
       val startDate = LocalDate.now()
       val visitsReport = entityBuilder.reportedAdjudication(chargeNumber = "visits-charge").also { report ->
@@ -2243,6 +2539,50 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("EXT_SUSPEND requires a suspendedUntil")
+    }
+
+    @Test
+    fun `cannot extend suspension when additional days is a live consecutive target`() {
+      val punishment = Punishment(
+        id = 1,
+        type = PunishmentType.ADDITIONAL_DAYS,
+        rehabilitativeActivities = mutableListOf(RehabilitativeActivity()),
+        schedule = mutableListOf(PunishmentSchedule(id = 1, duration = 10)),
+      )
+      val report = activeAdditionalDaysReport("1", PunishmentType.ADDITIONAL_DAYS).also {
+        it.clearPunishments()
+        it.addPunishment(punishment)
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber("1")).thenReturn(report)
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          "1",
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(activeAdditionalDaysReport("2", PunishmentType.ADDITIONAL_DAYS, consecutiveTo = "1")))
+
+      assertThatThrownBy {
+        punishmentsService.completeRehabilitativeActivity(
+          chargeNumber = "1",
+          punishmentId = 1,
+          completeRehabilitativeActivityRequest = CompleteRehabilitativeActivityRequest(
+            completed = false,
+            outcome = NotCompletedOutcome.EXT_SUSPEND,
+            suspendedUntil = LocalDate.now().plusDays(10),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessage("Unable to modify: ADDITIONAL_DAYS is linked to another report")
+
+      assertThat(punishment.getSchedule()).hasSize(1)
+      inOrder(reportedAdjudicationRepository) {
+        verify(reportedAdjudicationRepository).lockConsecutivePunishmentOperationsForPrisoner(report.prisonerNumber)
+        verify(reportedAdjudicationRepository).findByChargeNumberForUpdate("1")
+        verify(reportedAdjudicationRepository).findChargeProvedReportsWithActiveConsecutivePunishments(
+          "1",
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        )
+      }
     }
 
     @Test
@@ -2550,6 +2890,26 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
   }
 
   companion object {
+
+    fun activeAdditionalDaysReport(
+      chargeNumber: String,
+      type: PunishmentType,
+      consecutiveTo: String? = null,
+    ): ReportedAdjudication = entityBuilder.reportedAdjudication(
+      chargeNumber = chargeNumber,
+      dateTime = DATE_TIME_OF_INCIDENT,
+    ).also { report ->
+      report.status = ReportedAdjudicationStatus.CHARGE_PROVED
+      report.hearings.first().oicHearingType = OicHearingType.INAD_ADULT
+      report.addOutcome(Outcome(code = OutcomeCode.CHARGE_PROVED))
+      report.addPunishment(
+        Punishment(
+          type = type,
+          consecutiveToChargeNumber = consecutiveTo,
+          schedule = mutableListOf(PunishmentSchedule(duration = 1)),
+        ),
+      )
+    }
 
     fun socialVisitsPunishment(
       duration: Int,

@@ -111,7 +111,7 @@ class OutcomeService(
     reason: QuashedReason,
     details: String,
   ): ReportedAdjudicationDto {
-    findByChargeNumber(chargeNumber).latestOutcome().canQuash()
+    findByChargeNumberForUpdate(chargeNumber).latestOutcome().canQuash()
     chargeProvedReportsConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).takeIf { it.isNotEmpty() }
       ?.let { dependentChargeNumbers ->
         throw ValidationException(
@@ -175,7 +175,7 @@ class OutcomeService(
   }
 
   fun deleteOutcome(chargeNumber: String, id: Long? = null): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber)
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber)
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
     val supplementalLossOfVisitsEvents = mutableListOf<LossOfVisitsEventDto>()
 
@@ -235,20 +235,44 @@ class OutcomeService(
   fun getLatestOutcome(chargeNumber: String): Outcome? = findByChargeNumber(chargeNumber).latestOutcome()
 
   private fun validateConsecutiveTargetsForUnquash(reportedAdjudication: ReportedAdjudication) {
-    val consecutiveTargetChargeNumbers = reportedAdjudication.getPunishments()
+    val consecutivePunishments = reportedAdjudication.getPunishments()
       .filter { PunishmentType.additionalDays().contains(it.type) }
-      .mapNotNull { it.consecutiveToChargeNumber }
+      .filter { it.getSuspendedUntil() == null }
+      .filter { it.consecutiveToChargeNumber != null }
+    if (consecutivePunishments.isEmpty()) return
+
+    val issues = consecutivePunishments.mapNotNull { punishment ->
+      val targetChargeNumber = requireNotNull(punishment.consecutiveToChargeNumber)
+      findConsecutiveChainIssue(reportedAdjudication, punishment.type, targetChargeNumber)
+    }
+
+    issues.filterIsInstance<MissingConsecutiveSourceHearing>().firstOrNull()?.let {
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because the source charge has no hearing date",
+      )
+    }
+
+    val loopedCharges = issues.filterIsInstance<ConsecutivePunishmentLoop>()
+      .map { it.chargeNumber }
       .distinct()
       .sorted()
-    if (consecutiveTargetChargeNumbers.isEmpty()) return
-
-    val targetReports = findByChargeNumberIn(consecutiveTargetChargeNumbers).associateBy { it.chargeNumber }
-    val invalidTargets = consecutiveTargetChargeNumbers.filter { chargeNumber ->
-      targetReports[chargeNumber]?.let { target ->
-        target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
-          target.getPunishments().any { PunishmentType.additionalDays().contains(it.type) }
-      } != true
+    if (loopedCharges.isNotEmpty()) {
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because its consecutive punishment chain " +
+          "contains a loop at: ${loopedCharges.joinToString(", ")}. Repair the chain first",
+      )
     }
+
+    issues.filterIsInstance<ConsecutiveTargetAlreadyHasDependent>().firstOrNull()?.let { issue ->
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because consecutive target ${issue.chargeNumber} " +
+          "already has a live dependent on ${issue.dependentChargeNumber}",
+      )
+    }
+
+    val invalidTargets = issues.filter {
+      it is InvalidConsecutiveTarget || it is MissingConsecutiveTarget
+    }.map { it.chargeNumber }.distinct().sorted()
 
     if (invalidTargets.isNotEmpty()) {
       throw ValidationException(
@@ -262,7 +286,11 @@ class OutcomeService(
   private fun ReportedAdjudication.removePunishments(): SuspendedPunishmentUpdates {
     this.clearPunishments()
     this.punishmentComments.clear()
-    return deactivateActivatedPunishments(chargeNumber = chargeNumber, idsToIgnore = emptyList())
+    return deactivateActivatedPunishments(
+      chargeNumber = chargeNumber,
+      prisonerNumber = prisonerNumber,
+      idsToIgnore = emptyList(),
+    )
   }
 
   private fun createOutcome(
@@ -301,6 +329,7 @@ class OutcomeService(
     if (code == OutcomeCode.QUASHED) {
       deactivateActivatedPunishments(
         chargeNumber = chargeNumber,
+        prisonerNumber = reportedAdjudication.prisonerNumber,
         idsToIgnore = emptyList(),
       ).also { updates ->
         suspendedPunishmentEvents.addAll(updates.events)
@@ -360,8 +389,6 @@ class OutcomeService(
   }
 
   companion object {
-    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }
-
     fun ReportedAdjudication.getOutcome(id: Long) = this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun OutcomeCode.validateReferralTransition(to: OutcomeCode) {
@@ -382,7 +409,7 @@ class OutcomeService(
       return this
     }
 
-    fun ReportedAdjudication.lastOutcomeIsRefer() = OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }?.code)
+    fun ReportedAdjudication.lastOutcomeIsRefer() = OutcomeCode.referrals().contains(this.latestOutcome()?.code)
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {
