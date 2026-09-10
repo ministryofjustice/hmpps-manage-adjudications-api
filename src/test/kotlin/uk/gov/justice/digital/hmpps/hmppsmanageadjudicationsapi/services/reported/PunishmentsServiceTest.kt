@@ -314,6 +314,33 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
     }
 
+    @Test
+    fun `rejects a consecutive target that already has another live dependent`() {
+      val target = activeAdditionalDaysReport("2", PunishmentType.ADDITIONAL_DAYS)
+      val existingDependent = entityBuilder.reportedAdjudication(chargeNumber = "3")
+      whenever(reportedAdjudicationRepository.findByChargeNumber(target.chargeNumber)).thenReturn(target)
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          target.chargeNumber,
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(existingDependent))
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = reportedAdjudication.chargeNumber,
+          listOf(
+            PunishmentRequest(
+              type = PunishmentType.ADDITIONAL_DAYS,
+              consecutiveChargeNumber = target.chargeNumber,
+              duration = 1,
+            ),
+          ),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("already has a live consecutive ADDITIONAL_DAYS dependent on 3")
+    }
+
     @CsvSource("ADDITIONAL_DAYS", "PROSPECTIVE_DAYS")
     @ParameterizedTest
     fun `throws exception if not inad hearing `(punishmentType: PunishmentType) {
@@ -2180,6 +2207,48 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         assertThat(it.getSuspendedUntil()).isNull()
         assertThat(it.activatedByChargeNumber).isEqualTo(currentCharge.chargeNumber)
       }
+    }
+
+    @Test
+    fun `allows one update to remove its own consecutive link and deactivate its activated punishment`() {
+      currentCharge.addPunishment(
+        Punishment(
+          id = 3,
+          type = PunishmentType.ADDITIONAL_DAYS,
+          consecutiveToChargeNumber = reportToActivateFrom.chargeNumber,
+          schedule = mutableListOf(PunishmentSchedule(duration = 5)),
+        ),
+      )
+      reportToActivateFrom.getPunishments().first { it.type == PunishmentType.ADDITIONAL_DAYS }.also {
+        it.activatedByChargeNumber = currentCharge.chargeNumber
+        it.addSchedule(
+          PunishmentSchedule(
+            id = 2,
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now().plusDays(9),
+            duration = 10,
+          ).also { schedule -> schedule.createDateTime = LocalDateTime.now().plusDays(1) },
+        )
+      }
+      whenever(reportedAdjudicationRepository.findByChargeNumber(currentCharge.chargeNumber)).thenReturn(currentCharge)
+      whenever(
+        reportedAdjudicationRepository.findByPunishmentsActivatedByChargeNumber(currentCharge.chargeNumber),
+      ).thenReturn(listOf(reportToActivateFrom))
+      whenever(
+        reportedAdjudicationRepository.findChargeProvedReportsWithActiveConsecutivePunishments(
+          reportToActivateFrom.chargeNumber,
+          listOf(PunishmentType.ADDITIONAL_DAYS.name),
+        ),
+      ).thenReturn(listOf(currentCharge))
+      whenever(reportedAdjudicationRepository.save(currentCharge)).thenReturn(currentCharge)
+
+      punishmentsServiceV2.update(currentCharge.chargeNumber, punishments = emptyList())
+
+      val restoredPunishment = reportToActivateFrom.getPunishments()
+        .first { it.type == PunishmentType.ADDITIONAL_DAYS }
+      assertThat(restoredPunishment.activatedByChargeNumber).isNull()
+      assertThat(restoredPunishment.getSchedule()).hasSize(1)
+      assertThat(currentCharge.getPunishments()).isEmpty()
     }
 
     @Test

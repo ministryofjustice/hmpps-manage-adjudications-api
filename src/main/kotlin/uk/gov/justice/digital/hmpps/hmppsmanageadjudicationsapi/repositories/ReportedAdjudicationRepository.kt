@@ -210,82 +210,34 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
   ): List<ReportedAdjudication>
 
   @Query(
-    value = """
-      WITH looped_charges AS (
-        SELECT DISTINCT
-          CASE
-            WHEN ra1.create_datetime < ra2.create_datetime THEN p1.id
-            WHEN ra2.create_datetime < ra1.create_datetime THEN p2.id
-            ELSE least(p1.id, p2.id)
-          END AS punishment_id_to_clear
-        FROM reported_adjudications ra1
-        JOIN punishment p1 ON p1.reported_adjudication_fk_id = ra1.id AND coalesce(p1.deleted, false) = false
-        JOIN reported_adjudications ra2 ON ra2.charge_number = p1.consecutive_to_charge_number
-                                       AND ra2.prisoner_number = ra1.prisoner_number
-        JOIN punishment p2 ON p2.reported_adjudication_fk_id = ra2.id AND coalesce(p2.deleted, false) = false
-        WHERE p2.consecutive_to_charge_number = ra1.charge_number
-          AND p2.type = p1.type
-          AND ra1.id < ra2.id
-      )
-      SELECT punishment_id_to_clear FROM looped_charges
-    """,
+    value = "$LOOPED_CONSECUTIVE_PUNISHMENTS_QUERY SELECT DISTINCT prisoner_number FROM looped_charges ORDER BY prisoner_number",
     nativeQuery = true,
   )
-  fun findLoopedConsecutivePunishmentIdsToClear(): List<Long>
+  fun findPrisonerNumbersWithLoopedConsecutivePunishments(): List<String>
 
   @Query(
-    value = """
-      SELECT DISTINCT ra.* FROM reported_adjudications ra
-      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
-      WHERE p.id IN :punishmentIds
-    """,
+    value = "$LOOPED_CONSECUTIVE_PUNISHMENTS_QUERY SELECT punishment_id_to_clear FROM looped_charges WHERE prisoner_number = :prisonerNumber",
     nativeQuery = true,
   )
-  fun findByPunishmentIdIn(
-    @Param("punishmentIds") punishmentIds: List<Long>,
-  ): List<ReportedAdjudication>
+  fun findLoopedConsecutivePunishmentIdsToClearForPrisoner(
+    @Param("prisonerNumber") prisonerNumber: String,
+  ): List<Long>
 
   @Query(
     value = """
       SELECT DISTINCT ra.prisoner_number
       FROM reported_adjudications ra
       JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
-      WHERE p.id IN :punishmentIds
-      ORDER BY ra.prisoner_number
-    """,
-    nativeQuery = true,
-  )
-  fun findPrisonerNumbersByPunishmentIdIn(
-    @Param("punishmentIds") punishmentIds: List<Long>,
-  ): List<String>
-
-  @Query(
-    value = """
-      SELECT DISTINCT ra.charge_number
-      FROM reported_adjudications ra
-      JOIN punishment p ON p.reported_adjudication_fk_id = ra.id
       WHERE p.consecutive_to_charge_number IS NOT NULL
         AND p.type::text IN (:types)
         AND p.suspended_until IS NULL
         AND COALESCE(p.deleted, false) = false
-      ORDER BY ra.charge_number
+      ORDER BY ra.prisoner_number
     """,
     nativeQuery = true,
   )
-  fun findChargeNumbersWithActiveConsecutivePunishments(
+  fun findPrisonerNumbersWithActiveConsecutivePunishments(
     @Param("types") types: List<String>,
-  ): List<String>
-
-  @Query(
-    """
-      SELECT DISTINCT ra.prisonerNumber
-      FROM ReportedAdjudication ra
-      WHERE ra.chargeNumber IN :chargeNumbers
-      ORDER BY ra.prisonerNumber
-    """,
-  )
-  fun findPrisonerNumbersByChargeNumberIn(
-    @Param("chargeNumbers") chargeNumbers: List<String>,
   ): List<String>
 
   @Query(value = "SELECT nextval(:sequenceName)", nativeQuery = true)
@@ -409,7 +361,28 @@ interface ReportedAdjudicationRepository : CrudRepository<ReportedAdjudication, 
       JOIN reported_adjudications ra2 ON ra2.charge_number = p.consecutive_to_charge_number
       WHERE p.consecutive_to_charge_number = :chargeNumber
         AND p.type::text IN (:types)
+        AND p.suspended_until IS NULL
         AND COALESCE(p.deleted, false) = false
+    """
+
+    private const val LOOPED_CONSECUTIVE_PUNISHMENTS_QUERY = """
+      WITH looped_charges AS (
+        SELECT DISTINCT
+          CASE
+            WHEN ra1.create_datetime < ra2.create_datetime THEN p1.id
+            WHEN ra2.create_datetime < ra1.create_datetime THEN p2.id
+            ELSE least(p1.id, p2.id)
+          END AS punishment_id_to_clear,
+          ra1.prisoner_number
+        FROM reported_adjudications ra1
+        JOIN punishment p1 ON p1.reported_adjudication_fk_id = ra1.id AND coalesce(p1.deleted, false) = false
+        JOIN reported_adjudications ra2 ON ra2.charge_number = p1.consecutive_to_charge_number
+                                       AND ra2.prisoner_number = ra1.prisoner_number
+        JOIN punishment p2 ON p2.reported_adjudication_fk_id = ra2.id AND coalesce(p2.deleted, false) = false
+        WHERE p2.consecutive_to_charge_number = ra1.charge_number
+          AND p2.type = p1.type
+          AND ra1.id < ra2.id
+      )
     """
 
     private const val LATEST_OUTCOME_IS_CHARGE_PROVED = """

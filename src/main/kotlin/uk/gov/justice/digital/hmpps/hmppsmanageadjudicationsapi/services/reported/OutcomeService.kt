@@ -237,17 +237,21 @@ class OutcomeService(
   private fun validateConsecutiveTargetsForUnquash(reportedAdjudication: ReportedAdjudication) {
     val consecutivePunishments = reportedAdjudication.getPunishments()
       .filter { PunishmentType.additionalDays().contains(it.type) }
+      .filter { it.getSuspendedUntil() == null }
       .filter { it.consecutiveToChargeNumber != null }
     if (consecutivePunishments.isEmpty()) return
 
     val issues = consecutivePunishments.mapNotNull { punishment ->
       val targetChargeNumber = requireNotNull(punishment.consecutiveToChargeNumber)
-      if (punishment.getSuspendedUntil() != null) {
-        InvalidConsecutiveTarget(targetChargeNumber)
-      } else {
-        findConsecutiveChainIssue(reportedAdjudication, punishment.type, targetChargeNumber)
-      }
+      findConsecutiveChainIssue(reportedAdjudication, punishment.type, targetChargeNumber)
     }
+
+    issues.filterIsInstance<MissingConsecutiveSourceHearing>().firstOrNull()?.let {
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because the source charge has no hearing date",
+      )
+    }
+
     val loopedCharges = issues.filterIsInstance<ConsecutivePunishmentLoop>()
       .map { it.chargeNumber }
       .distinct()
@@ -259,7 +263,16 @@ class OutcomeService(
       )
     }
 
-    val invalidTargets = issues.map { it.chargeNumber }.distinct().sorted()
+    issues.filterIsInstance<ConsecutiveTargetAlreadyHasDependent>().firstOrNull()?.let { issue ->
+      throw ValidationException(
+        "Unable to unquash ${reportedAdjudication.chargeNumber} because consecutive target ${issue.chargeNumber} " +
+          "already has a live dependent on ${issue.dependentChargeNumber}",
+      )
+    }
+
+    val invalidTargets = issues.filter {
+      it is InvalidConsecutiveTarget || it is MissingConsecutiveTarget
+    }.map { it.chargeNumber }.distinct().sorted()
 
     if (invalidTargets.isNotEmpty()) {
       throw ValidationException(
@@ -376,8 +389,6 @@ class OutcomeService(
   }
 
   companion object {
-    fun ReportedAdjudication.latestOutcome(): Outcome? = this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }
-
     fun ReportedAdjudication.getOutcome(id: Long) = this.getOutcomes().firstOrNull { it.id == id } ?: throw EntityNotFoundException("Outcome not found for $id")
 
     fun OutcomeCode.validateReferralTransition(to: OutcomeCode) {
@@ -398,7 +409,7 @@ class OutcomeService(
       return this
     }
 
-    fun ReportedAdjudication.lastOutcomeIsRefer() = OutcomeCode.referrals().contains(this.getOutcomes().maxByOrNull { it.getCreatedDateTime()!! }?.code)
+    fun ReportedAdjudication.lastOutcomeIsRefer() = OutcomeCode.referrals().contains(this.latestOutcome()?.code)
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {

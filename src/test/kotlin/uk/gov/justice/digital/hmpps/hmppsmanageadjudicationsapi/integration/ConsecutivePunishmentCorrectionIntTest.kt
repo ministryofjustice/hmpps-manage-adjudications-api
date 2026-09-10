@@ -150,6 +150,30 @@ class ConsecutivePunishmentCorrectionIntTest : SqsIntegrationTestBase() {
     assertConsecutiveLink(thirdCharge, expected = firstCharge)
   }
 
+  @Test
+  fun `legacy loop endpoint does not rewrite a link through a quashed charge`() {
+    val firstCharge = "CHAIN-1"
+    val quashedCharge = "CHAIN-2"
+    val thirdCharge = "CHAIN-3"
+
+    saveReport(firstCharge, consecutiveTo = null, createdAt = LocalDateTime.of(2023, 2, 1, 9, 0))
+    saveReport(
+      quashedCharge,
+      consecutiveTo = firstCharge,
+      createdAt = LocalDateTime.of(2023, 2, 2, 9, 0),
+      outcomeCodes = listOf(OutcomeCode.CHARGE_PROVED, OutcomeCode.QUASHED),
+    )
+    saveReport(thirdCharge, consecutiveTo = quashedCharge, createdAt = LocalDateTime.of(2023, 2, 3, 9, 0))
+
+    webTestClient.post()
+      .uri("/scheduled-tasks/fix-consecutive-punishment-loops")
+      .exchange()
+      .expectStatus().isOk
+
+    assertConsecutiveLink(thirdCharge, expected = quashedCharge)
+    verify(eventPublishService, never()).publishEvent(any(), any())
+  }
+
   private fun seedLoop() {
     // older charge, created first, consecutive to the newer charge (the link to clear)
     saveReport(chargeNumber = olderCharge, consecutiveTo = newerCharge, createdAt = LocalDateTime.of(2023, 1, 1, 9, 0))

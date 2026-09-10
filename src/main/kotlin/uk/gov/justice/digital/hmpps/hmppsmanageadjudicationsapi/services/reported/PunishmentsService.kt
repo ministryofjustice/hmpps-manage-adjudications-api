@@ -401,6 +401,15 @@ class PunishmentsService(
         "charge ${source.chargeNumber} cannot be consecutive to $targetChargeNumber because it would create a consecutive punishment loop",
       )
 
+      is MissingConsecutiveSourceHearing -> throw ValidationException(
+        "charge ${issue.chargeNumber} has no hearing date",
+      )
+
+      is ConsecutiveTargetAlreadyHasDependent -> throw ValidationException(
+        "Unable to make ${source.chargeNumber} consecutive to $targetChargeNumber because ${issue.chargeNumber} " +
+          "already has a live consecutive ${punishmentType.name} dependent on ${issue.dependentChargeNumber}",
+      )
+
       null -> Unit
     }
   }

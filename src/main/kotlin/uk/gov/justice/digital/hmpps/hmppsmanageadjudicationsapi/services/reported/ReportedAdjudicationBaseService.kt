@@ -7,7 +7,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.LossOfVisit
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.SuspendedPunishmentEvent
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.toLossOfVisitsEvent
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Outcome
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
@@ -45,6 +44,15 @@ open class ReportedAdjudicationBaseService(
     override val chargeNumber: String,
   ) : ConsecutiveChainIssue
 
+  protected data class MissingConsecutiveSourceHearing(
+    override val chargeNumber: String,
+  ) : ConsecutiveChainIssue
+
+  protected data class ConsecutiveTargetAlreadyHasDependent(
+    override val chargeNumber: String,
+    val dependentChargeNumber: String,
+  ) : ConsecutiveChainIssue
+
   protected fun findByChargeNumber(chargeNumber: String): ReportedAdjudication = authorizeForActiveCaseload(
     reportedAdjudicationRepository.findByChargeNumber(chargeNumber) ?: throwEntityNotFoundException(chargeNumber),
   )
@@ -77,7 +85,7 @@ open class ReportedAdjudicationBaseService(
     targetChargeNumber: String,
   ): ConsecutiveChainIssue? {
     val sourceHearingDate = source.getLatestHearing()?.dateTimeOfHearing?.toLocalDate()
-      ?: return InvalidConsecutiveTarget(source.chargeNumber)
+      ?: return MissingConsecutiveSourceHearing(source.chargeNumber)
     val reports = mutableMapOf(source.chargeNumber to source)
     fun findReport(chargeNumber: String): ReportedAdjudication? = reports[chargeNumber]
       ?: findConsecutiveReport(chargeNumber)?.also { reports[chargeNumber] = it }
@@ -86,10 +94,12 @@ open class ReportedAdjudicationBaseService(
       return ConsecutivePunishmentLoop(it)
     }
 
-    val toValidate = ArrayDeque<String>().apply { add(targetChargeNumber) }
+    val toValidate = ArrayDeque<ConsecutiveTarget>().apply {
+      add(ConsecutiveTarget(targetChargeNumber, source.chargeNumber))
+    }
     val validated = mutableSetOf<String>()
     while (toValidate.isNotEmpty()) {
-      val chargeNumber = toValidate.removeFirst()
+      val (chargeNumber, expectedDependentChargeNumber) = toValidate.removeFirst()
       if (!validated.add(chargeNumber)) continue
 
       val target = findReport(chargeNumber) ?: return MissingConsecutiveTarget(chargeNumber)
@@ -98,11 +108,17 @@ open class ReportedAdjudicationBaseService(
       }
       val targetIsEligible = target.prisonerNumber == source.prisonerNumber &&
         target.getLatestHearing()?.dateTimeOfHearing?.toLocalDate() == sourceHearingDate &&
-        target.latestOutcomeCode() == OutcomeCode.CHARGE_PROVED &&
+        target.latestOutcome()?.code == OutcomeCode.CHARGE_PROVED &&
         matchingPunishments.isNotEmpty()
       if (!targetIsEligible) return InvalidConsecutiveTarget(chargeNumber)
 
-      matchingPunishments.mapNotNull { it.consecutiveToChargeNumber }.forEach(toValidate::add)
+      chargeProvedReportsConsecutiveTo(chargeNumber, listOf(punishmentType))
+        .firstOrNull { it != expectedDependentChargeNumber }
+        ?.let { return ConsecutiveTargetAlreadyHasDependent(chargeNumber, it) }
+
+      matchingPunishments.mapNotNull { it.consecutiveToChargeNumber }.forEach {
+        toValidate.add(ConsecutiveTarget(it, chargeNumber))
+      }
     }
 
     return null
@@ -132,7 +148,7 @@ open class ReportedAdjudicationBaseService(
         visitState[frame.chargeNumber] = ChainVisitState.VISITING
         frame.targets = findReport(frame.chargeNumber)
           ?.getPunishments()
-          ?.filter { it.type == punishmentType }
+          ?.filter { it.type == punishmentType && it.getSuspendedUntil() == null }
           ?.mapNotNull { it.consecutiveToChargeNumber }
           ?.iterator()
           ?: emptyList<String>().iterator()
@@ -255,7 +271,8 @@ open class ReportedAdjudicationBaseService(
           .forEach { punishmentToRestore ->
             if (
               PunishmentType.additionalDays().contains(punishmentToRestore.type) &&
-              isLinkedToChargeProvedReport(report.chargeNumber, listOf(punishmentToRestore.type))
+              chargeProvedReportsConsecutiveTo(report.chargeNumber, listOf(punishmentToRestore.type))
+                .any { it != chargeNumber }
             ) {
               throw ValidationException(
                 "Unable to deactivate: ${punishmentToRestore.type} on ${report.chargeNumber} is linked to another report",
@@ -295,9 +312,10 @@ open class ReportedAdjudicationBaseService(
     var targets: Iterator<String>? = null,
   )
 
-  private enum class ChainVisitState { VISITING, VISITED }
+  private data class ConsecutiveTarget(
+    val chargeNumber: String,
+    val expectedDependentChargeNumber: String,
+  )
 
-  private fun ReportedAdjudication.latestOutcomeCode(): OutcomeCode? = getOutcomes()
-    .maxWithOrNull(compareBy<Outcome>({ it.getCreatedDateTime() }, { it.id }))
-    ?.code
+  private enum class ChainVisitState { VISITING, VISITED }
 }

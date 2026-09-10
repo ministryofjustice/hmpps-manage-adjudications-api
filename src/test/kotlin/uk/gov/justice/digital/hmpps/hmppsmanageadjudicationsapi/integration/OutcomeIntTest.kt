@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.PunishmentRequest
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.controllers.reported.ReportedAdjudicationResponse
@@ -14,14 +17,19 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Import(TestOAuth2Config::class)
 class OutcomeIntTest : SqsIntegrationTestBase() {
+
+  @Autowired
+  private lateinit var transactionManager: PlatformTransactionManager
 
   @BeforeEach
   fun setUp() {
@@ -544,6 +552,36 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
           "Validation failure: Unable to quash $targetCharge because additional days on $dependentCharge " +
             "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
         )
+    }
+
+    @Test
+    fun `a legacy suspended consecutive punishment does not block its target`() {
+      val targetCharge = createChargeWithAdditionalDays()
+      val dependentCharge = createChargeWithAdditionalDays(consecutiveTo = targetCharge)
+      val suspendedUntil = LocalDate.now().plusMonths(1)
+
+      TransactionTemplate(transactionManager).executeWithoutResult {
+        reportedAdjudicationRepository.findByChargeNumber(dependentCharge)!!.also { report ->
+          report.getPunishments().single().addSchedule(
+            PunishmentSchedule(duration = 20, suspendedUntil = suspendedUntil).also {
+              it.createDateTime = LocalDateTime.now().plusSeconds(1)
+              it.createdByUserId = "ITAG_USER"
+              it.modifiedByUserId = "ITAG_USER"
+            },
+          )
+        }
+      }
+
+      webTestClient.get()
+        .uri("/reported-adjudications/$targetCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.punishments[0].canEdit").isEqualTo(true)
+        .jsonPath("$.reportedAdjudication.punishments[0].canRemove").isEqualTo(true)
+
+      quash(targetCharge).expectStatus().isCreated
     }
 
     @Test
