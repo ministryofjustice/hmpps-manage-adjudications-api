@@ -19,8 +19,10 @@ repositories {
   mavenCentral()
 }
 
-extra["jackson-2-bom.version"] = "2.22.1"
-extra["jackson-bom.version"] = "3.2.1"
+extra["jackson-2-bom.version"] = "2.22.2"
+extra["jackson-bom.version"] = "3.2.2"
+extra["logback.version"] = "1.6.3"
+extra["netty.version"] = "4.2.18.Final"
 extra["httpcore5.version"] = "5.4.3"
 extra["postgresql.version"] = "42.7.12"
 
@@ -32,7 +34,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-  implementation("tools.jackson.module:jackson-module-kotlin:3.2.1")
+  implementation("tools.jackson.module:jackson-module-kotlin:3.2.2")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.apache.commons:commons-text:1.15.0")
   implementation("io.swagger:swagger-annotations:1.6.16")
@@ -65,6 +67,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-jpa-test")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.0")
+  testImplementation("org.jsoup:jsoup:1.23.2")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.1")
 }
 
