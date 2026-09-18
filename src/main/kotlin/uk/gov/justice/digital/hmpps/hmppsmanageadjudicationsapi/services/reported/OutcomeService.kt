@@ -115,8 +115,8 @@ class OutcomeService(
     chargeProvedReportsConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).takeIf { it.isNotEmpty() }
       ?.let { dependentChargeNumbers ->
         throw ValidationException(
-          "Unable to quash $chargeNumber because additional days on ${dependentChargeNumbers.joinToString(", ")} " +
-            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+          "You cannot report $chargeNumber as quashed because additional days on ${dependentChargeNumbers.joinToString(", ")} " +
+            "are consecutive to it. Remove consecutive links, starting with the last charge in the chain",
         )
       }
 
@@ -248,7 +248,7 @@ class OutcomeService(
 
     issues.filterIsInstance<MissingConsecutiveSourceHearing>().firstOrNull()?.let {
       throw ValidationException(
-        "Unable to unquash ${reportedAdjudication.chargeNumber} because the source charge has no hearing date",
+        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because the source charge has no hearing date",
       )
     }
 
@@ -258,14 +258,14 @@ class OutcomeService(
       .sorted()
     if (loopedCharges.isNotEmpty()) {
       throw ValidationException(
-        "Unable to unquash ${reportedAdjudication.chargeNumber} because its consecutive punishment chain " +
-          "contains a loop at: ${loopedCharges.joinToString(", ")}. Repair the chain first",
+        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because its consecutive punishment chain " +
+          "contains a loop at: ${loopedCharges.joinToString(", ")}. Repair the consecutive chain, then try again.",
       )
     }
 
     issues.filterIsInstance<ConsecutiveTargetAlreadyHasDependent>().firstOrNull()?.let { issue ->
       throw ValidationException(
-        "Unable to unquash ${reportedAdjudication.chargeNumber} because consecutive target ${issue.chargeNumber} " +
+        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because consecutive charge ${issue.chargeNumber} " +
           "already has a live dependent on ${issue.dependentChargeNumber}",
       )
     }
@@ -276,9 +276,9 @@ class OutcomeService(
 
     if (invalidTargets.isNotEmpty()) {
       throw ValidationException(
-        "Unable to unquash ${reportedAdjudication.chargeNumber} because the following consecutive target charges " +
+        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because the following consecutive charges " +
           "do not have a live charge-proved additional days punishment: ${invalidTargets.joinToString(", ")}. " +
-          "Restore the target punishments first",
+          "Restore the target punishments, then try again. ",
       )
     }
   }
@@ -413,7 +413,7 @@ class OutcomeService(
 
     fun Outcome?.canQuash() {
       if (this?.code != OutcomeCode.CHARGE_PROVED) {
-        throw ValidationException("unable to quash this outcome")
+        throw ValidationException("You cannot report this outcome as quashed.")
       }
     }
 

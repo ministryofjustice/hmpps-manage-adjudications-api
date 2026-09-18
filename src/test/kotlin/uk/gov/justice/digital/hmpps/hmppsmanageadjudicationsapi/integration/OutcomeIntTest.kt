@@ -347,9 +347,9 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
     private fun invalidConsecutiveTargetMessage(
       sourceCharge: String,
       targetCharge: String,
-    ) = "Validation failure: Unable to unquash $sourceCharge because the following consecutive target charges " +
+    ) = "Validation failure: You cannot remove the quashed finding from $sourceCharge because the following consecutive charges " +
       "do not have a live charge-proved additional days punishment: $targetCharge. " +
-      "Restore the target punishments first"
+      "Restore the target punishments then try again."
 
     @Test
     fun `cannot quash a charge in the middle of a four charge consecutive ADA chain`() {
@@ -378,8 +378,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectStatus().isBadRequest
         .expectBody()
         .jsonPath("$.userMessage").isEqualTo(
-          "Validation failure: Unable to quash $secondCharge because additional days on $thirdCharge " +
-            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+          "Validation failure: You cannot report $secondCharge as quashed because additional days on $thirdCharge " +
+            "are consecutive to it. Remove consecutive links, starting with the last charge in the chain",
         )
 
       webTestClient.get()
@@ -549,8 +549,8 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .expectStatus().isBadRequest
         .expectBody()
         .jsonPath("$.userMessage").isEqualTo(
-          "Validation failure: Unable to quash $targetCharge because additional days on $dependentCharge " +
-            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+          "Validation failure: You cannot report $targetCharge as quashed because additional days on $dependentCharge " +
+            "are consecutive to it. Remove consecutive links, starting with the last charge in the chain",
         )
     }
 

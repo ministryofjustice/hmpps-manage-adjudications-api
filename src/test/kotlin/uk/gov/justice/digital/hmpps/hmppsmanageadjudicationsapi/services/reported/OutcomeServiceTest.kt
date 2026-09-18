@@ -361,8 +361,8 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcomeService.createQuashed("LGI-011192", QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
         .hasMessage(
-          "Unable to quash LGI-011192 because additional days on LGI-011206, LGI-011290 " +
-            "are consecutive to it. Remove consecutive links starting with the last charge in the chain",
+          "You cannot report LGI-011192 as quashed because additional days on LGI-011206, LGI-011290 " +
+            "are consecutive to it. Remove consecutive links, starting with the last charge in the chain",
         )
     }
 
@@ -387,7 +387,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         outcomeService.createQuashed("1", QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("unable to quash this outcome")
+        .hasMessageContaining("You cannot report this outcome as quashed.")
     }
 
     @Test
@@ -395,7 +395,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
       Assertions.assertThatThrownBy {
         outcomeService.createQuashed("1", QuashedReason.APPEAL_UPHELD, "details")
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("unable to quash this outcome")
+        .hasMessageContaining("You cannot report this outcome as quashed.")
     }
 
     @ParameterizedTest
@@ -868,7 +868,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy { outcomeService.deleteOutcome(source.chargeNumber, id = 2) }
         .isInstanceOf(ValidationException::class.java)
-        .hasMessage("Unable to unquash source because the source charge has no hearing date")
+        .hasMessage("You cannot remove the quashed finding from source because the source charge does not have a hearing date.")
     }
 
     @Test
