@@ -248,7 +248,7 @@ class OutcomeService(
 
     issues.filterIsInstance<MissingConsecutiveSourceHearing>().firstOrNull()?.let {
       throw ValidationException(
-        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because the source charge has no hearing date",
+        "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because the source charge does not have a hearing date.",
       )
     }
 
@@ -278,7 +278,7 @@ class OutcomeService(
       throw ValidationException(
         "You cannot remove the quashed finding from ${reportedAdjudication.chargeNumber} because the following consecutive charges " +
           "do not have a live charge-proved additional days punishment: ${invalidTargets.joinToString(", ")}. " +
-          "Restore the target punishments, then try again. ",
+          "Restore the target punishments then try again.",
       )
     }
   }

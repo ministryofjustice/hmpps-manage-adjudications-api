@@ -777,7 +777,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
         outcomeService.deleteOutcome(source.chargeNumber)
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining(
-          "following consecutive target charges do not have a live charge-proved additional days punishment: root",
+          "following consecutive charges do not have a live charge-proved additional days punishment: root",
         )
 
       assertThat(source.getOutcomes().maxBy { it.getCreatedDateTime()!! }.code).isEqualTo(OutcomeCode.QUASHED)
@@ -845,7 +845,7 @@ class OutcomeServiceTest : ReportedAdjudicationTestBase() {
 
       Assertions.assertThatThrownBy { outcomeService.deleteOutcome(source.chargeNumber) }
         .isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("consecutive target target already has a live dependent on dependent")
+        .hasMessageContaining("consecutive charge target already has a live dependent on dependent")
     }
 
     @Test
