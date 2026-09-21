@@ -1,6 +1,7 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported
 
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.repositories.ReportedAdjudicationRepository
@@ -22,6 +23,12 @@ abstract class ReportedAdjudicationTestBase : TestsToImplement {
   fun beforeEach() {
     whenever(authenticationFacade.currentUsername).thenReturn("ITAG_USER")
     whenever(authenticationFacade.activeCaseload).thenReturn("MDI")
+    whenever(reportedAdjudicationRepository.findPrisonerNumberByChargeNumber(any())).thenAnswer {
+      reportedAdjudicationRepository.findByChargeNumber(it.getArgument(0))?.prisonerNumber
+    }
+    whenever(reportedAdjudicationRepository.findByChargeNumberForUpdate(any())).thenAnswer {
+      reportedAdjudicationRepository.findByChargeNumber(it.getArgument(0))
+    }
   }
 
   companion object {

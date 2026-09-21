@@ -23,7 +23,6 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.PunishmentD
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.dtos.ReportedAdjudicationDto
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodeLookupService
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.reported.OutcomeService.Companion.latestOutcome
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import java.util.UUID
@@ -143,7 +142,7 @@ data class ReportedAdjudication(
           } else if (this.isActivePrisoner() && this.isInvalidSuspended()) {
             ReportedAdjudicationStatus.INVALID_SUSPENDED
           } else {
-            this.getOutcomes().sortedByDescending { it.getCreatedDateTime() }.first().code.status
+            this.latestOutcome()!!.code.status
           }
         }
       }
@@ -156,7 +155,10 @@ data class ReportedAdjudication(
 
   fun getOutcomes() = this.outcomes.filter { it.deleted != true }
 
-  fun getOutcomeToRemove() = this.getOutcomes().getOutcomeToRemove()
+  fun latestOutcome(): Outcome? = this.getOutcomes()
+    .maxWithOrNull(compareBy<Outcome>({ it.getCreatedDateTime() }, { it.id }))
+
+  fun getOutcomeToRemove() = this.latestOutcome()!!
 
   @TestOnly
   fun clearOutcomes() = this.outcomes.clear()
@@ -256,8 +258,6 @@ data class ReportedAdjudication(
       this.getPunishments().isNotEmpty()
 
     fun ReportedAdjudication.isActivePrisoner(): Boolean = !this.migratedInactivePrisoner
-    fun List<Outcome>.getOutcomeToRemove() = this.maxBy { it.getCreatedDateTime()!! }
-
     fun ReportedAdjudication.toHearingsDto() = this.hearings.map { it.toDto() }.sortedBy { it.dateTimeOfHearing }
     fun ReportedAdjudication.isActionable(activeCaseload: String?): Boolean? {
       activeCaseload ?: return null

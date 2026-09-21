@@ -45,10 +45,9 @@ class PunishmentsService(
     chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
-    validateNoConsecutiveLoop(chargeNumber, punishments)
     val lossOfVisitsAwarded = punishments.any { it.activatedFrom == null && it.type.isVisitsPunishment() }
 
-    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber).also {
       if (it.getPunishments()
           .isNotEmpty()
       ) {
@@ -56,6 +55,7 @@ class PunishmentsService(
       }
       it.validateCanAddPunishments()
     }
+    validateConsecutivePunishments(reportedAdjudication, punishments)
 
     punishments.validateCaution()
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
@@ -97,11 +97,10 @@ class PunishmentsService(
     chargeNumber: String,
     punishments: List<PunishmentRequest>,
   ): ReportedAdjudicationDto {
-    validateNoConsecutiveLoop(chargeNumber, punishments)
-
-    val reportedAdjudication = findByChargeNumber(chargeNumber).also {
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber).also {
       it.validateCanAddPunishments()
     }
+    validateConsecutivePunishments(reportedAdjudication, punishments)
     val visitsPunishmentsBefore = reportedAdjudication.getPunishments().toVisitsPunishmentStates()
 
     val suspendedPunishmentEvents = mutableSetOf<SuspendedPunishmentEvent>()
@@ -111,6 +110,7 @@ class PunishmentsService(
     val idsToUpdate = punishments.filter { it.id != null }.map { it.id!! }
     deactivateActivatedPunishments(
       chargeNumber = chargeNumber,
+      prisonerNumber = reportedAdjudication.prisonerNumber,
       idsToIgnore = idsToUpdate,
     ).also { updates ->
       suspendedPunishmentEvents.addAll(updates.events)
@@ -152,7 +152,7 @@ class PunishmentsService(
         )
         when (punishmentToAmend.type) {
           punishmentRequest.type -> {
-            punishmentRequest.suspendedUntil?.let {
+            if (punishmentToAmend.isChangedBy(punishmentRequest)) {
               punishmentRequest.type.consecutiveReportValidation(chargeNumber)
             }
             updatePunishment(punishmentToAmend, punishmentRequest)
@@ -192,7 +192,7 @@ class PunishmentsService(
     punishmentId: Long,
     completeRehabilitativeActivityRequest: CompleteRehabilitativeActivityRequest,
   ): ReportedAdjudicationDto {
-    val reportedAdjudication = findByChargeNumber(chargeNumber = chargeNumber)
+    val reportedAdjudication = findByChargeNumberForUpdate(chargeNumber = chargeNumber)
     val visitsPunishmentsBefore = reportedAdjudication.getPunishments().toVisitsPunishmentStates()
     val punishment = reportedAdjudication.getPunishments().getPunishmentToAmend(punishmentId)
     if (punishment.rehabilitativeActivities.isEmpty()) throw ValidationException("punishment $punishmentId on charge $chargeNumber has no rehabilitative activities")
@@ -203,6 +203,30 @@ class PunishmentsService(
     }
 
     val latestSchedule = punishment.latestSchedule()
+    when (completeRehabilitativeActivityRequest.outcome) {
+      NotCompletedOutcome.PARTIAL_ACTIVATE -> {
+        val daysToActivate = completeRehabilitativeActivityRequest.daysToActivate
+          ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
+        if (punishment.type.isVisitsPunishment()) {
+          val maximumDuration = minOf(
+            requireNotNull(latestSchedule.duration),
+            requireNotNull(punishment.type.maximumDuration),
+          )
+          if (daysToActivate !in 1..maximumDuration) {
+            throw ValidationException("daysToActivate for ${punishment.type} must be between 1 and $maximumDuration days")
+          }
+        }
+      }
+
+      NotCompletedOutcome.EXT_SUSPEND ->
+        completeRehabilitativeActivityRequest.suspendedUntil
+          ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
+
+      else -> Unit
+    }
+    if (punishment.scheduleWillChange(completeRehabilitativeActivityRequest.outcome)) {
+      punishment.type.consecutiveReportValidation(chargeNumber)
+    }
 
     when (completeRehabilitativeActivityRequest.outcome) {
       NotCompletedOutcome.FULL_ACTIVATE -> {
@@ -217,17 +241,7 @@ class PunishmentsService(
       }
 
       NotCompletedOutcome.PARTIAL_ACTIVATE -> {
-        val daysToActivate = completeRehabilitativeActivityRequest.daysToActivate
-          ?: throw ValidationException("PARTIAL_ACTIVATE requires daysToActivate")
-        if (punishment.type.isVisitsPunishment()) {
-          val maximumDuration = minOf(
-            requireNotNull(latestSchedule.duration),
-            requireNotNull(punishment.type.maximumDuration),
-          )
-          if (daysToActivate !in 1..maximumDuration) {
-            throw ValidationException("daysToActivate for ${punishment.type} must be between 1 and $maximumDuration days")
-          }
-        }
+        val daysToActivate = requireNotNull(completeRehabilitativeActivityRequest.daysToActivate)
         val startDate = LocalDate.now()
         punishment.addSchedule(
           PunishmentSchedule(
@@ -239,11 +253,9 @@ class PunishmentsService(
       }
 
       NotCompletedOutcome.EXT_SUSPEND -> {
-        completeRehabilitativeActivityRequest.suspendedUntil
-          ?: throw ValidationException("EXT_SUSPEND requires a suspendedUntil")
         punishment.addSchedule(
           PunishmentSchedule(
-            suspendedUntil = completeRehabilitativeActivityRequest.suspendedUntil,
+            suspendedUntil = requireNotNull(completeRehabilitativeActivityRequest.suspendedUntil),
             duration = latestSchedule.duration,
           ),
         )
@@ -286,6 +298,11 @@ class PunishmentsService(
       punishment.id ?: throw ValidationException("Suspended punishment activation missing punishment id to activate")
       val reportToUpdate = reportsActivatedFrom.firstOrNull { it.chargeNumber == punishment.activatedFrom!! }
         ?: throw EntityNotFoundException("activated from charge ${punishment.activatedFrom} not found")
+      if (reportToUpdate.prisonerNumber != reportedAdjudication.prisonerNumber) {
+        throw ValidationException(
+          "Unable to activate punishment ${punishment.id}: prisoner on ${reportToUpdate.chargeNumber} does not match ${reportedAdjudication.chargeNumber}",
+        )
+      }
 
       reportToUpdate.getPunishments().getSuspendedPunishmentToActivate(id = punishment.id)?.let { punishmentToActivate ->
         if (
@@ -335,21 +352,98 @@ class PunishmentsService(
     )
   }
 
-  private fun validateNoConsecutiveLoop(chargeNumber: String, punishments: List<PunishmentRequest>) {
-    val requestedConsecutiveTargets = punishments
+  private fun validateConsecutivePunishments(
+    source: ReportedAdjudication,
+    punishments: List<PunishmentRequest>,
+  ) {
+    punishments.filter { it.consecutiveChargeNumber != null }.forEach {
+      if (!PunishmentType.additionalDays().contains(it.type)) {
+        throw ValidationException("only additional days punishments can be consecutive to another charge")
+      }
+      if (it.suspendedUntil != null) {
+        throw ValidationException("a suspended additional days punishment cannot be consecutive to another charge")
+      }
+    }
+
+    punishments
       .filter { PunishmentType.additionalDays().contains(it.type) }
-      .mapNotNull { it.consecutiveChargeNumber }
-      .toSet()
-    if (requestedConsecutiveTargets.isEmpty()) return
+      .mapNotNull { punishment -> punishment.consecutiveChargeNumber?.let { punishment.type to it } }
+      .distinct()
+      .forEach { (type, targetChargeNumber) ->
+        validateConsecutiveChain(source, type, targetChargeNumber)
+      }
+  }
 
-    if (requestedConsecutiveTargets.contains(chargeNumber)) {
-      throw ValidationException("a punishment cannot be consecutive to its own charge $chargeNumber")
+  private fun validateConsecutiveChain(
+    source: ReportedAdjudication,
+    punishmentType: PunishmentType,
+    targetChargeNumber: String,
+  ) {
+    if (targetChargeNumber == source.chargeNumber) {
+      throw ValidationException("a punishment cannot be consecutive to its own charge ${source.chargeNumber}")
     }
 
-    val chargesConsecutiveToThis = chargesConsecutiveTo(chargeNumber, PunishmentType.additionalDays()).toSet()
-    requestedConsecutiveTargets.firstOrNull { chargesConsecutiveToThis.contains(it) }?.let {
-      throw ValidationException("charge $chargeNumber cannot be consecutive to $it because $it is already consecutive to this charge")
+    if (source.getLatestHearing()?.dateTimeOfHearing == null) {
+      throw ValidationException("charge ${source.chargeNumber} has no hearing date")
     }
+
+    when (val issue = findConsecutiveChainIssue(source, punishmentType, targetChargeNumber)) {
+      is MissingConsecutiveTarget -> throw ValidationException(
+        "consecutive target charge ${issue.chargeNumber} does not exist",
+      )
+
+      is InvalidConsecutiveTarget -> throw ValidationException(
+        "Unable to make ${source.chargeNumber} consecutive to $targetChargeNumber because ${issue.chargeNumber} " +
+          "does not have a live, unsuspended $punishmentType punishment for the same prisoner and hearing date",
+      )
+
+      is ConsecutivePunishmentLoop -> throw ValidationException(
+        "charge ${source.chargeNumber} cannot be consecutive to $targetChargeNumber because it would create a consecutive punishment loop",
+      )
+
+      is MissingConsecutiveSourceHearing -> throw ValidationException(
+        "charge ${issue.chargeNumber} has no hearing date",
+      )
+
+      is ConsecutiveTargetAlreadyHasDependent -> throw ValidationException(
+        "Unable to make ${source.chargeNumber} consecutive to $targetChargeNumber because ${issue.chargeNumber} " +
+          "already has a live consecutive ${punishmentType.name} dependent on ${issue.dependentChargeNumber}",
+      )
+
+      null -> Unit
+    }
+  }
+
+  private fun Punishment.isChangedBy(request: PunishmentRequest): Boolean {
+    val scheduleChanged = latestSchedule().hasScheduleBeenUpdated(request)
+    val activities = rehabilitativeActivities.map { listOf(it.details, it.monitor, it.endDate, it.totalSessions) }
+    val requestedActivities = request.rehabilitativeActivities.map { listOf(it.details, it.monitor, it.endDate, it.totalSessions) }
+
+    return hasChildUnder18 != request.hasChildUnder18 ||
+      privilegeType != request.privilegeType ||
+      otherPrivilege != request.otherPrivilege ||
+      stoppagePercentage != request.stoppagePercentage ||
+      consecutiveToChargeNumber != request.consecutiveChargeNumber ||
+      amount != request.damagesOwedAmount ||
+      paybackNotes != request.paybackNotes ||
+      activities != requestedActivities ||
+      scheduleChanged
+  }
+
+  private fun Punishment.scheduleWillChange(outcome: NotCompletedOutcome?): Boolean = when (outcome) {
+    NotCompletedOutcome.FULL_ACTIVATE,
+    NotCompletedOutcome.PARTIAL_ACTIVATE,
+    NotCompletedOutcome.EXT_SUSPEND,
+    -> true
+
+    NotCompletedOutcome.NO_ACTION,
+    null,
+    -> rehabCompleted != null &&
+      rehabNotCompletedOutcome in setOf(
+        NotCompletedOutcome.FULL_ACTIVATE,
+        NotCompletedOutcome.PARTIAL_ACTIVATE,
+        NotCompletedOutcome.EXT_SUSPEND,
+      )
   }
 
   private fun PunishmentType.consecutiveReportValidation(chargeNumber: String) {
