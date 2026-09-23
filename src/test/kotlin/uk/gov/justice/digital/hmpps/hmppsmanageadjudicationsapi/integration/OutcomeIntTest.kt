@@ -1,12 +1,15 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Import
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.config.TestOAuth2Config
@@ -17,6 +20,7 @@ import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Hearing
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Punishment
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentSchedule
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
 import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
@@ -400,6 +404,91 @@ class OutcomeIntTest : SqsIntegrationTestBase() {
         .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(secondCharge)
 
       quash(fourthCharge).expectStatus().isCreated
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    @WithMockUser(username = "ITAG_ALO")
+    fun `can unlink from the tail then quash a middle charge and reconnect the surviving charges`(multipleAdaRows: Boolean) {
+      val firstCharge = createChargeWithAdditionalDays()
+      val secondCharge = createChargeWithAdditionalDays(consecutiveTo = firstCharge)
+      val thirdCharge = createChargeWithAdditionalDays(consecutiveTo = secondCharge)
+      val fourthCharge = createChargeWithAdditionalDays(consecutiveTo = thirdCharge)
+
+      if (multipleAdaRows) {
+        // Reproduce the pre-existing competing links shown in the recording; new API writes reject this shape.
+        TransactionTemplate(transactionManager).executeWithoutResult {
+          val report = reportedAdjudicationRepository.findByChargeNumber(thirdCharge)!!
+          listOf(firstCharge, null, firstCharge).forEach { target ->
+            report.addPunishment(
+              Punishment(
+                type = PunishmentType.ADDITIONAL_DAYS,
+                consecutiveToChargeNumber = target,
+                schedule = mutableListOf(PunishmentSchedule(duration = 20)),
+              ),
+            )
+          }
+          reportedAdjudicationRepository.save(report)
+        }
+      }
+
+      fun changeTarget(chargeNumber: String, target: String?) {
+        val punishments = webTestClient.get()
+          .uri("/reported-adjudications/$chargeNumber/v2")
+          .headers(setHeaders(username = "ITAG_ALO"))
+          .exchange()
+          .expectStatus().isOk
+          .expectBody(ReportedAdjudicationResponse::class.java)
+          .returnResult().responseBody!!.reportedAdjudication.punishments
+        webTestClient.put()
+          .uri("/reported-adjudications/$chargeNumber/punishments/v2")
+          .headers(setHeaders(username = "ITAG_ALO", roles = listOf("ROLE_ADJUDICATIONS_REVIEWER")))
+          .bodyValue(
+            mapOf(
+              "punishments" to punishments.map { punishment ->
+                PunishmentRequest(
+                  id = punishment.id,
+                  type = PunishmentType.ADDITIONAL_DAYS,
+                  duration = 20,
+                  consecutiveChargeNumber = target,
+                )
+              },
+            ),
+          )
+          .exchange()
+          .expectStatus().isOk
+      }
+
+      quash(secondCharge).expectStatus().isBadRequest
+      changeTarget(fourthCharge, null)
+      changeTarget(thirdCharge, null)
+      quash(secondCharge).expectStatus().isCreated
+      changeTarget(thirdCharge, firstCharge)
+      changeTarget(fourthCharge, thirdCharge)
+
+      listOf(firstCharge to null, thirdCharge to firstCharge, fourthCharge to thirdCharge).forEach { (charge, target) ->
+        val report = webTestClient.get()
+          .uri("/reported-adjudications/$charge/v2")
+          .headers(setHeaders(username = "ITAG_ALO"))
+          .exchange()
+          .expectStatus().isOk
+          .expectBody(ReportedAdjudicationResponse::class.java)
+          .returnResult().responseBody!!.reportedAdjudication
+        assertThat(report.status).isEqualTo(ReportedAdjudicationStatus.CHARGE_PROVED)
+        assertThat(report.punishments).hasSize(if (charge == thirdCharge && multipleAdaRows) 4 else 1)
+        report.punishments.forEach { punishment ->
+          assertThat(punishment.schedule.duration).isEqualTo(20)
+          assertThat(punishment.consecutiveChargeNumber).isEqualTo(target)
+        }
+      }
+      webTestClient.get()
+        .uri("/reported-adjudications/$secondCharge/v2")
+        .headers(setHeaders(username = "ITAG_ALO"))
+        .exchange()
+        .expectStatus().isOk
+        .expectBody()
+        .jsonPath("$.reportedAdjudication.status").isEqualTo(ReportedAdjudicationStatus.QUASHED.name)
+        .jsonPath("$.reportedAdjudication.punishments[0].consecutiveChargeNumber").isEqualTo(firstCharge)
     }
 
     @Test
