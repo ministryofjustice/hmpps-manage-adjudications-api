@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup Java
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
           distribution: temurin
           java-version: ${{ inputs.java_version }}
@@ -80,7 +80,7 @@ jobs:
             --tests uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration.ExportReferenceData
 
       - name: Generate database schema report
-        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/database_schema_report@1061afed0f02c82850314e2fc29711523139e574 # v1.1.2
+        uses: ministryofjustice/hmpps-github-shared-actions/.github/actions/database_schema_report@accf37e936517ed39e7a888cf74f0277dab3310e # v1.1.4
         with:
           database_name: ${{ inputs.database_name }}
           schema: ${{ inputs.database_schema }}
@@ -101,7 +101,7 @@ jobs:
 
       - name: Publish to GitHub Pages
         if: ${{ inputs.publish }}
-        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # v4.8.0
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
         with:
           branch: gh-pages
           folder: /tmp/schemaspy
