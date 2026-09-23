@@ -603,47 +603,10 @@
 <polygon fill="#000000" stroke="#000000" points="658.0325,-359.9797 665.6759,-364.2854 662.0162,-360.3398 666,-360.7 666,-360.7 666,-360.7 662.0162,-360.3398 666.3241,-357.1146 658.0325,-359.9797 658.0325,-359.9797"/>
 <ellipse fill="none" stroke="#000000" cx="654.8455" cy="-359.6915" rx="3.2" ry="3.2"/>
 </g>
-<!-- dis_issue_history -->
-<g id="node15" class="node">
-<title>dis_issue_history</title>
-<g id="a_node15"><a xlink:href="../../tables/dis_issue_history.html" xlink:title="dis_issue_history" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="653,-1162.2 653,-1267.2 861,-1267.2 861,-1162.2 653,-1162.2"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="653,-1243.7 653,-1266.7 861,-1266.7 861,-1243.7 653,-1243.7"/>
-<polygon fill="none" stroke="#000000" points="653,-1243.7 653,-1266.7 861,-1266.7 861,-1243.7 653,-1243.7"/>
-<text text-anchor="start" x="658" y="-1252.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00" fill="#000000">dis_issue_history</text>
-<text text-anchor="start" x="826.0437" y="-1251.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">[table]</text>
-<polygon fill="none" stroke="#000000" points="653,-1221.7 653,-1243.7 861,-1243.7 861,-1221.7 653,-1221.7"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="658" y="-1238.7"/>
-<text text-anchor="start" x="673" y="-1228.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="653,-1199.7 653,-1221.7 861,-1221.7 861,-1199.7 653,-1199.7"/>
-<polygon fill="none" stroke="#000000" points="653,-1199.7 653,-1221.7 861,-1221.7 861,-1199.7 653,-1199.7"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="658" y="-1216.7"/>
-<text text-anchor="start" x="673" y="-1206.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">reported_adjudication_fk_id</text>
-<polygon fill="none" stroke="#000000" points="653,-1180.7 653,-1199.7 861,-1199.7 861,-1180.7 653,-1180.7"/>
-<text text-anchor="start" x="656" y="-1186.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="653,-1161.7 653,-1180.7 755,-1180.7 755,-1161.7 653,-1161.7"/>
-<polygon fill="none" stroke="#000000" points="653,-1161.7 653,-1180.7 755,-1180.7 755,-1161.7 653,-1161.7"/>
-<text text-anchor="start" x="656" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="755,-1161.7 755,-1180.7 808,-1180.7 808,-1161.7 755,-1161.7"/>
-<polygon fill="none" stroke="#000000" points="755,-1161.7 755,-1180.7 808,-1180.7 808,-1161.7 755,-1161.7"/>
-<text text-anchor="start" x="798.8862" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="808,-1161.7 808,-1180.7 861,-1180.7 861,-1161.7 808,-1161.7"/>
-<polygon fill="none" stroke="#000000" points="808,-1161.7 808,-1180.7 861,-1180.7 861,-1161.7 808,-1161.7"/>
-<text text-anchor="start" x="851.8862" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- dis_issue_history&#45;&gt;reported_adjudications -->
-<g id="edge2" class="edge">
-<title>dis_issue_history:w&#45;&gt;reported_adjudications:e</title>
-<path fill="none" stroke="#000000" d="M638.6074,-1213.8146C601.5722,-1233.2176 648.3846,-1336.7 592,-1336.7"/>
-<polygon fill="#000000" stroke="#000000" points="645.181,-1212.3921 653.7614,-1214.2186 649.0905,-1211.5461 653,-1210.7 653,-1210.7 653,-1210.7 649.0905,-1211.5461 652.2386,-1207.1814 645.181,-1212.3921 645.181,-1212.3921"/>
-<ellipse fill="none" stroke="#000000" cx="642.0534" cy="-1213.069" rx="3.2" ry="3.2"/>
-</g>
 <!-- evidence -->
-<g id="node16" class="node">
+<g id="node15" class="node">
 <title>evidence</title>
-<g id="a_node16"><a xlink:href="../../tables/evidence.html" xlink:title="evidence" target="_top">
+<g id="a_node15"><a xlink:href="../../tables/evidence.html" xlink:title="evidence" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="666,-186.2 666,-291.2 848,-291.2 848,-186.2 666,-186.2"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="666,-267.7 666,-290.7 848,-290.7 848,-267.7 666,-267.7"/>
 <polygon fill="none" stroke="#000000" points="666,-267.7 666,-290.7 848,-290.7 848,-267.7 666,-267.7"/>
@@ -676,6 +639,43 @@
 <path fill="none" stroke="#000000" d="M651.4446,-236.0158C604.0999,-245.0629 599.1419,-297.7 543,-297.7"/>
 <polygon fill="#000000" stroke="#000000" points="658.0325,-235.4203 666.3241,-238.2854 662.0162,-235.0602 666,-234.7 666,-234.7 666,-234.7 662.0162,-235.0602 665.6759,-231.1146 658.0325,-235.4203 658.0325,-235.4203"/>
 <ellipse fill="none" stroke="#000000" cx="654.8455" cy="-235.7085" rx="3.2" ry="3.2"/>
+</g>
+<!-- dis_issue_history -->
+<g id="node16" class="node">
+<title>dis_issue_history</title>
+<g id="a_node16"><a xlink:href="../../tables/dis_issue_history.html" xlink:title="dis_issue_history" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="653,-1162.2 653,-1267.2 861,-1267.2 861,-1162.2 653,-1162.2"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="653,-1243.7 653,-1266.7 861,-1266.7 861,-1243.7 653,-1243.7"/>
+<polygon fill="none" stroke="#000000" points="653,-1243.7 653,-1266.7 861,-1266.7 861,-1243.7 653,-1243.7"/>
+<text text-anchor="start" x="658" y="-1252.3" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00" fill="#000000">dis_issue_history</text>
+<text text-anchor="start" x="826.0437" y="-1251.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">[table]</text>
+<polygon fill="none" stroke="#000000" points="653,-1221.7 653,-1243.7 861,-1243.7 861,-1221.7 653,-1221.7"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="658" y="-1238.7"/>
+<text text-anchor="start" x="673" y="-1228.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="653,-1199.7 653,-1221.7 861,-1221.7 861,-1199.7 653,-1199.7"/>
+<polygon fill="none" stroke="#000000" points="653,-1199.7 653,-1221.7 861,-1221.7 861,-1199.7 653,-1199.7"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="658" y="-1216.7"/>
+<text text-anchor="start" x="673" y="-1206.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">reported_adjudication_fk_id</text>
+<polygon fill="none" stroke="#000000" points="653,-1180.7 653,-1199.7 861,-1199.7 861,-1180.7 653,-1180.7"/>
+<text text-anchor="start" x="656" y="-1186.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="653,-1161.7 653,-1180.7 755,-1180.7 755,-1161.7 653,-1161.7"/>
+<polygon fill="none" stroke="#000000" points="653,-1161.7 653,-1180.7 755,-1180.7 755,-1161.7 653,-1161.7"/>
+<text text-anchor="start" x="656" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="755,-1161.7 755,-1180.7 808,-1180.7 808,-1161.7 755,-1161.7"/>
+<polygon fill="none" stroke="#000000" points="755,-1161.7 755,-1180.7 808,-1180.7 808,-1161.7 755,-1161.7"/>
+<text text-anchor="start" x="798.8862" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="808,-1161.7 808,-1180.7 861,-1180.7 861,-1161.7 808,-1161.7"/>
+<polygon fill="none" stroke="#000000" points="808,-1161.7 808,-1180.7 861,-1180.7 861,-1161.7 808,-1161.7"/>
+<text text-anchor="start" x="851.8862" y="-1167.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- dis_issue_history&#45;&gt;reported_adjudications -->
+<g id="edge2" class="edge">
+<title>dis_issue_history:w&#45;&gt;reported_adjudications:e</title>
+<path fill="none" stroke="#000000" d="M638.6074,-1213.8146C601.5722,-1233.2176 648.3846,-1336.7 592,-1336.7"/>
+<polygon fill="#000000" stroke="#000000" points="645.181,-1212.3921 653.7614,-1214.2186 649.0905,-1211.5461 653,-1210.7 653,-1210.7 653,-1210.7 649.0905,-1211.5461 652.2386,-1207.1814 645.181,-1212.3921 645.181,-1212.3921"/>
+<ellipse fill="none" stroke="#000000" cx="642.0534" cy="-1213.069" rx="3.2" ry="3.2"/>
 </g>
 <!-- protected_characteristics -->
 <g id="node17" class="node">
