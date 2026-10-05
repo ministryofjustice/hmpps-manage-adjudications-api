@@ -153,18 +153,18 @@
         "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "repair_cost",
-        "type": "numeric",
-        "length": 10,
-        "nullable": "√",
+        "name": "location_uuid",
+        "type": "uuid",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Cost of repair in pounds, where recorded. Separate from the DAMAGES_OWED punishment, which is the amount the prisoner was ordered to pay. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>Location identifier in the locations-inside-prison service. This is the current location reference. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "incident_role",
@@ -214,13 +214,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_on_behalf_of_reason",
+        "name": "issuing_officer",
         "type": "varchar",
-        "length": 4000,
+        "length": 32,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Reason the report was created on behalf of another officer. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>DPS username of the officer who most recently issued the notice of report (DIS1/2) to the prisoner. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "hearing",
@@ -352,15 +352,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "review_user_id",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>create_user_id",
         "type": "varchar",
         "length": 32,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>DPS username of the reviewer who accepted, rejected or returned the report. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "witness",
@@ -433,18 +433,18 @@
         "comments": "<p>Foreign key to punishment. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "location_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "name": "create_datetime",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Legacy NOMIS internal location id where the incident occurred. Superseded by location_uuid. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "punishment",
@@ -536,13 +536,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "gender",
-        "type": "varchar",
-        "length": 12,
-        "nullable": "",
+        "name": "modify_datetime",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "√",
         "autoUpdated": "",
-        "defaultValue": "'MALE'::character varying",
-        "comments": "<p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "hearing",
@@ -573,18 +573,18 @@
         "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>prisoner_number",
-        "type": "varchar",
-        "length": 7,
-        "nullable": "",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>reported_adjudication_fk_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>NOMIS offender number (noms id) of the prisoner charged. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Foreign key to reported_adjudications. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "hearing",
@@ -618,15 +618,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>date_time_of_discovery",
-        "type": "timestamp",
-        "length": 29,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modify_user_id",
+        "type": "varchar",
+        "length": 32,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>DPS username of the person who last updated the row. Null if it has never been updated. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "reported_witness",
@@ -699,18 +699,18 @@
         "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>create_user_id",
-        "type": "varchar",
-        "length": 32,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modify_datetime",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "evidence",
@@ -872,13 +872,13 @@
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>date_time_of_first_hearing",
-        "type": "timestamp",
-        "length": 29,
-        "nullable": "√",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>status",
+        "type": "varchar",
+        "length": 32,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Denormalised date of the earliest hearing, maintained for reporting and sorting. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "'AWAITING_REVIEW'::character varying",
+        "comments": "<p>Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "flyway_schema_history",
@@ -1082,13 +1082,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "incident_role_associated_prisoners_name",
-        "type": "varchar",
-        "length": 100,
-        "nullable": "√",
+        "name": "create_datetime",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Name of the other prisoner involved, held where they cannot be looked up. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "reported_witness",
@@ -1133,18 +1133,18 @@
         "comments": "<p>DPS username of the person who last updated the row. Null if it has never been updated. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "statement",
+        "name": "modify_user_id",
         "type": "varchar",
-        "length": 2147483647,
-        "nullable": "",
+        "length": 32,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>The reporting officer&rsquo;s free text account of the incident. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>DPS username of the person who last updated the row. Null if it has never been updated. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "rehabilitative_activity",
@@ -1180,13 +1180,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_on_behalf_of_officer",
+        "name": "gender",
         "type": "varchar",
-        "length": 32,
-        "nullable": "√",
+        "length": 12,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Name of the officer the report was created on behalf of, when someone else entered it for them. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "defaultValue": "'MALE'::character varying",
+        "comments": "<p>Prisoner gender, used to select the correct wording of offence paragraphs. One of MALE, FEMALE. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "incident_details",
@@ -1301,8 +1301,8 @@
         "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -1311,7 +1311,7 @@
         "length": 10,
         "nullable": "",
         "autoUpdated": "√",
-        "defaultValue": "nextval('reported_adjudications_id_seq'::regclass)",
+        "defaultValue": "nextval('reported_damages_id_seq'::regclass)",
         "comments": "<p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
@@ -1320,13 +1320,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "is_youth_offender",
-        "type": "bool",
-        "length": 1,
+        "name": "statement",
+        "type": "varchar",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "false",
-        "comments": "<p>True when the YOI rule set applies rather than the adult rule set. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>The reporting officer&rsquo;s free text account of the incident. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "outcome",
@@ -1413,18 +1413,18 @@
         "comments": "<p>Free text description of the evidence. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "serial",
-        "length": 10,
-        "nullable": "",
-        "autoUpdated": "√",
-        "defaultValue": "nextval('reported_damages_id_seq'::regclass)",
-        "comments": "<p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "agency_incident_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>NOMIS AGENCY_INCIDENT_ID the charge came from. Populated on migrated records and on records synchronised back to NOMIS. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "flyway_schema_history",
@@ -1444,15 +1444,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "status_before_migration",
-        "type": "varchar",
-        "length": 32,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>date_time_of_discovery",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Status the charge held in NOMIS before migration. Populated on migrated records only. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>When the incident was discovered. Equal to the incident date unless it was found later; the 48 hour notice clock runs from here. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "offence",
@@ -1469,18 +1469,18 @@
         "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>charge_number",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "code",
         "type": "varchar",
-        "length": 16,
+        "length": 32,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Business key for the charge, unique across the service. Format is <agency>&lt;6 digit sequence&gt; for DPS-raised charges (for example MDI001234); migrated NOMIS charges use the NOMIS charge number, suffixed -<n> where one NOMIS incident split into several DPS charges. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "punishment_schedule",
@@ -1595,18 +1595,18 @@
         "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modify_datetime",
+        "name": "date_time_resubmitted",
         "type": "timestamp",
         "length": 29,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>When a returned report was resubmitted for review. Where set, this is treated as the report&rsquo;s created date in the API. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "draft_adjudications",
@@ -1637,18 +1637,18 @@
         "comments": "<p>Type of witness. One of OFFICER, STAFF, OTHER_PERSON, VICTIM, PRISONER. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>originating_agency_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "details",
         "type": "varchar",
-        "length": 6,
+        "length": 4000,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Agency (prison) code where the incident was reported. Together with override_agency_id this controls which caseload may see and action the record. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Free text description of the damage. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "witness",
@@ -1875,18 +1875,18 @@
         "comments": "<p>Charge number this punishment runs consecutively to. Used for added days that follow on from an award on an earlier charge. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "create_user_id",
+        "name": "created_on_behalf_of_reason",
         "type": "varchar",
-        "length": 32,
-        "nullable": "",
+        "length": 4000,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "comments": "<p>Reason the report was created on behalf of another officer. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "punishment_comments",
@@ -1922,13 +1922,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "agency_incident_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "name": "is_youth_offender",
+        "type": "bool",
+        "length": 1,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>NOMIS AGENCY_INCIDENT_ID the charge came from. Populated on migrated records and on records synchronised back to NOMIS. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "false",
+        "comments": "<p>True when the YOI rule set applies rather than the adult rule set. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "offence",
@@ -1945,18 +1945,18 @@
         "comments": "<p>Name of a victim who is neither a prisoner nor staff (for example a visitor). <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "reporter",
+        "name": "created_on_behalf_of_officer",
         "type": "varchar",
         "length": 32,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>DPS username of the officer who recorded this entry. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "comments": "<p>Name of the officer the report was created on behalf of, when someone else entered it for them. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "reported_witness",
@@ -2018,15 +2018,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "date_time_of_issue",
-        "type": "timestamp",
-        "length": 29,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>incident_role_associated_prisoners_number",
+        "type": "varchar",
+        "length": 7,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the notice of report was most recently issued. Full history is in dis_issue_history. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>NOMIS offender number of the other prisoner involved, where the role code requires one. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "outcome",
@@ -2062,13 +2062,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "issuing_officer",
+        "name": "incident_role_code",
         "type": "varchar",
-        "length": 32,
+        "length": 5,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>DPS username of the officer who most recently issued the notice of report (DIS1/2) to the prisoner. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "comments": "<p>Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "damages",
@@ -2141,18 +2141,18 @@
         "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "handover_deadline",
-        "type": "timestamp",
-        "length": 29,
+        "name": "create_user_id",
+        "type": "varchar",
+        "length": 32,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "draft_adjudications",
@@ -2230,13 +2230,13 @@
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>incident_role_associated_prisoners_number",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>originating_agency_id",
         "type": "varchar",
-        "length": 7,
-        "nullable": "√",
+        "length": 6,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>NOMIS offender number of the other prisoner involved, where the role code requires one. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Agency (prison) code where the incident was reported. Together with override_agency_id this controls which caseload may see and action the record. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "reported_offence",
@@ -2396,43 +2396,43 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "status_reason",
+        "type": "varchar",
+        "length": 128,
+        "nullable": "√",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>Reason code recorded when the reviewer rejected or returned the report. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+    },
+    {
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
+        "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>override_agency_id",
-        "type": "varchar",
-        "length": 6,
-        "nullable": "√",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>migrated",
+        "type": "bool",
+        "length": 1,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Agency code the prisoner transferred to after the charge was raised, set by TransferService from prisoner movement events. Null when there has been no transfer. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "defaultValue": "false",
+        "comments": "<p>True when the record was migrated from NOMIS rather than raised in DPS. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
-        "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>reported_adjudication_fk_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>Foreign key to reported_adjudications. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
-    },
-    {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "create_datetime",
-        "type": "timestamp",
-        "length": 29,
+        "name": "migrated_inactive_prisoner",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "false",
+        "comments": "<p>True when the record was migrated for a prisoner who was no longer active. These records are excluded from the INVALID_* status checks because their data cannot be corrected. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "incident_details",
@@ -2480,29 +2480,29 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modify_user_id",
-        "type": "varchar",
-        "length": 32,
-        "nullable": "√",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>DPS username of the person who last updated the row. Null if it has never been updated. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "serial",
+        "length": 10,
+        "nullable": "",
+        "autoUpdated": "√",
+        "defaultValue": "nextval('reported_adjudications_id_seq'::regclass)",
+        "comments": "<p>Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modify_user_id",
-        "type": "varchar",
-        "length": 32,
-        "nullable": "√",
+        "name": "migrated_split_record",
+        "type": "bool",
+        "length": 1,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>DPS username of the person who last updated the row. Null if it has never been updated. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
+        "defaultValue": "false",
+        "comments": "<p>True when a single NOMIS charge was split into multiple DPS charges during migration. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "offence",
@@ -2603,18 +2603,18 @@
         "comments": "<p>Name of the officer the report was created on behalf of, when someone else entered it for them. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "details",
+        "name": "status_before_migration",
         "type": "varchar",
-        "length": 4000,
-        "nullable": "",
+        "length": 32,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Free text description of the damage. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>Status the charge held in NOMIS before migration. Populated on migrated records only. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "draft_adjudications",
@@ -2636,13 +2636,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "status_reason",
-        "type": "varchar",
-        "length": 128,
-        "nullable": "√",
+        "name": "handover_deadline",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Reason code recorded when the reviewer rejected or returned the report. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>Deadline for issuing the notice of report to the prisoner, calculated as 48 hours after discovery. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "offence",
@@ -3110,15 +3110,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>migrated",
-        "type": "bool",
-        "length": 1,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "review_user_id",
+        "type": "varchar",
+        "length": 32,
+        "nullable": "√",
         "autoUpdated": "",
-        "defaultValue": "false",
-        "comments": "<p>True when the record was migrated from NOMIS rather than raised in DPS. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>DPS username of the reviewer who accepted, rejected or returned the report. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "witness",
@@ -3140,13 +3140,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "status_details",
-        "type": "varchar",
-        "length": 4000,
+        "name": "location_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Free text the reviewer gave alongside status_reason. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>Legacy NOMIS internal location id where the incident occurred. Superseded by location_uuid. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "punishment",
@@ -3247,32 +3247,32 @@
         "comments": "<p>True once the reporter has completed the witnesses page, including confirming there were none. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "create_datetime",
-        "type": "timestamp",
-        "length": 29,
-        "nullable": "",
+        "name": "repair_cost",
+        "type": "numeric",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>Cost of repair in pounds, where recorded. Separate from the DAMAGES_OWED punishment, which is the amount the prisoner was ordered to pay. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>status",
-        "type": "varchar",
-        "length": 32,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "date_time_of_incident",
+        "type": "timestamp",
+        "length": 29,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "'AWAITING_REVIEW'::character varying",
-        "comments": "<p>Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>When the incident occurred. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "draft_adjudications",
@@ -3320,15 +3320,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "incident_role_code",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>charge_number",
         "type": "varchar",
-        "length": 5,
-        "nullable": "√",
+        "length": 16,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
+        "comments": "<p>Business key for the charge, unique across the service. Format is <agency>&lt;6 digit sequence&gt; for DPS-raised charges (for example MDI001234); migrated NOMIS charges use the NOMIS charge number, suffixed -<n> where one NOMIS incident split into several DPS charges. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "hearing",
@@ -3345,18 +3345,18 @@
         "comments": "<p>Foreign key to hearing_outcome. Null while the hearing is scheduled but not yet held. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_damages",
-        "tableFileName": "reported_damages",
+        "tableName": "reported_adjudications",
+        "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "code",
-        "type": "varchar",
-        "length": 32,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>offender_booking_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Type of damage. One of ELECTRICAL_REPAIR, PLUMBING_REPAIR, FURNITURE_OR_FABRIC_REPAIR, LOCK_REPAIR, REDECORATION, CLEANING, REPLACE_AN_ITEM. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>NOMIS OFFENDER_BOOK_ID for the booking the charge belongs to. Use this to join to NOMIS sentence and sanction data. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "reported_evidence",
@@ -3420,13 +3420,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "last_modified_agency_id",
+        "name": "status_details",
         "type": "varchar",
-        "length": 6,
+        "length": 4000,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Agency code of the establishment that last changed the record. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Free text the reviewer gave alongside status_reason. <a href=\"./null\">Sensitivity: SPECIAL-CATEGORY<\/a><\/p>"
     },
     {
         "tableName": "offence",
@@ -3658,13 +3658,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "location_uuid",
-        "type": "uuid",
-        "length": 2147483647,
-        "nullable": "",
+        "name": "last_modified_agency_id",
+        "type": "varchar",
+        "length": 6,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Location identifier in the locations-inside-prison service. This is the current location reference. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Agency code of the establishment that last changed the record. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "punishment_schedule",
@@ -3728,13 +3728,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "migrated_inactive_prisoner",
-        "type": "bool",
-        "length": 1,
-        "nullable": "",
+        "name": "date_time_of_issue",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "√",
         "autoUpdated": "",
-        "defaultValue": "false",
-        "comments": "<p>True when the record was migrated for a prisoner who was no longer active. These records are excluded from the INVALID_* status checks because their data cannot be corrected. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>When the notice of report was most recently issued. Full history is in dis_issue_history. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "outcome",
@@ -3824,15 +3824,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "migrated_split_record",
-        "type": "bool",
-        "length": 1,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>date_time_of_first_hearing",
+        "type": "timestamp",
+        "length": 29,
+        "nullable": "√",
         "autoUpdated": "",
-        "defaultValue": "false",
-        "comments": "<p>True when a single NOMIS charge was split into multiple DPS charges during migration. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "defaultValue": "null",
+        "comments": "<p>Denormalised date of the earliest hearing, maintained for reporting and sorting. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
         "tableName": "reported_offence",
@@ -3880,15 +3880,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modify_datetime",
-        "type": "timestamp",
-        "length": 29,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>prisoner_number",
+        "type": "varchar",
+        "length": 7,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>NOMIS offender number (noms id) of the prisoner charged. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "punishment_schedule",
@@ -3908,15 +3908,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>offender_booking_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "incident_role_associated_prisoners_name",
+        "type": "varchar",
+        "length": 100,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>NOMIS OFFENDER_BOOK_ID for the booking the charge belongs to. Use this to join to NOMIS sentence and sanction data. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
+        "comments": "<p>Name of the other prisoner involved, held where they cannot be looked up. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "draft_adjudications",
@@ -4087,18 +4087,18 @@
         "comments": "<p>When the row was last updated. Null if it has never been updated. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
     },
     {
-        "tableName": "reported_adjudications",
-        "tableFileName": "reported_adjudications",
+        "tableName": "reported_damages",
+        "tableFileName": "reported_damages",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "date_time_of_incident",
-        "type": "timestamp",
-        "length": 29,
+        "name": "reporter",
+        "type": "varchar",
+        "length": 32,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the incident occurred. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>DPS username of the officer who recorded this entry. <a href=\"./null\">Sensitivity: STAFF<\/a><\/p>"
     },
     {
         "tableName": "incident_role",
@@ -4202,15 +4202,15 @@
         "tableName": "reported_adjudications",
         "tableFileName": "reported_adjudications",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "date_time_resubmitted",
-        "type": "timestamp",
-        "length": 29,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>override_agency_id",
+        "type": "varchar",
+        "length": 6,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When a returned report was resubmitted for review. Where set, this is treated as the report&rsquo;s created date in the API. <a href=\"./null\">Sensitivity: NONE<\/a><\/p>"
+        "comments": "<p>Agency code the prisoner transferred to after the charge was raised, set by TransferService from prisoner movement events. Null when there has been no transfer. <a href=\"./null\">Sensitivity: PERSONAL<\/a><\/p>"
     },
     {
         "tableName": "incident_details",
