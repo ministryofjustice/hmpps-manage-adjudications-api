@@ -3,7 +3,7 @@ import uk.gov.justice.digital.hmpps.gradle.PortForwardRedisTask
 import uk.gov.justice.digital.hmpps.gradle.RevealSecretsTask
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.9"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.11"
   id("jacoco")
   kotlin("plugin.spring") version "2.4.20"
   kotlin("plugin.jpa") version "2.4.20"
@@ -19,8 +19,8 @@ repositories {
   mavenCentral()
 }
 
-extra["jackson-2-bom.version"] = "2.22.2"
-extra["jackson-bom.version"] = "3.2.2"
+extra["jackson-2-bom.version"] = "2.22.3"
+extra["jackson-bom.version"] = "3.2.3"
 extra["logback.version"] = "1.6.3"
 extra["netty.version"] = "4.2.18.Final"
 extra["httpcore5.version"] = "5.4.3"
