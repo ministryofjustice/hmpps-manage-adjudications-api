@@ -398,7 +398,7 @@ class PunishmentsService(
       )
 
       is ConsecutivePunishmentLoop -> throw ValidationException(
-        "charge ${source.chargeNumber} cannot be consecutive to $targetChargeNumber because it would create a consecutive punishment loop",
+        "Charge ${source.chargeNumber} cannot be consecutive to $targetChargeNumber because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.",
       )
 
       is MissingConsecutiveSourceHearing -> throw ValidationException(

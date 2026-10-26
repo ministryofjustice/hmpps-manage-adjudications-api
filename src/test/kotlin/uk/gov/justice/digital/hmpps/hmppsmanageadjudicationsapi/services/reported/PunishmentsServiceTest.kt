@@ -141,7 +141,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining(
-          "charge $sourceChargeNumber cannot be consecutive to 2 because it would create a consecutive punishment loop",
+          "Charge $sourceChargeNumber cannot be consecutive to 2 because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.",
         )
     }
 
@@ -1440,7 +1440,7 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
           punishments = listOf(PunishmentRequest(type = type, consecutiveChargeNumber = "2", duration = 1)),
         )
       }.isInstanceOf(ValidationException::class.java)
-        .hasMessageContaining("charge 1 cannot be consecutive to 2 because it would create a consecutive punishment loop")
+        .hasMessageContaining("Charge 1 cannot be consecutive to 2 because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.")
     }
 
     @Test

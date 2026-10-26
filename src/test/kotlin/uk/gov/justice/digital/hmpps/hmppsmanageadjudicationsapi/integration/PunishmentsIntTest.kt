@@ -171,7 +171,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo(
-        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because it would create a consecutive punishment loop",
+        "Validation failure: Charge $chargeX cannot be consecutive to $chargeY because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.",
       )
   }
 
@@ -221,7 +221,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo(
-        "Validation failure: charge $chargeX cannot be consecutive to $chargeY because it would create a consecutive punishment loop",
+        "Validation failure: Charge $chargeX cannot be consecutive to $chargeY because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.",
       )
   }
 
@@ -267,7 +267,7 @@ class PunishmentsIntTest : SqsIntegrationTestBase() {
       .expectStatus().isBadRequest
       .expectBody()
       .jsonPath("$.userMessage").isEqualTo(
-        "Validation failure: charge $firstCharge cannot be consecutive to $thirdCharge because it would create a consecutive punishment loop",
+        "Validation failure: Charge $firstCharge cannot be consecutive to $thirdCharge because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.",
       )
   }
 
