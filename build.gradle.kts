@@ -3,7 +3,7 @@ import uk.gov.justice.digital.hmpps.gradle.PortForwardRedisTask
 import uk.gov.justice.digital.hmpps.gradle.RevealSecretsTask
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.12"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.14"
   id("jacoco")
   kotlin("plugin.spring") version "2.4.21"
   kotlin("plugin.jpa") version "2.4.21"
@@ -21,10 +21,10 @@ repositories {
 
 extra["jackson-2-bom.version"] = "2.22.3"
 extra["jackson-bom.version"] = "3.2.3"
-extra["logback.version"] = "1.6.3"
+extra["logback.version"] = "1.6.5"
 extra["netty.version"] = "4.2.18.Final"
 extra["httpcore5.version"] = "5.4.3"
-extra["postgresql.version"] = "42.7.12"
+extra["postgresql.version"] = "42.7.14"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
