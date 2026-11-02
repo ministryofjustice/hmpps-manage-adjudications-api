@@ -42,7 +42,7 @@ dependencies {
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
   implementation("io.opentelemetry:opentelemetry-api:1.67.0")
-  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.0")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.1")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.11.0")
   developmentOnly("com.h2database:h2:2.5.252")
