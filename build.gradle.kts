@@ -67,8 +67,8 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-jpa-test")
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.0.3")
-  testImplementation("org.jsoup:jsoup:1.23.2")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.5")
+  testImplementation("org.jsoup:jsoup:1.24.1")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.8.6")
 }
 
 allOpen {
