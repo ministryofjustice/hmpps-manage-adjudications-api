@@ -500,7 +500,7 @@
     },
     {
       "code": "STAFF",
-      "description": "Staff member"
+      "description": "Member of staff who's not a prison officer"
     },
     {
       "code": "OTHER_PERSON",

@@ -314,7 +314,7 @@ COMMENT ON COLUMN constant_witness_code.description IS 'General reporting label 
 COMMENT ON COLUMN constant_witness_code.sequence IS 'Display order in the reporting catalogue. [Sensitivity: NONE]';
 INSERT INTO constant_witness_code (code, description, sequence) VALUES
     ('OFFICER', 'Prison officer', 0),
-    ('STAFF', 'Staff member', 1),
+    ('STAFF', 'Member of staff who''s not a prison officer', 1),
     ('OTHER_PERSON', 'Other person', 2),
     ('VICTIM', 'Victim', 3),
     ('PRISONER', 'Prisoner', 4);
