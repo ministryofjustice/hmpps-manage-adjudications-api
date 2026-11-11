@@ -1,0 +1,1890 @@
+{
+  "punishment_type": [
+    {
+      "code": "PRIVILEGE",
+      "description": "Loss of privileges"
+    },
+    {
+      "code": "EARNINGS",
+      "description": "Stoppage of earnings"
+    },
+    {
+      "code": "CONFINEMENT",
+      "description": "Cellular confinement"
+    },
+    {
+      "code": "REMOVAL_ACTIVITY",
+      "description": "Removal from activity"
+    },
+    {
+      "code": "EXCLUSION_WORK",
+      "description": "Exclusion from associated work"
+    },
+    {
+      "code": "EXTRA_WORK",
+      "description": "Extra work"
+    },
+    {
+      "code": "REMOVAL_WING",
+      "description": "Removal from wing or unit"
+    },
+    {
+      "code": "ADDITIONAL_DAYS",
+      "description": "Additional days"
+    },
+    {
+      "code": "PROSPECTIVE_DAYS",
+      "description": "Prospective additional days"
+    },
+    {
+      "code": "CAUTION",
+      "description": "Caution"
+    },
+    {
+      "code": "DAMAGES_OWED",
+      "description": "Recovery of money for damages"
+    },
+    {
+      "code": "PAYBACK",
+      "description": "Payback punishment"
+    },
+    {
+      "code": "RESTRICTION_OF_SOCIAL_VISITS",
+      "description": "Restriction of social visits"
+    },
+    {
+      "code": "LOSS_OF_SOCIAL_VISITS",
+      "description": "Loss of social visits"
+    }
+  ],
+  "privilege_type": [
+    {
+      "code": "CANTEEN",
+      "description": "Canteen"
+    },
+    {
+      "code": "FACILITIES",
+      "description": "Facilities"
+    },
+    {
+      "code": "MONEY",
+      "description": "Money"
+    },
+    {
+      "code": "TV",
+      "description": "TV"
+    },
+    {
+      "code": "ASSOCIATION",
+      "description": "Association"
+    },
+    {
+      "code": "GYM",
+      "description": "Gym"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    }
+  ],
+  "not_completed_outcome": [
+    {
+      "code": "FULL_ACTIVATE",
+      "description": "Suspended punishment activated"
+    },
+    {
+      "code": "PARTIAL_ACTIVATE",
+      "description": "Part of the suspended punishment activated"
+    },
+    {
+      "code": "EXT_SUSPEND",
+      "description": "Suspension end date extended"
+    },
+    {
+      "code": "NO_ACTION",
+      "description": "No further action"
+    }
+  ],
+  "measurement": [
+    {
+      "code": "DAYS",
+      "description": "Days"
+    },
+    {
+      "code": "HOURS",
+      "description": "Hours"
+    }
+  ],
+  "reason_for_change": [
+    {
+      "code": "APPEAL",
+      "description": "The punishments have been changed after an appeal"
+    },
+    {
+      "code": "CORRECTION",
+      "description": "To make a correction"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    },
+    {
+      "code": "GOV_OR_DIRECTOR",
+      "description": "A Governor or Director has decided to terminate or change punishments for another reason"
+    }
+  ],
+  "reported_adjudication_status": [
+    {
+      "code": "ACCEPTED",
+      "description": "Accepted"
+    },
+    {
+      "code": "REJECTED",
+      "description": "Rejected"
+    },
+    {
+      "code": "AWAITING_REVIEW",
+      "description": "Awaiting review"
+    },
+    {
+      "code": "RETURNED",
+      "description": "Returned"
+    },
+    {
+      "code": "UNSCHEDULED",
+      "description": "Unscheduled"
+    },
+    {
+      "code": "SCHEDULED",
+      "description": "Scheduled"
+    },
+    {
+      "code": "REFER_POLICE",
+      "description": "Referred to police"
+    },
+    {
+      "code": "REFER_INAD",
+      "description": "Referred to independent adjudicator"
+    },
+    {
+      "code": "REFER_GOV",
+      "description": "Referred to governor"
+    },
+    {
+      "code": "PROSECUTION",
+      "description": "Police prosecution"
+    },
+    {
+      "code": "DISMISSED",
+      "description": "Dismissed"
+    },
+    {
+      "code": "NOT_PROCEED",
+      "description": "Not proceeded with"
+    },
+    {
+      "code": "ADJOURNED",
+      "description": "Adjourned"
+    },
+    {
+      "code": "CHARGE_PROVED",
+      "description": "Charge proved"
+    },
+    {
+      "code": "QUASHED",
+      "description": "Quashed"
+    },
+    {
+      "code": "INVALID_OUTCOME",
+      "description": "Invalid outcome"
+    },
+    {
+      "code": "INVALID_SUSPENDED",
+      "description": "Invalid suspended"
+    },
+    {
+      "code": "INVALID_ADA",
+      "description": "Invalid added days"
+    }
+  ],
+  "gender": [
+    {
+      "code": "MALE",
+      "description": "Male"
+    },
+    {
+      "code": "FEMALE",
+      "description": "Female"
+    }
+  ],
+  "oic_hearing_type": [
+    {
+      "code": "GOV_ADULT",
+      "description": "Governor (adult)"
+    },
+    {
+      "code": "GOV_YOI",
+      "description": "Governor (YOI)"
+    },
+    {
+      "code": "INAD_YOI",
+      "description": "Independent adjudicator (YOI)"
+    },
+    {
+      "code": "GOV",
+      "description": "Governor"
+    },
+    {
+      "code": "INAD_ADULT",
+      "description": "Independent adjudicator (adult)"
+    }
+  ],
+  "hearing_outcome_code": [
+    {
+      "code": "COMPLETE",
+      "description": "Hearing complete"
+    },
+    {
+      "code": "REFER_POLICE",
+      "description": "Refer to police"
+    },
+    {
+      "code": "REFER_INAD",
+      "description": "Refer to independent adjudicator"
+    },
+    {
+      "code": "ADJOURN",
+      "description": "Adjourn hearing"
+    },
+    {
+      "code": "NOMIS",
+      "description": "NOMIS outcome"
+    },
+    {
+      "code": "REFER_GOV",
+      "description": "Refer to governor"
+    }
+  ],
+  "hearing_outcome_plea": [
+    {
+      "code": "UNFIT",
+      "description": "Unfit"
+    },
+    {
+      "code": "ABSTAIN",
+      "description": "Abstain"
+    },
+    {
+      "code": "GUILTY",
+      "description": "Guilty"
+    },
+    {
+      "code": "NOT_GUILTY",
+      "description": "Not guilty"
+    },
+    {
+      "code": "NOT_ASKED",
+      "description": "Not asked"
+    }
+  ],
+  "hearing_outcome_adjourn_reason": [
+    {
+      "code": "LEGAL_ADVICE",
+      "description": "Request for legal advice approved"
+    },
+    {
+      "code": "LEGAL_REPRESENTATION",
+      "description": "Request for legal representation approved"
+    },
+    {
+      "code": "RO_ATTEND",
+      "description": "Adjourned so that reporting officer can attend"
+    },
+    {
+      "code": "HELP",
+      "description": "Prisoner needs help, such as an interpreter or disability aid"
+    },
+    {
+      "code": "UNFIT",
+      "description": "Prisoner unfit to proceed"
+    },
+    {
+      "code": "WITNESS",
+      "description": "Request for witness approved"
+    },
+    {
+      "code": "WITNESS_SUPPORT",
+      "description": "Request for witness to support mitigation"
+    },
+    {
+      "code": "MCKENZIE",
+      "description": "Request for McKenzie friend approved"
+    },
+    {
+      "code": "EVIDENCE",
+      "description": "Further evidence needed"
+    },
+    {
+      "code": "INVESTIGATION",
+      "description": "Further investigation needed"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other reason"
+    }
+  ],
+  "outcome_code": [
+    {
+      "code": "REFER_POLICE",
+      "description": "Police referral"
+    },
+    {
+      "code": "REFER_INAD",
+      "description": "Independent adjudicator referral"
+    },
+    {
+      "code": "REFER_GOV",
+      "description": "Governor referral"
+    },
+    {
+      "code": "NOT_PROCEED",
+      "description": "Not proceeded with"
+    },
+    {
+      "code": "DISMISSED",
+      "description": "Dismissed"
+    },
+    {
+      "code": "PROSECUTION",
+      "description": "Prosecution"
+    },
+    {
+      "code": "SCHEDULE_HEARING",
+      "description": "Hearing scheduled"
+    },
+    {
+      "code": "CHARGE_PROVED",
+      "description": "Charge proved"
+    },
+    {
+      "code": "QUASHED",
+      "description": "Guilty finding quashed"
+    }
+  ],
+  "not_proceed_reason": [
+    {
+      "code": "ANOTHER_WAY",
+      "description": "Resolved in another way"
+    },
+    {
+      "code": "RELEASED",
+      "description": "Prisoner released"
+    },
+    {
+      "code": "WITNESS_NOT_ATTEND",
+      "description": "Witness unable to attend"
+    },
+    {
+      "code": "UNFIT",
+      "description": "Prisoner mentally or physically unfit to attend"
+    },
+    {
+      "code": "FLAWED",
+      "description": "Flawed notice of report"
+    },
+    {
+      "code": "EXPIRED_NOTICE",
+      "description": "Notice of report issued more than 48 hours after incident"
+    },
+    {
+      "code": "EXPIRED_HEARING",
+      "description": "Hearing open outside timeframe"
+    },
+    {
+      "code": "NOT_FAIR",
+      "description": "Not fair to continue"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    }
+  ],
+  "quashed_reason": [
+    {
+      "code": "FLAWED_CASE",
+      "description": "Flawed case"
+    },
+    {
+      "code": "JUDICIAL_REVIEW",
+      "description": "Quashed on judicial review"
+    },
+    {
+      "code": "APPEAL_UPHELD",
+      "description": "Prisoner appeal upheld"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    }
+  ],
+  "refer_gov_reason": [
+    {
+      "code": "REVIEW_FOR_REFER_POLICE",
+      "description": "To review for police referral"
+    },
+    {
+      "code": "GOV_INQUIRY",
+      "description": "For governor inquiry"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    }
+  ],
+  "damage_code": [
+    {
+      "code": "ELECTRICAL_REPAIR",
+      "description": "Electrical"
+    },
+    {
+      "code": "PLUMBING_REPAIR",
+      "description": "Plumbing"
+    },
+    {
+      "code": "FURNITURE_OR_FABRIC_REPAIR",
+      "description": "Furniture or fabric"
+    },
+    {
+      "code": "LOCK_REPAIR",
+      "description": "Lock"
+    },
+    {
+      "code": "REDECORATION",
+      "description": "Redecoration"
+    },
+    {
+      "code": "CLEANING",
+      "description": "Cleaning"
+    },
+    {
+      "code": "REPLACE_AN_ITEM",
+      "description": "Replacing an item"
+    }
+  ],
+  "evidence_code": [
+    {
+      "code": "PHOTO",
+      "description": "Photo"
+    },
+    {
+      "code": "BODY_WORN_CAMERA",
+      "description": "Body-worn camera"
+    },
+    {
+      "code": "CCTV",
+      "description": "CCTV"
+    },
+    {
+      "code": "BAGGED_AND_TAGGED",
+      "description": "Bagged and tagged"
+    },
+    {
+      "code": "OTHER",
+      "description": "Other"
+    }
+  ],
+  "witness_code": [
+    {
+      "code": "OFFICER",
+      "description": "Prison officer"
+    },
+    {
+      "code": "STAFF",
+      "description": "Staff member"
+    },
+    {
+      "code": "OTHER_PERSON",
+      "description": "Other person"
+    },
+    {
+      "code": "VICTIM",
+      "description": "Victim"
+    },
+    {
+      "code": "PRISONER",
+      "description": "Prisoner"
+    }
+  ],
+  "characteristic": [
+    {
+      "code": "AGE",
+      "description": "Age"
+    },
+    {
+      "code": "DISABILITY",
+      "description": "Disability"
+    },
+    {
+      "code": "GENDER_REASSIGN",
+      "description": "Gender reassignment"
+    },
+    {
+      "code": "MARRIAGE_AND_CP",
+      "description": "Marriage and civil partnership"
+    },
+    {
+      "code": "PREGNANCY_AND_MAT",
+      "description": "Pregnancy and maternity"
+    },
+    {
+      "code": "RACE",
+      "description": "Race"
+    },
+    {
+      "code": "RELIGION",
+      "description": "Religion or belief"
+    },
+    {
+      "code": "SEX",
+      "description": "Sex"
+    },
+    {
+      "code": "SEX_ORIENTATION",
+      "description": "Sexual orientation"
+    }
+  ],
+  "offence": [
+    {
+      "offence_code": 1001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A",
+      "nomis_code_with_others": "51:1A",
+      "paragraph": "1(a)",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1003,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A",
+      "nomis_code_with_others": "51:1A",
+      "paragraph": "1(a)",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1005,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A",
+      "nomis_code_with_others": "51:1A",
+      "paragraph": "1(a)",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1021,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A",
+      "nomis_code_with_others": "51:1A",
+      "paragraph": "1(a)",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1007,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A",
+      "nomis_code_with_others": "51:1A",
+      "paragraph": "1(a)",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 100124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A (24)",
+      "nomis_code_with_others": "51:1A (24)",
+      "paragraph": "1(a)",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100324,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A (24)",
+      "nomis_code_with_others": "51:1A (24)",
+      "paragraph": "1(a)",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100524,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A (24)",
+      "nomis_code_with_others": "51:1A (24)",
+      "paragraph": "1(a)",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 102124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A (24)",
+      "nomis_code_with_others": "51:1A (24)",
+      "paragraph": "1(a)",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100724,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1A (24)",
+      "nomis_code_with_others": "51:1A (24)",
+      "paragraph": "1(a)",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 1002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1B",
+      "nomis_code_with_others": "51:25D",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1022,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1B",
+      "nomis_code_with_others": "51:25D",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 102224,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1B (24)",
+      "nomis_code_with_others": "51:1B (24)",
+      "paragraph": "1(b)",
+      "description": "Commits any sexual assault",
+      "retired": false
+    },
+    {
+      "offence_code": 102324,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1C (24)",
+      "nomis_code_with_others": "51:1C (24)",
+      "paragraph": "1(c)",
+      "description": "Exposes themselves, or commits any other indecent or obscene act",
+      "retired": false
+    },
+    {
+      "offence_code": 102424,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1D (24)",
+      "nomis_code_with_others": "51:1D (24)",
+      "paragraph": "1(d)",
+      "description": "Sexually harasses any person",
+      "retired": false
+    },
+    {
+      "offence_code": 1004,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1J",
+      "nomis_code_with_others": "51:25F",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1006,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1N",
+      "nomis_code_with_others": "51:25G",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1008,
+      "rule_set": "ADULT",
+      "nomis_code": "51:1F",
+      "nomis_code_with_others": "51:25E",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 4001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:4",
+      "nomis_code_with_others": "51:4",
+      "paragraph": "4",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:4",
+      "nomis_code_with_others": "51:4",
+      "paragraph": "4",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4003,
+      "rule_set": "ADULT",
+      "nomis_code": "51:4",
+      "nomis_code_with_others": "51:4",
+      "paragraph": "4",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4004,
+      "rule_set": "ADULT",
+      "nomis_code": "51:4",
+      "nomis_code_with_others": "51:4",
+      "paragraph": "4",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4005,
+      "rule_set": "ADULT",
+      "nomis_code": "51:4",
+      "nomis_code_with_others": "51:4",
+      "paragraph": "4",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 5001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:5",
+      "nomis_code_with_others": "51:25Q",
+      "paragraph": "5",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:5",
+      "nomis_code_with_others": "51:25Q",
+      "paragraph": "5",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5003,
+      "rule_set": "ADULT",
+      "nomis_code": "51:5",
+      "nomis_code_with_others": "51:25Q",
+      "paragraph": "5",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5004,
+      "rule_set": "ADULT",
+      "nomis_code": "51:5",
+      "nomis_code_with_others": "51:25Q",
+      "paragraph": "5",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5005,
+      "rule_set": "ADULT",
+      "nomis_code": "51:5",
+      "nomis_code_with_others": "51:25Q",
+      "paragraph": "5",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 7001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:7",
+      "nomis_code_with_others": "51:25O",
+      "paragraph": "7",
+      "description": "Escapes or absconds from prison or from legal custody",
+      "retired": false
+    },
+    {
+      "offence_code": 7002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:7",
+      "nomis_code_with_others": "51:25O",
+      "paragraph": "7",
+      "description": "Escapes or absconds from prison or from legal custody",
+      "retired": false
+    },
+    {
+      "offence_code": 8001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:8D",
+      "nomis_code_with_others": "51:25AI",
+      "paragraph": "8",
+      "description": "Fails to comply with any condition upon which the person is temporarily released under rule 9",
+      "retired": false
+    },
+    {
+      "offence_code": 8002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:8E",
+      "nomis_code_with_others": "51:25AJ",
+      "paragraph": "8",
+      "description": "Fails to comply with any condition upon which the person is temporarily released under rule 9",
+      "retired": false
+    },
+    {
+      "offence_code": 12001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:12",
+      "nomis_code_with_others": "51:25AM",
+      "paragraph": "12",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 12002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:12A",
+      "nomis_code_with_others": "51:25A",
+      "paragraph": "12",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 14001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:14",
+      "nomis_code_with_others": "51:25J",
+      "paragraph": "14",
+      "description": "Sells or, without permission, delivers to any person any article which the person is allowed to have only for the person's own use",
+      "retired": false
+    },
+    {
+      "offence_code": 13001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:13B",
+      "nomis_code_with_others": "51:25J",
+      "paragraph": "13",
+      "description": "Sells or delivers to any person any unauthorised article",
+      "retired": false
+    },
+    {
+      "offence_code": 15001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:15",
+      "nomis_code_with_others": "51:25T",
+      "paragraph": "15",
+      "description": "Takes improperly any article belonging to another person or to a prison",
+      "retired": false
+    },
+    {
+      "offence_code": 24001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:24",
+      "nomis_code_with_others": "51:25Y",
+      "paragraph": "24",
+      "description": "Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 38)",
+      "retired": false
+    },
+    {
+      "offence_code": 24002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:24",
+      "nomis_code_with_others": "51:25Y",
+      "paragraph": "24",
+      "description": "Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 38)",
+      "retired": false
+    },
+    {
+      "offence_code": 23001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:23AP",
+      "nomis_code_with_others": "51:25V",
+      "paragraph": "23",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 23201,
+      "rule_set": "ADULT",
+      "nomis_code": "51:23AP",
+      "nomis_code_with_others": "51:25V",
+      "paragraph": "23",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 23002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:25Z",
+      "nomis_code_with_others": "51:25Z",
+      "paragraph": "22",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 23202,
+      "rule_set": "ADULT",
+      "nomis_code": "51:25Z",
+      "nomis_code_with_others": "51:25Z",
+      "paragraph": "22",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 9001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:9",
+      "nomis_code_with_others": "51:25U",
+      "paragraph": "9",
+      "description": "Is found with any substance in the person's urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to the person by themselves or by another person (but subject to Rule 52)",
+      "retired": false
+    },
+    {
+      "offence_code": 9002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:9",
+      "nomis_code_with_others": "51:25U",
+      "paragraph": "9",
+      "description": "Is found with any substance in the person's urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 9, been administered to the person by themselves or by another person (but subject to Rule 52)",
+      "retired": false
+    },
+    {
+      "offence_code": 12101,
+      "rule_set": "ADULT",
+      "nomis_code": "51:12AQ",
+      "nomis_code_with_others": "51:25X",
+      "paragraph": "12",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 12102,
+      "rule_set": "ADULT",
+      "nomis_code": "51:12AQ",
+      "nomis_code_with_others": "51:25X",
+      "paragraph": "12",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 10001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:10",
+      "nomis_code_with_others": "51:10",
+      "paragraph": "10",
+      "description": "Is intoxicated as a consequence of consuming any alcoholic beverage (but subject to rule 52A)",
+      "retired": false
+    },
+    {
+      "offence_code": 11001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:11",
+      "nomis_code_with_others": "51:11",
+      "paragraph": "11",
+      "description": "Consumes any alcoholic beverage whether or not provided to the person by another person (but subject to rule 52A)",
+      "retired": false
+    },
+    {
+      "offence_code": 16001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:16",
+      "nomis_code_with_others": "51:25C",
+      "paragraph": "16",
+      "description": "Intentionally or recklessly sets fire to any part of a prison or any other property, whether or not the person's own",
+      "retired": false
+    },
+    {
+      "offence_code": 24101,
+      "rule_set": "ADULT",
+      "nomis_code": "51:24A",
+      "nomis_code_with_others": "51:25L",
+      "paragraph": "24(a)",
+      "description": "Displays, attaches or draws on any part of a prison, or on any other property, threatening, abusive or insulting racist words, drawings, symbols or other material",
+      "retired": true
+    },
+    {
+      "offence_code": 2410124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:24A (24)",
+      "nomis_code_with_others": "51:24A (24)",
+      "paragraph": "24(a)",
+      "description": "Displays, attaches or draws on any part of a prison, or on any other property, threatening, abusive or insulting words, drawings, symbols or other material, which demonstrate, or are motivated (wholly or partly) by, hostility to persons based on them sharing a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 17001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:17A",
+      "nomis_code_with_others": "51:17A",
+      "paragraph": "17(a)",
+      "description": "Causes racially aggravated damage to, or destruction of, any part of a prison or any other property, other than the person's own",
+      "retired": true
+    },
+    {
+      "offence_code": 1700124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:17A (24)",
+      "nomis_code_with_others": "51:17A (24)",
+      "paragraph": "17(a)",
+      "description": "Causes damage to, or destruction of, any part of a prison or any other property, other than the person's own, aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 17002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:17",
+      "nomis_code_with_others": "51:17",
+      "paragraph": "17",
+      "description": "Destroys or damages any part of a prison or any other property, other than the person's own",
+      "retired": false
+    },
+    {
+      "offence_code": 19001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:19B",
+      "nomis_code_with_others": "51:25AE",
+      "paragraph": "19",
+      "description": "Is disrespectful to any officer, or any person (other than a prisoner) who is at the prison for the purpose of working there, or any person visiting a prison",
+      "retired": false
+    },
+    {
+      "offence_code": 19002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:19C",
+      "nomis_code_with_others": "51:25AF",
+      "paragraph": "19",
+      "description": "Is disrespectful to any officer, or any person (other than a prisoner) who is at the prison for the purpose of working there, or any person visiting a prison",
+      "retired": false
+    },
+    {
+      "offence_code": 19003,
+      "rule_set": "ADULT",
+      "nomis_code": "51:19A",
+      "nomis_code_with_others": "51:25AD",
+      "paragraph": "19",
+      "description": "Is disrespectful to any officer, or any person (other than a prisoner) who is at the prison for the purpose of working there, or any person visiting a prison",
+      "retired": false
+    },
+    {
+      "offence_code": 20001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:20A",
+      "nomis_code_with_others": "51:20A",
+      "paragraph": "20(a)",
+      "description": "Uses threatening, abusive or insulting racist words or behaviour",
+      "retired": true
+    },
+    {
+      "offence_code": 2000124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:20A (24)",
+      "nomis_code_with_others": "51:20A (24)",
+      "paragraph": "20(a)",
+      "description": "Uses threatening, abusive or insulting words or behaviour, which demonstrate, or are motivated (wholly or partly) by, hostility to persons based on them sharing a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 20002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:20",
+      "nomis_code_with_others": "51:25AC",
+      "paragraph": "20",
+      "description": "Uses threatening, abusive or insulting words or behaviour",
+      "retired": false
+    },
+    {
+      "offence_code": 22001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:22",
+      "nomis_code_with_others": "51:25W",
+      "paragraph": "22",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 23101,
+      "rule_set": "ADULT",
+      "nomis_code": "51:23",
+      "nomis_code_with_others": "51:25AN",
+      "paragraph": "23",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 2001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:2A",
+      "nomis_code_with_others": "51:25K",
+      "paragraph": "2",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2021,
+      "rule_set": "ADULT",
+      "nomis_code": "51:2A",
+      "nomis_code_with_others": "51:25K",
+      "paragraph": "2",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:2C",
+      "nomis_code_with_others": "51:25M",
+      "paragraph": "2",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2003,
+      "rule_set": "ADULT",
+      "nomis_code": "51:2D",
+      "nomis_code_with_others": "51:25N",
+      "paragraph": "2",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2004,
+      "rule_set": "ADULT",
+      "nomis_code": "51:2B",
+      "nomis_code_with_others": "51:25L",
+      "paragraph": "2",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 3001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:3",
+      "nomis_code_with_others": "51:25H",
+      "paragraph": "3",
+      "description": "Denies access to any part of the prison to any officer or any person (other than a prisoner) who is at the prison for the purpose of working there",
+      "retired": false
+    },
+    {
+      "offence_code": 6001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:6",
+      "nomis_code_with_others": "51:25R",
+      "paragraph": "6",
+      "description": "Intentionally obstructs an officer in the execution of their duty, or any person (other than a prisoner) who is at the prison for the purpose of working there, in the performance of their work",
+      "retired": false
+    },
+    {
+      "offence_code": 18001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:18A",
+      "nomis_code_with_others": "51:25B",
+      "paragraph": "18",
+      "description": "Absents themselves from any place the person is required to be or is present at any place where the person is not authorised to be",
+      "retired": false
+    },
+    {
+      "offence_code": 18002,
+      "rule_set": "ADULT",
+      "nomis_code": "51:18B",
+      "nomis_code_with_others": "51:25AO",
+      "paragraph": "18",
+      "description": "Absents themselves from any place the person is required to be or is present at any place where the person is not authorised to be",
+      "retired": false
+    },
+    {
+      "offence_code": 21001,
+      "rule_set": "ADULT",
+      "nomis_code": "51:21",
+      "nomis_code_with_others": "51:25AL",
+      "paragraph": "21",
+      "description": "Intentionally fails to work properly or, being required to work, refuses to do so",
+      "retired": false
+    },
+    {
+      "offence_code": 2600124,
+      "rule_set": "ADULT",
+      "nomis_code": "51:23A (24)",
+      "nomis_code_with_others": "51:23A (24)",
+      "paragraph": "23(a)",
+      "description": "Fails to comply with any payback punishment",
+      "retired": false
+    },
+    {
+      "offence_code": 1001,
+      "rule_set": "YOI",
+      "nomis_code": "55:2",
+      "nomis_code_with_others": "55:2",
+      "paragraph": "2",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1003,
+      "rule_set": "YOI",
+      "nomis_code": "55:2",
+      "nomis_code_with_others": "55:2",
+      "paragraph": "2",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1005,
+      "rule_set": "YOI",
+      "nomis_code": "55:2",
+      "nomis_code_with_others": "55:2",
+      "paragraph": "2",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1021,
+      "rule_set": "YOI",
+      "nomis_code": "55:2",
+      "nomis_code_with_others": "55:2",
+      "paragraph": "2",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 1007,
+      "rule_set": "YOI",
+      "nomis_code": "55:2",
+      "nomis_code_with_others": "55:2",
+      "paragraph": "2",
+      "description": "Commits any racially aggravated assault",
+      "retired": true
+    },
+    {
+      "offence_code": 100124,
+      "rule_set": "YOI",
+      "nomis_code": "55:2 (24)",
+      "nomis_code_with_others": "55:2 (24)",
+      "paragraph": "2",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100324,
+      "rule_set": "YOI",
+      "nomis_code": "55:2 (24)",
+      "nomis_code_with_others": "55:2 (24)",
+      "paragraph": "2",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100524,
+      "rule_set": "YOI",
+      "nomis_code": "55:2 (24)",
+      "nomis_code_with_others": "55:2 (24)",
+      "paragraph": "2",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 102124,
+      "rule_set": "YOI",
+      "nomis_code": "55:2 (24)",
+      "nomis_code_with_others": "55:2 (24)",
+      "paragraph": "2",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 100724,
+      "rule_set": "YOI",
+      "nomis_code": "55:2 (24)",
+      "nomis_code_with_others": "55:2 (24)",
+      "paragraph": "2",
+      "description": "Commits any assault aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 1002,
+      "rule_set": "YOI",
+      "nomis_code": "55:1A",
+      "nomis_code_with_others": "55:29D",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1022,
+      "rule_set": "YOI",
+      "nomis_code": "55:1A",
+      "nomis_code_with_others": "55:29D",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 102224,
+      "rule_set": "YOI",
+      "nomis_code": "55:2A (24)",
+      "nomis_code_with_others": "55:2A (24)",
+      "paragraph": "2(a)",
+      "description": "Commits any sexual assault",
+      "retired": false
+    },
+    {
+      "offence_code": 102324,
+      "rule_set": "YOI",
+      "nomis_code": "55:2B (24)",
+      "nomis_code_with_others": "55:2B (24)",
+      "paragraph": "2(b)",
+      "description": "Exposes themselves, or commits any other indecent or obscene act",
+      "retired": false
+    },
+    {
+      "offence_code": 102424,
+      "rule_set": "YOI",
+      "nomis_code": "55:2C (24)",
+      "nomis_code_with_others": "55:2C (24)",
+      "paragraph": "2(c)",
+      "description": "Sexually harasses any person",
+      "retired": false
+    },
+    {
+      "offence_code": 1004,
+      "rule_set": "YOI",
+      "nomis_code": "55:1L",
+      "nomis_code_with_others": "55:29F",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1006,
+      "rule_set": "YOI",
+      "nomis_code": "55:1M",
+      "nomis_code_with_others": "55:29G",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 1008,
+      "rule_set": "YOI",
+      "nomis_code": "55:1E",
+      "nomis_code_with_others": "55:29E",
+      "paragraph": "1",
+      "description": "Commits any assault",
+      "retired": false
+    },
+    {
+      "offence_code": 4001,
+      "rule_set": "YOI",
+      "nomis_code": "55:5",
+      "nomis_code_with_others": "55:5",
+      "paragraph": "5",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4002,
+      "rule_set": "YOI",
+      "nomis_code": "55:5",
+      "nomis_code_with_others": "55:5",
+      "paragraph": "5",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4003,
+      "rule_set": "YOI",
+      "nomis_code": "55:5",
+      "nomis_code_with_others": "55:5",
+      "paragraph": "5",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4004,
+      "rule_set": "YOI",
+      "nomis_code": "55:5",
+      "nomis_code_with_others": "55:5",
+      "paragraph": "5",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 4005,
+      "rule_set": "YOI",
+      "nomis_code": "55:5",
+      "nomis_code_with_others": "55:5",
+      "paragraph": "5",
+      "description": "Fights with any person",
+      "retired": false
+    },
+    {
+      "offence_code": 5001,
+      "rule_set": "YOI",
+      "nomis_code": "55:6",
+      "nomis_code_with_others": "55:29Q",
+      "paragraph": "6",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5002,
+      "rule_set": "YOI",
+      "nomis_code": "55:6",
+      "nomis_code_with_others": "55:29Q",
+      "paragraph": "6",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5003,
+      "rule_set": "YOI",
+      "nomis_code": "55:6",
+      "nomis_code_with_others": "55:29Q",
+      "paragraph": "6",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5004,
+      "rule_set": "YOI",
+      "nomis_code": "55:6",
+      "nomis_code_with_others": "55:29Q",
+      "paragraph": "6",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 5005,
+      "rule_set": "YOI",
+      "nomis_code": "55:6",
+      "nomis_code_with_others": "55:29Q",
+      "paragraph": "6",
+      "description": "Intentionally endangers the health or personal safety of others or, by the person's conduct, is reckless whether such health or personal safety is endangered",
+      "retired": false
+    },
+    {
+      "offence_code": 7001,
+      "rule_set": "YOI",
+      "nomis_code": "55:8",
+      "nomis_code_with_others": "55:29O",
+      "paragraph": "8",
+      "description": "Escapes or absconds from a young offender institution or from legal custody",
+      "retired": false
+    },
+    {
+      "offence_code": 7002,
+      "rule_set": "YOI",
+      "nomis_code": "55:8",
+      "nomis_code_with_others": "55:29O",
+      "paragraph": "8",
+      "description": "Escapes or absconds from a young offender institution or from legal custody",
+      "retired": false
+    },
+    {
+      "offence_code": 8001,
+      "rule_set": "YOI",
+      "nomis_code": "55:9D",
+      "nomis_code_with_others": "55:29AI",
+      "paragraph": "9",
+      "description": "Fails to comply with any condition upon which the person was temporarily released under rule 5 of these rules",
+      "retired": false
+    },
+    {
+      "offence_code": 8002,
+      "rule_set": "YOI",
+      "nomis_code": "55:9E",
+      "nomis_code_with_others": "55:29AJ",
+      "paragraph": "9",
+      "description": "Fails to comply with any condition upon which the person was temporarily released under rule 5 of these rules",
+      "retired": false
+    },
+    {
+      "offence_code": 12001,
+      "rule_set": "YOI",
+      "nomis_code": "55:13",
+      "nomis_code_with_others": "55:29AM",
+      "paragraph": "13",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 12002,
+      "rule_set": "YOI",
+      "nomis_code": "55:13A",
+      "nomis_code_with_others": "55:29AH",
+      "paragraph": "13",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 14001,
+      "rule_set": "YOI",
+      "nomis_code": "55:15",
+      "nomis_code_with_others": "55:29J",
+      "paragraph": "15",
+      "description": "Sells or, without permission, delivers to any person any article which the person is allowed to have only for the person's own use",
+      "retired": false
+    },
+    {
+      "offence_code": 13001,
+      "rule_set": "YOI",
+      "nomis_code": "55:14B",
+      "nomis_code_with_others": "55:29J",
+      "paragraph": "14",
+      "description": "Sells or delivers to any person any unauthorised article",
+      "retired": false
+    },
+    {
+      "offence_code": 15001,
+      "rule_set": "YOI",
+      "nomis_code": "55:16",
+      "nomis_code_with_others": "55:29T",
+      "paragraph": "16",
+      "description": "Takes improperly any article belonging to another person or to a young offender institution",
+      "retired": false
+    },
+    {
+      "offence_code": 24001,
+      "rule_set": "YOI",
+      "nomis_code": "55:27",
+      "nomis_code_with_others": "55:29Y",
+      "paragraph": "27",
+      "description": "Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 16)",
+      "retired": false
+    },
+    {
+      "offence_code": 24002,
+      "rule_set": "YOI",
+      "nomis_code": "55:27",
+      "nomis_code_with_others": "55:29Y",
+      "paragraph": "27",
+      "description": "Receives any controlled drug, pharmacy medicine, prescription only medicine, psychoactive substance or specified substance or, without the consent of an officer, any other article, during the course of a visit (not being an interview such as is mentioned in rule 16)",
+      "retired": false
+    },
+    {
+      "offence_code": 23001,
+      "rule_set": "YOI",
+      "nomis_code": "55:26B",
+      "nomis_code_with_others": "55:29V",
+      "paragraph": "26",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 23201,
+      "rule_set": "YOI",
+      "nomis_code": "55:26B",
+      "nomis_code_with_others": "55:29V",
+      "paragraph": "26",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 23002,
+      "rule_set": "YOI",
+      "nomis_code": "55:26C",
+      "nomis_code_with_others": "55:29Z",
+      "paragraph": "25",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 23202,
+      "rule_set": "YOI",
+      "nomis_code": "55:26C",
+      "nomis_code_with_others": "55:29Z",
+      "paragraph": "25",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 9001,
+      "rule_set": "YOI",
+      "nomis_code": "55:10",
+      "nomis_code_with_others": "55:29U",
+      "paragraph": "10",
+      "description": "Is found with any substance in the person's urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 5, been administered to the person by themselves or by another person (but subject to Rule 56)",
+      "retired": false
+    },
+    {
+      "offence_code": 9002,
+      "rule_set": "YOI",
+      "nomis_code": "55:10",
+      "nomis_code_with_others": "55:29U",
+      "paragraph": "10",
+      "description": "Is found with any substance in the person's urine which demonstrates that a controlled drug, pharmacy medication, prescription only medicine, psychoactive substance or specified substance has, whether in prison or while on temporary release under rule 5, been administered to the person by themselves or by another person (but subject to Rule 56)",
+      "retired": false
+    },
+    {
+      "offence_code": 12101,
+      "rule_set": "YOI",
+      "nomis_code": "55:13C",
+      "nomis_code_with_others": "55:29X",
+      "paragraph": "13",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 12102,
+      "rule_set": "YOI",
+      "nomis_code": "55:13B",
+      "nomis_code_with_others": "55:29X",
+      "paragraph": "13",
+      "description": "Has in the person's possession: (a) any unauthorised article, or (b) a greater quantity of any article than the person is authorised to have",
+      "retired": false
+    },
+    {
+      "offence_code": 10001,
+      "rule_set": "YOI",
+      "nomis_code": "55:11",
+      "nomis_code_with_others": "55:11",
+      "paragraph": "11",
+      "description": "Is intoxicated as a consequence of knowingly consuming any alcoholic beverage",
+      "retired": false
+    },
+    {
+      "offence_code": 11001,
+      "rule_set": "YOI",
+      "nomis_code": "55:12",
+      "nomis_code_with_others": "55:12",
+      "paragraph": "12",
+      "description": "Knowingly consumes any alcoholic beverage, other than any provided to the person pursuant to a written order of the medical officer under rule 21(1)",
+      "retired": false
+    },
+    {
+      "offence_code": 16001,
+      "rule_set": "YOI",
+      "nomis_code": "55:17",
+      "nomis_code_with_others": "55:29C",
+      "paragraph": "17",
+      "description": "Intentionally or recklessly sets fire to any part of a young offender institution or any other property, whether or not the person's own",
+      "retired": false
+    },
+    {
+      "offence_code": 24101,
+      "rule_set": "YOI",
+      "nomis_code": "55:28",
+      "nomis_code_with_others": "55:29I",
+      "paragraph": "28",
+      "description": "Displays, attaches or draws on any part of a young offender institution, or on any other property, threatening, abusive, or insulting racist words, drawings, symbols or other material",
+      "retired": true
+    },
+    {
+      "offence_code": 2410124,
+      "rule_set": "YOI",
+      "nomis_code": "55:28 (24)",
+      "nomis_code_with_others": "55:28 (24)",
+      "paragraph": "28",
+      "description": "Displays, attaches or draws on any part of a young offender institution, or on any other property, threatening, abusive or insulting words, drawings, symbols or other material, which demonstrate, or are motivated (wholly or partly) by, hostility to persons based on them sharing a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 17001,
+      "rule_set": "YOI",
+      "nomis_code": "55:19",
+      "nomis_code_with_others": "55:19",
+      "paragraph": "19",
+      "description": "Causes racially aggravated damage to, or destruction of, any part of a young offender institution or any other property, other than the person's own",
+      "retired": true
+    },
+    {
+      "offence_code": 1700124,
+      "rule_set": "YOI",
+      "nomis_code": "55:19 (24)",
+      "nomis_code_with_others": "55:19 (24)",
+      "paragraph": "19",
+      "description": "Causes damage to, or destruction of, any part of a young offender institution or any other property, other than the person's own, aggravated by a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 17002,
+      "rule_set": "YOI",
+      "nomis_code": "55:18",
+      "nomis_code_with_others": "55:18",
+      "paragraph": "18",
+      "description": "Destroys or damages any part of a young offender institution or any other property other than the person's own",
+      "retired": false
+    },
+    {
+      "offence_code": 19001,
+      "rule_set": "YOI",
+      "nomis_code": "55:21B",
+      "nomis_code_with_others": "55:29AE",
+      "paragraph": "21",
+      "description": "Is disrespectful to any officer, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, or any person visiting a young offender institution",
+      "retired": false
+    },
+    {
+      "offence_code": 19002,
+      "rule_set": "YOI",
+      "nomis_code": "55:21C",
+      "nomis_code_with_others": "55:29AF",
+      "paragraph": "21",
+      "description": "Is disrespectful to any officer, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, or any person visiting a young offender institution",
+      "retired": false
+    },
+    {
+      "offence_code": 19003,
+      "rule_set": "YOI",
+      "nomis_code": "55:21A",
+      "nomis_code_with_others": "55:29AD",
+      "paragraph": "21",
+      "description": "Is disrespectful to any officer, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, or any person visiting a young offender institution",
+      "retired": false
+    },
+    {
+      "offence_code": 20001,
+      "rule_set": "YOI",
+      "nomis_code": "55:23",
+      "nomis_code_with_others": "55:23",
+      "paragraph": "23",
+      "description": "Uses threatening, abusive or insulting racist words or behaviour",
+      "retired": true
+    },
+    {
+      "offence_code": 2000124,
+      "rule_set": "YOI",
+      "nomis_code": "55:23 (24)",
+      "nomis_code_with_others": "55:23 (24)",
+      "paragraph": "23",
+      "description": "Uses threatening, abusive or insulting words or behaviour, which demonstrate, or are motivated (wholly or partly) by, hostility to persons based on them sharing a protected characteristic",
+      "retired": false
+    },
+    {
+      "offence_code": 20002,
+      "rule_set": "YOI",
+      "nomis_code": "55:22",
+      "nomis_code_with_others": "55:29AC",
+      "paragraph": "22",
+      "description": "Uses threatening, abusive or insulting words or behaviour",
+      "retired": false
+    },
+    {
+      "offence_code": 22001,
+      "rule_set": "YOI",
+      "nomis_code": "55:25",
+      "nomis_code_with_others": "55:29W",
+      "paragraph": "25",
+      "description": "Disobeys any lawful order",
+      "retired": false
+    },
+    {
+      "offence_code": 23101,
+      "rule_set": "YOI",
+      "nomis_code": "55:26",
+      "nomis_code_with_others": "55:29AI",
+      "paragraph": "26",
+      "description": "Disobeys or fails to comply with any rule or regulation applying to the person",
+      "retired": false
+    },
+    {
+      "offence_code": 2001,
+      "rule_set": "YOI",
+      "nomis_code": "55:3A",
+      "nomis_code_with_others": "55:29K",
+      "paragraph": "3",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2021,
+      "rule_set": "YOI",
+      "nomis_code": "55:3A",
+      "nomis_code_with_others": "55:29K",
+      "paragraph": "3",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2002,
+      "rule_set": "YOI",
+      "nomis_code": "55:3C",
+      "nomis_code_with_others": "55:29M",
+      "paragraph": "3",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2003,
+      "rule_set": "YOI",
+      "nomis_code": "55:3D",
+      "nomis_code_with_others": "55:29N",
+      "paragraph": "3",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 2004,
+      "rule_set": "YOI",
+      "nomis_code": "55:3B",
+      "nomis_code_with_others": "55:29L",
+      "paragraph": "3",
+      "description": "Detains any person against the person's will",
+      "retired": false
+    },
+    {
+      "offence_code": 3001,
+      "rule_set": "YOI",
+      "nomis_code": "55:4",
+      "nomis_code_with_others": "55:29H",
+      "paragraph": "4",
+      "description": "Denies access to any part of the young offender institution to any officer or any person (other than an inmate) who is at the young offender institution for the purpose of working there",
+      "retired": false
+    },
+    {
+      "offence_code": 6001,
+      "rule_set": "YOI",
+      "nomis_code": "55:7",
+      "nomis_code_with_others": "55:29R",
+      "paragraph": "7",
+      "description": "Intentionally obstructs an officer in the execution of their duty, or any person (other than an inmate) who is at the young offender institution for the purpose of working there, in the performance of their work",
+      "retired": false
+    },
+    {
+      "offence_code": 18001,
+      "rule_set": "YOI",
+      "nomis_code": "55:20A",
+      "nomis_code_with_others": "55:29AB",
+      "paragraph": "20",
+      "description": "Absents themselves from any place where the person is required to be or is present at any place where the person is not authorised to be",
+      "retired": false
+    },
+    {
+      "offence_code": 18002,
+      "rule_set": "YOI",
+      "nomis_code": "55:20B",
+      "nomis_code_with_others": "55:29AO",
+      "paragraph": "20",
+      "description": "Absents themselves from any place where the person is required to be or is present at any place where the person is not authorised to be",
+      "retired": false
+    },
+    {
+      "offence_code": 21001,
+      "rule_set": "YOI",
+      "nomis_code": "55:24",
+      "nomis_code_with_others": "55:29AL",
+      "paragraph": "24",
+      "description": "Intentionally fails to work properly or, being required to work, refuses to do so",
+      "retired": false
+    },
+    {
+      "offence_code": 2600124,
+      "rule_set": "YOI",
+      "nomis_code": "55:26A (24)",
+      "nomis_code_with_others": "55:26A (24)",
+      "paragraph": "26(a)",
+      "description": "Fails to comply with any payback punishment",
+      "retired": false
+    }
+  ]
+}

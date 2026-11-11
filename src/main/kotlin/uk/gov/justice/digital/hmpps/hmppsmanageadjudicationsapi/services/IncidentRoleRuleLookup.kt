@@ -31,6 +31,8 @@ class IncidentRoleRuleLookup {
       ),
     )
 
+    fun roleCodes(): List<String> = (adultIncidentRuleDetailByRole.keys + youthIncidentRuleDetailByRole.keys).toList()
+
     fun associatedPrisonerInformationRequired(incidentRoleCode: String?): Boolean = INCITES_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode || ASSISTS_OTHER_TO_COMMIT_OFFENCE == incidentRoleCode
 
     fun getOffenceRuleDetails(incidentRoleCode: String?, isYouthOffender: Boolean): OffenceRuleDetailsDto? {

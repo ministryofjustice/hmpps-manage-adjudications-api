@@ -1,74 +1,67 @@
 package uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.integration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Characteristic
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.DamageCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.EvidenceCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Gender
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeAdjournReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.HearingOutcomePlea
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.Measurement
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotCompletedOutcome
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.NotProceedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OicHearingType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.OutcomeCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PrivilegeType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.PunishmentType
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.QuashedReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReasonForChange
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReferGovReason
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.ReportedAdjudicationStatus
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.entities.WitnessCode
-import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.OffenceCodes
+import uk.gov.justice.digital.hmpps.hmppsmanageadjudicationsapi.services.IncidentRoleRuleLookup
 import java.io.File
 
-/**
- * Writes reference-data.csv, the companion to the SchemaSpy report and data-dictionary.csv.
- *
- * Every code in this schema is a JPA string enum or an integer resolved in Kotlin - there are no
- * reference tables in the database - so a schema report alone leaves an analyst unable to decode
- * columns such as reported_offence.offence_code or punishment.type. This exports those lookups.
- *
- * Excluded from normal test runs; run with `./gradlew -Pinit-db=true test` (see build.gradle.kts).
- */
+/** Exports the reporting catalogue alongside the SchemaSpy report. */
 class ExportReferenceData {
-
   @Test
   fun `exports reference data`() {
-    val rows = mutableListOf<Row>()
-
-    rows += enumRows("reported_adjudications.status", ReportedAdjudicationStatus.entries)
-    rows += enumRows("reported_adjudications.gender", Gender.entries)
-    rows += Row("reported_adjudications.incident_role_code", "25a", "Attempts to commit any of the foregoing offences")
-    rows += Row("reported_adjudications.incident_role_code", "25b", "Incites another prisoner to commit any of the foregoing offences")
-    rows += Row("reported_adjudications.incident_role_code", "25c", "Assists another prisoner to commit, or to attempt to commit, any of the foregoing offences")
-
-    rows += enumRows("outcome.code", OutcomeCode.entries)
-    rows += enumRows("outcome.not_proceed_reason", NotProceedReason.entries)
-    rows += enumRows("outcome.quashed_reason", QuashedReason.entries)
-    rows += enumRows("outcome.refer_gov_reason", ReferGovReason.entries)
-
-    rows += enumRows("hearing.oic_hearing_type", OicHearingType.entries)
-    rows += enumRows("hearing_outcome.code", HearingOutcomeCode.entries)
-    rows += enumRows("hearing_outcome.adjourn_reason", HearingOutcomeAdjournReason.entries)
-    rows += enumRows("hearing_outcome.plea", HearingOutcomePlea.entries)
-
-    rows += enumRows("punishment.type", PunishmentType.entries)
-    rows += enumRows("punishment.privilege_type", PrivilegeType.entries)
-    rows += enumRows("punishment.rehab_not_completed_outcome", NotCompletedOutcome.entries)
-    rows += enumRows("punishment_schedule.measurement", Measurement.entries)
-    rows += enumRows("punishment_comments.reason_for_change", ReasonForChange.entries)
-
-    rows += enumRows("damages.code / reported_damages.code", DamageCode.entries)
-    rows += enumRows("evidence.code / reported_evidence.code", EvidenceCode.entries)
-    rows += enumRows("witness.code / reported_witness.code", WitnessCode.entries)
-    rows += enumRows(
-      "protected_characteristics.characteristic / draft_protected_characteristics.characteristic",
-      Characteristic.entries,
+    val catalogue = ObjectMapper().readTree(javaClass.getResourceAsStream("/reference-data/reporting-codes.json"))
+    val columns = linkedMapOf(
+      "punishment_type" to "punishment.type",
+      "privilege_type" to "punishment.privilege_type",
+      "not_completed_outcome" to "punishment.rehab_not_completed_outcome",
+      "measurement" to "punishment_schedule.measurement",
+      "reason_for_change" to "punishment_comments.reason_for_change",
+      "reported_adjudication_status" to "reported_adjudications.status / reported_adjudications.status_before_migration",
+      "gender" to "reported_adjudications.gender / draft_adjudications.gender",
+      "oic_hearing_type" to "hearing.oic_hearing_type",
+      "hearing_outcome_code" to "hearing_outcome.code",
+      "hearing_outcome_plea" to "hearing_outcome.plea",
+      "hearing_outcome_adjourn_reason" to "hearing_outcome.adjourn_reason",
+      "outcome_code" to "outcome.code",
+      "not_proceed_reason" to "outcome.not_proceed_reason",
+      "quashed_reason" to "outcome.quashed_reason",
+      "refer_gov_reason" to "outcome.refer_gov_reason",
+      "damage_code" to "damages.code / reported_damages.code",
+      "evidence_code" to "evidence.code / reported_evidence.code",
+      "witness_code" to "witness.code / reported_witness.code",
+      "characteristic" to "protected_characteristics.characteristic / draft_protected_characteristics.characteristic",
     )
-
-    rows += offenceCodeRows()
+    val rows = mutableListOf<Row>()
+    columns.forEach { (key, column) ->
+      catalogue[key].forEach { rows += Row(column, it["code"].asText(), it["description"].asText(), "constant_$key") }
+    }
+    catalogue["offence"].forEach {
+      rows += Row(
+        "offence.offence_code / reported_offence.offence_code",
+        it["offence_code"].asText(),
+        it["description"].asText(),
+        "ruleSet=${it["rule_set"].asText()}; nomisCode=${it["nomis_code"].asText()}; " +
+          "withOthersNomisCode=${it["nomis_code_with_others"].asText()}; " +
+          "paragraph=${it["paragraph"].asText()}; retired=${it["retired"].asBoolean()}",
+      )
+    }
+    rows += Row(
+      "reported_offence.offence_code",
+      "0",
+      "Migrated offence: use the NOMIS description stored on the record",
+      "No constant_offence row; use reported_offence.nomis_offence_code and nomis_offence_description",
+    )
+    listOf(false, true).forEach { isYouth ->
+      IncidentRoleRuleLookup.roleCodes().forEach { code ->
+        val details = requireNotNull(IncidentRoleRuleLookup.getOffenceRuleDetails(code, isYouth))
+        rows += Row(
+          "reported_adjudications.incident_role_code / incident_role.role_code",
+          code,
+          details.paragraphDescription.trim(),
+          "ruleSet=${if (isYouth) "YOI" else "ADULT"}; paragraph=${details.paragraphNumber}; null means acting alone",
+        )
+      }
+    }
 
     val output = File(System.getProperty("referenceDataOutput") ?: "reference-data.csv")
     output.bufferedWriter().use { writer ->
@@ -78,33 +71,7 @@ class ExportReferenceData {
     println("Wrote ${rows.size} reference data rows to ${output.absolutePath}")
   }
 
-  /**
-   * offence.offence_code and reported_offence.offence_code hold the integers in
-   * OffenceCodes.uniqueOffenceCodes, so one enum entry expands to several stored values.
-   */
-  private fun offenceCodeRows(): List<Row> = OffenceCodes.entries.flatMap { offence ->
-    offence.uniqueOffenceCodes.map { code ->
-      Row(
-        columnRef = "offence.offence_code / reported_offence.offence_code",
-        code = code.toString(),
-        description = offence.paragraphDescription.getParagraphDescription(Gender.MALE),
-        notes = "name=${offence.name}; nomisCode=${offence.nomisCode}; paragraph=${offence.paragraph}; " +
-          "withOthersNomisCode=${offence.getNomisCodeWithOthers()}; " +
-          "applicableVersions=${offence.applicableVersions.joinToString("|")}",
-      )
-    }
-  }
-
-  private fun <T : Enum<T>> enumRows(columnRef: String, values: List<T>) = values.map { Row(columnRef, it.name, "") }
-
-  private data class Row(
-    val columnRef: String,
-    val code: String,
-    val description: String,
-    val notes: String = "",
-  ) {
-    fun toCsv() = listOf(columnRef, code, description, notes).joinToString(",") { escape(it) }
-
-    private fun escape(value: String) = "\"${value.replace("\"", "\"\"")}\""
+  private data class Row(val columnRef: String, val code: String, val description: String, val notes: String) {
+    fun toCsv() = listOf(columnRef, code, description, notes).joinToString(",") { "\"${it.replace("\"", "\"\"")}\"" }
   }
 }
