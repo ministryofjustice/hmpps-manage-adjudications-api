@@ -394,7 +394,7 @@
     },
     {
       "code": "EXPIRED_NOTICE",
-      "description": "Notice of report issued more than 48 hours after incident"
+      "description": "Notice of report issued more than 48 hours after discovery"
     },
     {
       "code": "EXPIRED_HEARING",

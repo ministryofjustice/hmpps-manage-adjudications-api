@@ -235,7 +235,7 @@ INSERT INTO constant_not_proceed_reason (code, description, sequence) VALUES
     ('WITNESS_NOT_ATTEND', 'Witness unable to attend', 2),
     ('UNFIT', 'Prisoner mentally or physically unfit to attend', 3),
     ('FLAWED', 'Flawed notice of report', 4),
-    ('EXPIRED_NOTICE', 'Notice of report issued more than 48 hours after incident', 5),
+    ('EXPIRED_NOTICE', 'Notice of report issued more than 48 hours after discovery', 5),
     ('EXPIRED_HEARING', 'Hearing open outside timeframe', 6),
     ('NOT_FAIR', 'Not fair to continue', 7),
     ('OTHER', 'Other', 8);
