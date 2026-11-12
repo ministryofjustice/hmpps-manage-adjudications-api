@@ -514,7 +514,7 @@ CREATE TABLE constant_incident_role (
     description text NOT NULL,
     PRIMARY KEY (code, rule_set)
 );
-COMMENT ON TABLE constant_incident_role IS 'Incident role reference by adult or YOI rule set. Null role code means the person committed the offence alone. Drafts with no rule set remain unresolved.';
+COMMENT ON TABLE constant_incident_role IS 'Incident role reference by adult or YOI rule set. A null role code indicates committed, not whether the person acted alone. A missing draft incident_role row means the role has not been supplied. Drafts with no rule set remain unresolved.';
 COMMENT ON COLUMN constant_incident_role.code IS 'Stored incident role code. [Sensitivity: NONE]';
 COMMENT ON COLUMN constant_incident_role.rule_set IS 'ADULT or YOI; selected using is_youth_offender. [Sensitivity: NONE]';
 COMMENT ON COLUMN constant_incident_role.paragraph IS 'Applicable rule paragraph. [Sensitivity: NONE]';
@@ -529,3 +529,5 @@ INSERT INTO constant_incident_role (code, rule_set, paragraph, description) VALU
 
 COMMENT ON COLUMN offence.offence_code IS 'Internal DPS offence code. For reporting join constant_offence by code and the parent draft rule set; an unset is_youth_offender remains unresolved. [Sensitivity: SPECIAL-CATEGORY]';
 COMMENT ON COLUMN reported_offence.offence_code IS 'Internal DPS offence code. For reporting join constant_offence by code and the parent adjudication rule set. Migrated sentinel 0 has no reference row: use nomis_offence_code and nomis_offence_description on this record. [Sensitivity: SPECIAL-CATEGORY]';
+COMMENT ON COLUMN incident_role.role_code IS 'Incident role code. Null in an existing role row indicates committed, not whether the person acted alone. A missing draft incident_role row means the role has not been supplied. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]';
+COMMENT ON COLUMN reported_adjudications.incident_role_code IS 'Incident role code. Null indicates committed, not whether the person acted alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]';
