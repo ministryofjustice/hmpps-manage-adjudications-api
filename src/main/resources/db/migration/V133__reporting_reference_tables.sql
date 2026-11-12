@@ -55,7 +55,7 @@ COMMENT ON COLUMN constant_not_completed_outcome.description IS 'General reporti
 COMMENT ON COLUMN constant_not_completed_outcome.sequence IS 'Display order in the reporting catalogue. [Sensitivity: NONE]';
 INSERT INTO constant_not_completed_outcome (code, description, sequence) VALUES
     ('FULL_ACTIVATE', 'Suspended punishment activated', 0),
-    ('PARTIAL_ACTIVATE', 'Part of the suspended punishment activated', 1),
+    ('PARTIAL_ACTIVATE', 'Suspended punishment activated for a specified number of days', 1),
     ('EXT_SUSPEND', 'Suspension end date extended', 2),
     ('NO_ACTION', 'No further action', 3);
 

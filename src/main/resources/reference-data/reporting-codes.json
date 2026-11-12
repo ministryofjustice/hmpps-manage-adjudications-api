@@ -94,7 +94,7 @@
     },
     {
       "code": "PARTIAL_ACTIVATE",
-      "description": "Part of the suspended punishment activated"
+      "description": "Suspended punishment activated for a specified number of days"
     },
     {
       "code": "EXT_SUSPEND",
