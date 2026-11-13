@@ -87,7 +87,7 @@ class ExportReferenceData {
         rows += Row(
           "reported_adjudications.incident_role_code / incident_role.role_code",
           code,
-          details.paragraphDescription.trim(),
+          details.paragraphDescription.trim().removeSuffix(":"),
           "ruleSet=${if (isYouth) "YOI" else "ADULT"}; paragraph=${details.paragraphNumber}; " +
             "null means committed, not necessarily alone; a missing draft incident role is unresolved",
         )

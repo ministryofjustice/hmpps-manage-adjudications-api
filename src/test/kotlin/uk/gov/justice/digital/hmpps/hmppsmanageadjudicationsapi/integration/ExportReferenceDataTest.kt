@@ -31,6 +31,9 @@ class ExportReferenceDataTest {
       assertThat(lines.count { it.startsWith("\"reported_adjudications.incident_role_code\",\"$code\",") }).isEqualTo(1)
       assertThat(lines.count { it.startsWith("\"reported_adjudications.incident_role_code / incident_role.role_code\",\"$code\",") }).isEqualTo(2)
     }
+    assertThat(lines.filter { it.startsWith("\"reported_adjudications.incident_role_code") })
+      .hasSize(9)
+      .noneMatch { it.contains(":\",") }
     OffenceCodes.entries.forEach { offence ->
       offence.uniqueOffenceCodes.forEach { code ->
         val prefix = "\"offence.offence_code / reported_offence.offence_code\",\"$code\","
