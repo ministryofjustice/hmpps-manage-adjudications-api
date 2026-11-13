@@ -62,6 +62,22 @@ class SchemaCommentsTest : IntegrationTestBase() {
       .isEmpty()
   }
 
+  @Test
+  fun `incident role comments distinguish committed from acting alone and an unresolved draft`() {
+    val comments = columnComments().associate { it.name to it.comment }
+    assertThat(comments["reported_adjudications.incident_role_code"])
+      .contains("Null indicates committed, not whether the person acted alone")
+    assertThat(comments["incident_role.role_code"])
+      .contains("Null in an existing role row indicates committed, not whether the person acted alone")
+      .contains("missing draft incident_role row")
+    val tableComment = jdbcTemplate.queryForObject(
+      "SELECT obj_description('public.constant_incident_role'::regclass)",
+      String::class.java,
+    )
+    assertThat(tableComment).contains("null role code indicates committed, not whether the person acted alone")
+      .contains("missing draft incident_role row")
+  }
+
   private data class ColumnComment(
     val name: String,
     val comment: String?,

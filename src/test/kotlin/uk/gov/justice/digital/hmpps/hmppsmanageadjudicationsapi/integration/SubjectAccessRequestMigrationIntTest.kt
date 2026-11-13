@@ -74,6 +74,7 @@ class SubjectAccessRequestMigrationIntTest :
     // class runs first against a fresh container. Test-class ordering is not guaranteed, so
     // reset to a pristine state once - before the first method - to make the expected ids
     // deterministic regardless of execution order while preserving the intra-class progression.
+    // Reporting reference tables are Flyway seed data, so retain them during the reset.
     if (!databaseReset) {
       resetDatabaseToPristineState()
       databaseReset = true
@@ -86,7 +87,7 @@ class SubjectAccessRequestMigrationIntTest :
       connection.createStatement().use { statement ->
         val tables = mutableListOf<String>()
         statement.executeQuery(
-          "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> 'flyway_schema_history'",
+          "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> 'flyway_schema_history' AND left(tablename, 9) <> 'constant_'",
         ).use { rs -> while (rs.next()) tables.add(rs.getString(1)) }
 
         if (tables.isNotEmpty()) {

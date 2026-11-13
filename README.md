@@ -109,13 +109,33 @@ along with three CSV exports for the MOJ Data Catalogue and SAR assurance:
 | File | Contents |
 |------|----------|
 | `data-dictionary.csv` | Every table and column, with its description, sensitivity classification, type, nullability, PK and FK |
-| `reference-data.csv`  | The enum and offence code lookups. These have no reference tables in the database - `reported_offence.offence_code` and every `@Enumerated` column resolve in Kotlin only |
+| `reference-data.csv`  | Reporting labels for enum, offence and incident-role codes, including rule-set and historical details |
 | `sar-data-dictionary.csv` | Complete SAR field inventory, including mandatory/template Y/N flags and database, derived or externally resolved source details |
 
 Table and column descriptions live in `src/main/resources/db/migration/V130__schema_comments.sql` as
 `COMMENT ON` statements, so the database is the single source of truth and SchemaSpy, the CSV export
 and any Glue crawl all agree. **Add a `COMMENT ON` for any new table or column** - a later migration
 can add to or replace comments at any time.
+
+### Reporting reference tables
+
+The `constant_*` tables are read-only reporting copies. Application behaviour continues to use Kotlin enums. Maintain `src/main/resources/reference-data/reporting-codes.json` and add a forward-only Flyway migration whenever reporting codes, descriptions or order change; the database integration test checks the catalogue, Kotlin codes and migrated tables together. Reporting labels may differ intentionally from SAR wording, which remains unchanged.
+
+Join `constant_offence` on both `offence_code` and the adjudication rule set derived from `is_youth_offender` (`ADULT` for false, `YOI` for true). Use a left join to retain unmatched records. A draft with a null rule set must remain unresolved. Retired rows remain available for historic data. `nomis_code` is the base code; `nomis_code_with_others` supplies the alternative for offences involving others (or the base code when no alternative exists). The migrated sentinel offence code `0` has no reference row: use `reported_offence.nomis_offence_code` and `reported_offence.nomis_offence_description` from the record instead. Incident roles use `constant_incident_role` with the same rule-set distinction. A null role code indicates the committed role, not whether the person acted alone. For drafts, distinguish a present `incident_role` row with a null code from a missing row, where the role has not yet been supplied. Reference rows contain general labels and do not contain person-specific records.
+The `retired` flag currently follows offence rule version 2, as configured in the UI. When the active rule version changes, update the reporting catalogue, migration and `ReportingReferenceDataTest` together.
+
+For example, the following reporting join preserves unknown and migrated offences:
+
+```sql
+SELECT ro.offence_code,
+       CASE WHEN ro.offence_code = 0 THEN ro.nomis_offence_code ELSE ref.nomis_code END AS nomis_code,
+       CASE WHEN ro.offence_code = 0 THEN ro.nomis_offence_description ELSE ref.description END AS description
+FROM reported_offence ro
+JOIN reported_adjudications ra ON ra.id = ro.reported_adjudication_fk_id
+LEFT JOIN constant_offence ref
+  ON ref.offence_code = ro.offence_code
+ AND ref.rule_set = CASE ra.is_youth_offender WHEN true THEN 'YOI' WHEN false THEN 'ADULT' END;
+```
 
 ### Data sensitivity
 
