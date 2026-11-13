@@ -149,7 +149,7 @@ class ReportingReferenceDataTest : IntegrationTestBase() {
           "code" to code,
           "rule_set" to if (isYouth) "YOI" else "ADULT",
           "paragraph" to details.paragraphNumber,
-          "description" to details.paragraphDescription.trim(),
+          "description" to details.paragraphDescription.trim().removeSuffix(":"),
         )
       }
     }.sortedWith(compareBy({ it["rule_set"] }, { it["code"] }))
@@ -157,7 +157,7 @@ class ReportingReferenceDataTest : IntegrationTestBase() {
     assertThat(actual).isEqualTo(expected)
     assertThat(expected).allSatisfy {
       assertThat(it["paragraph"]).isNotBlank()
-      assertThat(it["description"]).isNotBlank()
+      assertThat(it["description"]).isNotBlank().doesNotEndWith(":")
     }
     assertThat(IncidentRoleRuleLookup.getOffenceRuleDetails(null, false)).isNull()
     assertThat(IncidentRoleRuleLookup.getOffenceRuleDetails(null, true)).isNull()
