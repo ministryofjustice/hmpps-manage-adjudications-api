@@ -836,12 +836,12 @@
 <text text-anchor="start" x="101" y="-2935.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">success</text>
 <polygon fill="none" stroke="#000000" points="257,-2928 257,-2950 341,-2950 341,-2928 257,-2928"/>
 <text text-anchor="start" x="260" y="-2935.7" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">bool[1]</text>
-<polygon fill="#ffffff" stroke="transparent" points="81,-2909 81,-2928 173,-2928 173,-2909 81,-2909"/>
-<polygon fill="none" stroke="#000000" points="81,-2909 81,-2928 173,-2928 173,-2909 81,-2909"/>
+<polygon fill="#ffffff" stroke="transparent" points="81,-2909 81,-2928 154,-2928 154,-2909 81,-2909"/>
+<polygon fill="none" stroke="#000000" points="81,-2909 81,-2928 154,-2928 154,-2909 81,-2909"/>
 <text text-anchor="start" x="84" y="-2915.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">&lt; 0</text>
-<polygon fill="#ffffff" stroke="transparent" points="173,-2909 173,-2928 257,-2928 257,-2909 173,-2909"/>
-<polygon fill="none" stroke="#000000" points="173,-2909 173,-2928 257,-2928 257,-2909 173,-2909"/>
-<text text-anchor="start" x="247.8862" y="-2915.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="154,-2909 154,-2928 257,-2928 257,-2909 154,-2909"/>
+<polygon fill="none" stroke="#000000" points="154,-2909 154,-2928 257,-2928 257,-2909 154,-2909"/>
+<text text-anchor="start" x="209.3807" y="-2915.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">130 rows</text>
 <polygon fill="#ffffff" stroke="transparent" points="257,-2909 257,-2928 341,-2928 341,-2909 257,-2909"/>
 <polygon fill="none" stroke="#000000" points="257,-2909 257,-2928 341,-2928 341,-2909 257,-2909"/>
 <text text-anchor="start" x="322.4053" y="-2915.1" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#000000">0 &gt;</text>
