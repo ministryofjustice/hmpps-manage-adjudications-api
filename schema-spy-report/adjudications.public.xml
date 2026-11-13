@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><database name="adjudications" schema="public" type="PostgreSQL - 18.6 (Debian 18.6-1.pgdg13+2)">
+<?xml version="1.0" encoding="UTF-8"?><database name="adjudications" schema="public" type="PostgreSQL - 18.7 (Debian 18.7-1.pgdg13+2)">
    <sequences>
       <sequence increment="1" name="aci_charge_sequence" startValue="1"/>
       <sequence increment="1" name="agi_charge_sequence" startValue="1"/>
@@ -183,6 +183,263 @@
       <sequence increment="1" name="wyi_charge_sequence" startValue="1"/>
    </sequences>
    <tables>
+      <table name="constant_characteristic" remarks="Reporting labels for characteristic. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_characteristic_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_characteristic_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_damage_code" remarks="Reporting labels for damage code. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_damage_code_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_damage_code_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_evidence_code" remarks="Reporting labels for evidence code. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_evidence_code_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_evidence_code_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_gender" remarks="Reporting labels for gender. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_gender_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_gender_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_hearing_outcome_adjourn_reason" remarks="Reporting labels for hearing outcome adjourn reason. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_hearing_outcome_adjourn_reason_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_hearing_outcome_adjourn_reason_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_hearing_outcome_code" remarks="Reporting labels for hearing outcome code. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_hearing_outcome_code_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_hearing_outcome_code_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_hearing_outcome_plea" remarks="Reporting labels for hearing outcome plea. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_hearing_outcome_plea_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_hearing_outcome_plea_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_incident_role" remarks="Incident role reference by adult or YOI rule set. A null role code indicates committed, not whether the person acted alone. A missing draft incident_role row means the role has not been supplied. Drafts with no rule set remain unresolved." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored incident role code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="rule_set" nullable="false" remarks="ADULT or YOI; selected using is_youth_offender. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="paragraph" nullable="false" remarks="Applicable rule paragraph. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="false" remarks="General description of the incident role. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <primaryKey column="rule_set" sequenceNumberInPK="2"/>
+         <index name="constant_incident_role_pkey" unique="true">
+            <column ascending="true" name="code"/>
+            <column ascending="true" name="rule_set"/>
+         </index>
+         <checkConstraint constraint="(rule_set = ANY (ARRAY['ADULT'::text, 'YOI'::text]))" name="constant_incident_role_rule_set_check"/>
+      </table>
+      <table name="constant_measurement" remarks="Reporting labels for measurement. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_measurement_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_measurement_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_not_completed_outcome" remarks="Reporting labels for not completed outcome. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_not_completed_outcome_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_not_completed_outcome_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_not_proceed_reason" remarks="Reporting labels for not proceed reason. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_not_proceed_reason_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_not_proceed_reason_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_offence" remarks="Reporting offence reference. Join on offence_code and the adjudication rule set selected by is_youth_offender. Code 0 is a migrated sentinel: use the NOMIS code and description stored on reported_offence. Drafts with no rule set remain unresolved." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="offence_code" nullable="false" remarks="Stored offence code; excludes migrated sentinel 0. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="rule_set" nullable="false" remarks="ADULT or YOI; selected using the adjudication is_youth_offender flag. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="nomis_code" nullable="false" remarks="NOMIS offence code for this rule set. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="nomis_code_with_others" nullable="false" remarks="NOMIS offence code when others are involved; defaults to the base NOMIS code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="paragraph" nullable="false" remarks="Applicable rule paragraph. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="description" nullable="false" remarks="Neutral reporting description, without HTML or pronoun placeholders. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="retired" nullable="false" remarks="True if this offence is not selectable in the current rule version; retained for history. [Sensitivity: NONE]" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="offence_code" sequenceNumberInPK="1"/>
+         <primaryKey column="rule_set" sequenceNumberInPK="2"/>
+         <index name="constant_offence_pkey" unique="true">
+            <column ascending="true" name="offence_code"/>
+            <column ascending="true" name="rule_set"/>
+         </index>
+         <checkConstraint constraint="(rule_set = ANY (ARRAY['ADULT'::text, 'YOI'::text]))" name="constant_offence_rule_set_check"/>
+      </table>
+      <table name="constant_oic_hearing_type" remarks="Reporting labels for oic hearing type. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_oic_hearing_type_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_oic_hearing_type_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_outcome_code" remarks="Reporting labels for outcome code. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_outcome_code_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_outcome_code_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_privilege_type" remarks="Reporting labels for privilege type. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_privilege_type_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_privilege_type_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_punishment_type" remarks="Reporting labels for punishment type. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_punishment_type_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_punishment_type_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_quashed_reason" remarks="Reporting labels for quashed reason. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_quashed_reason_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_quashed_reason_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_reason_for_change" remarks="Reporting labels for reason for change. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_reason_for_change_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_reason_for_change_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_refer_gov_reason" remarks="Reporting labels for refer gov reason. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_refer_gov_reason_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_refer_gov_reason_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_reported_adjudication_status" remarks="Reporting labels for reported adjudication status. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_reported_adjudication_status_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_reported_adjudication_status_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
+      <table name="constant_witness_code" remarks="Reporting labels for witness code. Reporting labels can differ from SAR wording; SAR descriptions remain unchanged." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="Stored enum code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="description" nullable="false" remarks="General reporting label for this code. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="sequence" nullable="false" remarks="Display order in the reporting catalogue. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="code" sequenceNumberInPK="1"/>
+         <index name="constant_witness_code_pkey" unique="true">
+            <column ascending="true" name="code"/>
+         </index>
+         <index name="constant_witness_code_sequence_key" unique="true">
+            <column ascending="true" name="sequence"/>
+         </index>
+      </table>
       <table name="damages" remarks="Damage to prison property recorded on a draft adjudication. Copied to reported_damages on submission." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('damages_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. [Sensitivity: NONE]" size="10" type="serial" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications. [Sensitivity: NONE]" size="19" type="int8" typeCode="-5">
@@ -311,7 +568,7 @@
             <column ascending="true" name="draft_adjudication_fk_id"/>
          </index>
       </table>
-      <table name="flyway_schema_history" numRows="129" remarks="" schema="public" type="TABLE">
+      <table name="flyway_schema_history" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="installed_rank" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="version" nullable="true" remarks="" size="50" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="false" remarks="" size="200" type="varchar" typeCode="12"/>
@@ -424,7 +681,7 @@
          <column autoUpdated="true" defaultValue="nextval('incident_role_id_seq'::regclass)" digits="0" id="0" name="id" nullable="false" remarks="Surrogate primary key. Sequence value with no business meaning; it is not the NOMIS identifier. [Sensitivity: NONE]" size="10" type="serial" typeCode="4">
             <child column="incident_role_id" foreignKey="fk_incident_role" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="role_code" nullable="true" remarks="Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]" size="5" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="role_code" nullable="true" remarks="Incident role code. Null in an existing role row indicates committed, not whether the person acted alone. A missing draft incident_role row means the role has not been supplied. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]" size="5" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="associated_prisoners_number" nullable="true" remarks="NOMIS offender number of the other prisoner involved, where the role code requires one. [Sensitivity: PERSONAL]" size="7" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="create_user_id" nullable="false" remarks="DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. [Sensitivity: STAFF]" size="32" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="create_datetime" nullable="false" remarks="When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. [Sensitivity: NONE]" size="29" type="timestamp" typeCode="93"/>
@@ -461,7 +718,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="draft_adjudication_fk_id" nullable="true" remarks="Foreign key to draft_adjudications. [Sensitivity: NONE]" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="offence_draft_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="draft_adjudications"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code (an integer, not the Prison Rules paragraph). Resolved in application code by OffenceCodeLookupService against the OffenceCodes enum - there is no reference table in this database. See the reference-data export for the full code list. [Sensitivity: SPECIAL-CATEGORY]" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code. For reporting join constant_offence by code and the parent draft rule set; an unset is_youth_offender remains unresolved. [Sensitivity: SPECIAL-CATEGORY]" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="victim_prisoners_number" nullable="true" remarks="NOMIS offender number of the prisoner victim, for offences that have one. [Sensitivity: PERSONAL]" size="7" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. [Sensitivity: STAFF]" size="32" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. [Sensitivity: NONE]" size="29" type="timestamp" typeCode="93"/>
@@ -673,7 +930,7 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="create_datetime" nullable="false" remarks="When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. [Sensitivity: NONE]" size="29" type="timestamp" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="modify_user_id" nullable="true" remarks="DPS username of the person who last updated the row. Null if it has never been updated. [Sensitivity: STAFF]" size="32" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="modify_datetime" nullable="true" remarks="When the row was last updated. Null if it has never been updated. [Sensitivity: NONE]" size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="incident_role_code" nullable="true" remarks="Paragraph 25 role code. Null means the prisoner committed the offence alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]" size="5" type="varchar" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="incident_role_code" nullable="true" remarks="Incident role code. Null indicates committed, not whether the person acted alone. 25a = attempts to commit, 25b = incites another to commit, 25c = assists another to commit. [Sensitivity: SPECIAL-CATEGORY]" size="5" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="incident_role_associated_prisoners_number" nullable="true" remarks="NOMIS offender number of the other prisoner involved, where the role code requires one. [Sensitivity: PERSONAL]" size="7" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="'AWAITING_REVIEW'::character varying" digits="0" id="14" name="status" nullable="false" remarks="Current state of the charge. One of AWAITING_REVIEW, RETURNED, REJECTED, ACCEPTED (deprecated), UNSCHEDULED, SCHEDULED, ADJOURNED, REFER_POLICE, REFER_INAD, REFER_GOV, PROSECUTION, DISMISSED, NOT_PROCEED, CHARGE_PROVED, QUASHED, INVALID_OUTCOME, INVALID_SUSPENDED, INVALID_ADA. Derived from the latest outcome by ReportedAdjudication.calculateStatus(). The three INVALID_* values flag data inconsistencies inherited from the NOMIS migration rather than real states. [Sensitivity: SPECIAL-CATEGORY]" size="32" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="status_reason" nullable="true" remarks="Reason code recorded when the reviewer rejected or returned the report. [Sensitivity: NONE]" size="128" type="varchar" typeCode="12"/>
@@ -857,7 +1114,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="reported_adjudication_fk_id" nullable="true" remarks="Foreign key to reported_adjudications. [Sensitivity: NONE]" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="reported_offence_reported_adjudication_fk_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported_adjudications"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code (an integer, not the Prison Rules paragraph). Resolved in application code by OffenceCodeLookupService against the OffenceCodes enum - there is no reference table in this database. Migrated NOMIS charges that could not be mapped use the MIGRATED_OFFENCE code and carry the original text in nomis_offence_code / nomis_offence_description. See the reference-data export for the full code list. [Sensitivity: SPECIAL-CATEGORY]" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="offence_code" nullable="false" remarks="Internal DPS offence code. For reporting join constant_offence by code and the parent adjudication rule set. Migrated sentinel 0 has no reference row: use nomis_offence_code and nomis_offence_description on this record. [Sensitivity: SPECIAL-CATEGORY]" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="victim_prisoners_number" nullable="true" remarks="NOMIS offender number of the prisoner victim, for offences that have one. [Sensitivity: PERSONAL]" size="7" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="create_user_id" nullable="false" remarks="DPS username of the person who created the row. For records migrated from NOMIS this is the migration process rather than the officer who recorded the original prison event. [Sensitivity: STAFF]" size="32" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="create_datetime" nullable="false" remarks="When the row was created. For migrated records this is the date of the migration run, not the prison event - use actual_created_date where the table has one. [Sensitivity: NONE]" size="29" type="timestamp" typeCode="93"/>

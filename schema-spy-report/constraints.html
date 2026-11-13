@@ -104,24 +104,6 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>offence_draft_adjudication_fk_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/offence.html'>offence</a><span>.draft_adjudication_fk_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/draft_adjudications.html'>draft_adjudications</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>reported_evidence_reported_adjudication_fk_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -212,11 +194,11 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>reported_offence_reported_adjudication_fk_id_fkey</td>
+                                        <td>reported_witness_reported_adjudication_fk_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/reported_offence.html'>reported_offence</a><span>.reported_adjudication_fk_id</span></td>
+                                                    <td><a href='tables/reported_witness.html'>reported_witness</a><span>.reported_adjudication_fk_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -230,11 +212,101 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>reported_witness_reported_adjudication_fk_id_fkey</td>
+                                        <td>witness_draft_adjudication_fk_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/reported_witness.html'>reported_witness</a><span>.reported_adjudication_fk_id</span></td>
+                                                    <td><a href='tables/witness.html'>witness</a><span>.draft_adjudication_fk_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/draft_adjudications.html'>draft_adjudications</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>rehabilitative_activity_punishment_fk_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/rehabilitative_activity.html'>rehabilitative_activity</a><span>.punishment_fk_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/punishment.html'>punishment</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>punishment_reported_adjudication_fk_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/punishment.html'>punishment</a><span>.reported_adjudication_fk_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/reported_adjudications.html'>reported_adjudications</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>reported_damages_reported_adjudication_fk_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/reported_damages.html'>reported_damages</a><span>.reported_adjudication_fk_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/reported_adjudications.html'>reported_adjudications</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>offence_draft_adjudication_fk_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/offence.html'>offence</a><span>.draft_adjudication_fk_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/draft_adjudications.html'>draft_adjudications</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>reported_offence_reported_adjudication_fk_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/reported_offence.html'>reported_offence</a><span>.reported_adjudication_fk_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -320,24 +392,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>witness_draft_adjudication_fk_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/witness.html'>witness</a><span>.draft_adjudication_fk_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/draft_adjudications.html'>draft_adjudications</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>dis_issue_history_reported_adjudication_fk_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -392,24 +446,6 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>rehabilitative_activity_punishment_fk_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/rehabilitative_activity.html'>rehabilitative_activity</a><span>.punishment_fk_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/punishment.html'>punishment</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>punishment_schedule_punishment_fk_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -445,42 +481,6 @@
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
-                                    <tr>
-                                        <td>punishment_reported_adjudication_fk_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/punishment.html'>punishment</a><span>.reported_adjudication_fk_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/reported_adjudications.html'>reported_adjudications</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>reported_damages_reported_adjudication_fk_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/reported_damages.html'>reported_damages</a><span>.reported_adjudication_fk_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/reported_adjudications.html'>reported_adjudications</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -510,6 +510,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td><a href='tables/constant_offence.html'>constant_offence</a></td>
+                                        <td>constant_offence_rule_set_check</td>
+                                        <td>(rule_set &#61; ANY (ARRAY[&#39;ADULT&#39;::text, &#39;YOI&#39;::text]))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/constant_incident_role.html'>constant_incident_role</a></td>
+                                        <td>constant_incident_role_rule_set_check</td>
+                                        <td>(rule_set &#61; ANY (ARRAY[&#39;ADULT&#39;::text, &#39;YOI&#39;::text]))</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
