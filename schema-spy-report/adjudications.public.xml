@@ -316,7 +316,7 @@
             <column ascending="true" name="sequence"/>
          </index>
       </table>
-      <table name="constant_offence" numRows="148" remarks="Reporting offence reference. Join on offence_code and the adjudication rule set selected by is_youth_offender. Code 0 is a migrated sentinel: use the NOMIS code and description stored on reported_offence. Drafts with no rule set remain unresolved." schema="public" type="TABLE">
+      <table name="constant_offence" remarks="Reporting offence reference. Join on offence_code and the adjudication rule set selected by is_youth_offender. Code 0 is a migrated sentinel: use the NOMIS code and description stored on reported_offence. Drafts with no rule set remain unresolved." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="offence_code" nullable="false" remarks="Stored offence code; excludes migrated sentinel 0. [Sensitivity: NONE]" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="rule_set" nullable="false" remarks="ADULT or YOI; selected using the adjudication is_youth_offender flag. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="nomis_code" nullable="false" remarks="NOMIS offence code for this rule set. [Sensitivity: NONE]" size="2147483647" type="text" typeCode="12"/>
