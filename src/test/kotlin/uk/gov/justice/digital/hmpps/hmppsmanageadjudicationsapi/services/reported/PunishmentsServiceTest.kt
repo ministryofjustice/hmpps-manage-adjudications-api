@@ -455,6 +455,19 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         .hasMessageContaining("social visits punishments are only valid for adult adjudications")
     }
 
+    @Test
+    fun `validation error - exclusion from associated work is not valid for youth adjudications`() {
+      reportedAdjudication.isYouthOffender = true
+
+      assertThatThrownBy {
+        punishmentsService.create(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(type = PunishmentType.EXCLUSION_WORK, duration = 1, startDate = LocalDate.now(), endDate = LocalDate.now())),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("exclusion from associated work is only valid for adult adjudications")
+    }
+
     @CsvSource(
       "RESTRICTION_OF_SOCIAL_VISITS, 0, 84",
       "RESTRICTION_OF_SOCIAL_VISITS, 85, 84",
@@ -1441,6 +1454,45 @@ class PunishmentsServiceTest : ReportedAdjudicationTestBase() {
         )
       }.isInstanceOf(ValidationException::class.java)
         .hasMessageContaining("Charge 1 cannot be consecutive to 2 because this would create a consecutive punishment loop. Check that you’re adding this charge to the correct adjudication.")
+    }
+
+    @Test
+    fun `validation error - changing a youth punishment to exclusion from associated work`() {
+      reportedAdjudication.isYouthOffender = true
+      reportedAdjudication.addPunishment(
+        Punishment(
+          id = 1,
+          type = PunishmentType.EXTRA_WORK,
+          schedule = mutableListOf(PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now())),
+        ),
+      )
+
+      assertThatThrownBy {
+        punishmentsService.update(
+          chargeNumber = "1",
+          listOf(PunishmentRequest(id = 1, type = PunishmentType.EXCLUSION_WORK, duration = 1, suspendedUntil = LocalDate.now())),
+        )
+      }.isInstanceOf(ValidationException::class.java)
+        .hasMessageContaining("exclusion from associated work is only valid for adult adjudications")
+    }
+
+    @Test
+    fun `existing exclusion from associated work on a youth charge can still be amended`() {
+      reportedAdjudication.isYouthOffender = true
+      reportedAdjudication.addPunishment(
+        Punishment(
+          id = 1,
+          type = PunishmentType.EXCLUSION_WORK,
+          schedule = mutableListOf(PunishmentSchedule(id = 1, duration = 1, suspendedUntil = LocalDate.now())),
+        ),
+      )
+
+      val response = punishmentsService.update(
+        chargeNumber = "1",
+        listOf(PunishmentRequest(id = 1, type = PunishmentType.EXCLUSION_WORK, duration = 2, suspendedUntil = LocalDate.now())),
+      )
+
+      assertThat(response.punishments.single().schedule.duration).isEqualTo(2)
     }
 
     @Test
