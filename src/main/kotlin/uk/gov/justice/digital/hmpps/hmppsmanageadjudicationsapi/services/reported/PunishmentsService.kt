@@ -587,6 +587,12 @@ class PunishmentsService(
       }
     }
 
+    // exclusion from associated work is an adult-only punishment. An existing one on a youth charge is left alone so
+    // the rest of the charge's punishments can still be amended
+    if (this.type == PunishmentType.EXCLUSION_WORK && isYouthOffender && punishmentToAmend?.type != PunishmentType.EXCLUSION_WORK) {
+      throw ValidationException("exclusion from associated work is only valid for adult adjudications")
+    }
+
     when (this.type) {
       PunishmentType.DAMAGES_OWED ->
         this.damagesOwedAmount
