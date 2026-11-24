@@ -40,7 +40,7 @@ dependencies {
   implementation("io.swagger:swagger-annotations:1.6.16")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
-  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.4.1")
+  implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.6.0")
   implementation("io.opentelemetry:opentelemetry-api:1.68.0")
   implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.33.1")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
@@ -68,7 +68,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-webtestclient")
   testImplementation("uk.gov.justice.service.hmpps:hmpps-kotlin-spring-boot-starter-test:3.1.0")
   testImplementation("org.jsoup:jsoup:1.24.1")
-  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.9.0")
+  testImplementation("uk.gov.justice.service.hmpps:hmpps-subject-access-request-test-support:2.10.0")
 }
 
 allOpen {
