@@ -45,7 +45,7 @@ services:
       - API_BASE_URL_OAUTH=http://hmpps-auth:8080/auth
 
   hmpps-manage-adjudications-api-db:
-    image: postgres
+    image: postgres:18
     container_name: hmpps-manage-adjudications-api-db
     restart: always
     networks:
