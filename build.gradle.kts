@@ -3,7 +3,7 @@ import uk.gov.justice.digital.hmpps.gradle.PortForwardRedisTask
 import uk.gov.justice.digital.hmpps.gradle.RevealSecretsTask
 
 plugins {
-  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.0.15"
+  id("uk.gov.justice.hmpps.gradle-spring-boot") version "11.1.0"
   id("jacoco")
   kotlin("plugin.spring") version "2.4.21"
   kotlin("plugin.jpa") version "2.4.21"
@@ -37,7 +37,7 @@ dependencies {
   implementation("tools.jackson.module:jackson-module-kotlin:3.3.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.apache.commons:commons-text:1.15.0")
-  implementation("io.swagger:swagger-annotations:1.6.16")
+  implementation("io.swagger:swagger-annotations:1.6.17")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0")
 
   implementation("uk.gov.justice.service.hmpps:hmpps-sqs-spring-boot-starter:7.6.0")
